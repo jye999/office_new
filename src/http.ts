@@ -37,7 +37,7 @@ export async function paginate(query: Paginatable, perPage: number, req: Fastify
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
   const [{ total }] = (await query
     .clone()
-    .select([sql`count(*) as total`.toOperationNode()])
+    .select([sql`count(*) as total`])
     .execute()) as { total: number }[];
   const data = (await query.clone().offset((page - 1) * perPage).limit(perPage).execute()) as unknown[];
   const path = `${req.protocol}://${req.host}${new URL(req.url, 'http://localhost').pathname}`;
