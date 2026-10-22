@@ -99,7 +99,7 @@ describe('auth routes (fastify inject)', () => {
     anonApp.get('/secret2', { preHandler: [requireRoles(['admin'])] }, async () => 'ok');
     const anon = await anonApp.inject({ method: 'GET', url: '/secret2' });
     expect(anon.statusCode).toBe(302);
-    expect(anon.headers['location']).toBe('/login');
+    expect(anon.headers['location']).toBe('http://localhost:80/login'); // Laravel sends absolute Location
     await app.close();
     await anonApp.close();
   });
@@ -119,7 +119,7 @@ describe('auth routes (fastify inject)', () => {
 
     const home = await app.inject({ method: 'GET', url: '/' });
     expect(home.statusCode).toBe(302);
-    expect(home.headers['location']).toBe('/login');
+    expect(home.headers['location']).toBe('http://localhost:80/login');
     await app.close();
   });
 
@@ -136,7 +136,7 @@ describe('auth routes (fastify inject)', () => {
       payload: { email: '', password: '' },
     });
     expect(post.statusCode).toBe(302);
-    expect(post.headers['location']).toBe('/'); // no Referer -> app root
+    expect(post.headers['location']).toBe('http://localhost:80/'); // no Referer -> app root
     const cookie = cookieOf(post);
     expect(cookie).toContain('office_session=');
 

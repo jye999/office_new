@@ -3,6 +3,7 @@
 
 import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { sql } from './db.js';
 import type { TemplateValue } from './view.js';
 
 export function input<T = unknown>(req: FastifyRequest, key: string): T | null {
@@ -18,6 +19,45 @@ export function allInput(req: FastifyRequest): Record<string, unknown> {
   return { ...query, ...body };
 }
 
+// ---------------------------------------------------------------- paginate
+
+// Structural Kysely select query (avoids fighting the generic typing).
+interface Paginatable {
+  clone(): Paginatable;
+  select(selectors: unknown[]): Paginatable;
+  offset(n: number): Paginatable;
+  limit(n: number): Paginatable;
+  execute(): Promise<unknown[]>;
+}
+
+// Laravel 5.4 `->paginate(n)` JSON (LengthAwarePaginator::toArray). 5.4 has no
+// first_page_url/links keys; `from` is negative when total is 0 (kept quirk).
+export async function paginate(query: Paginatable, perPage: number, req: FastifyRequest) {
+  const rawPage = Number(input(req, 'page'));
+  const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
+  const [{ total }] = (await query
+    .clone()
+    .select([sql`count(*) as total`.toOperationNode()])
+    .execute()) as { total: number }[];
+  const data = (await query.clone().offset((page - 1) * perPage).limit(perPage).execute()) as unknown[];
+  const path = `${req.protocol}://${req.host}${new URL(req.url, 'http://localhost').pathname}`;
+  const url = (p: number) => `${path}?page=${p}`;
+  const lastPage = Math.ceil(total / perPage);
+  const lastItem = total ? Math.min(total, page * perPage) : 0;
+  return {
+    current_page: page,
+    data,
+    from: lastItem - perPage + 1,
+    last_page: lastPage,
+    next_page_url: page < lastPage ? url(page + 1) : null,
+    path,
+    per_page: perPage,
+    prev_page_url: page > 1 ? url(page - 1) : null,
+    to: lastItem,
+    total,
+  };
+}
+
 // Laravel's ValidationException handler drops passwords from flashed old input.
 export function sanitizeOldInput(input: Record<string, unknown>): Record<string, unknown> {
   const { password: _password, password_confirmation: _password_confirmation, ...rest } = input;
@@ -27,7 +67,28 @@ export function sanitizeOldInput(input: Record<string, unknown>): Record<string,
 // redirect()->back(): Referer header, or the app root.
 export function redirectBack(req: FastifyRequest, reply: FastifyReply): FastifyReply {
   const referer = req.headers['referer'];
-  return reply.redirect(typeof referer === 'string' && referer ? referer : '/');
+  return lredirect(req, reply, typeof referer === 'string' && referer ? referer : '/');
+}
+
+function escapeHtml(s: string): string {
+  return s.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+}
+
+// Laravel redirect(): 302 Location: <absolute> plus the framework's HTML body
+// (meta refresh + "Redirecting to …" link). reply.redirect() alone sends an
+// empty body, which breaks HTML parity.
+export function lredirect(req: FastifyRequest, reply: FastifyReply, to: string): FastifyReply {
+  const absolute = to.startsWith('http') ? to : `${req.protocol}://${req.host}${to.startsWith('/') ? '' : '/'}${to}`;
+  reply
+    .code(302)
+    .header('Location', absolute)
+    .type('text/html; charset=UTF-8')
+    .send(
+      `<!DOCTYPE html><html><head><meta charset="UTF-8" /><meta http-equiv="refresh" content="0;url='${escapeHtml(absolute)}'"` +
+        ` /><title>Redirecting to ${escapeHtml(absolute)}</title></head>` +
+        `<body>Redirecting to <a href="${escapeHtml(absolute)}">${escapeHtml(absolute)}</a>.</body></html>`,
+    );
+  return reply;
 }
 
 // @fastify/secure-session decorates req.session at runtime with this API; it is

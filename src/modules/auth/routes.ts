@@ -5,7 +5,7 @@ import { createHmac, randomBytes } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { config } from '../../config.js';
 import { db, nowDb } from '../../db.js';
-import { allInput, input, redirectBack, sanitizeOldInput } from '../../http.js';
+import { allInput, input, lredirect, redirectBack, sanitizeOldInput } from '../../http.js';
 import { registerRoute } from '../../router.js';
 import {
   currentUser,
@@ -113,7 +113,7 @@ async function handleLogin(req: FastifyRequest, reply: FastifyReply): Promise<vo
     session['user_id'] = user.id;
     delete session['intended'];
     (req as { saveSession?: () => Promise<void> }).saveSession?.();
-    reply.redirect(intended ?? '/home');
+    lredirect(req, reply, intended ?? '/home');
     return;
   }
 
@@ -219,7 +219,7 @@ async function handlePasswordReset(req: FastifyRequest, reply: FastifyReply): Pr
   session['user_id'] = user.id;
   (req as { saveSession?: () => Promise<void> }).saveSession?.();
   reply.flashStatus(trans('passwords.reset'));
-  reply.redirect('/home');
+  lredirect(req, reply, '/home');
 }
 
 // ---------------------------------------------------------------- routes
@@ -232,24 +232,24 @@ export function registerAuthRoutes(app: FastifyInstance): void {
       const session = req.session as Record<string, unknown>;
       session['intended'] = `${req.protocol}://${req.host}${req.raw.url ?? '/'}`;
       (req as { saveSession?: () => Promise<void> }).saveSession?.();
-      reply.redirect('/login');
+      lredirect(req, reply, '/login');
       return;
     }
     // parity: supplier redirect has no withInput()
     if (hasRole(auth, ['user', 'admin', 'remote'])) {
       (req.session as Record<string, unknown>)['old'] = allInput(req);
-      reply.redirect('/summary');
+      lredirect(req, reply, '/summary');
     } else if (hasRole(auth, ['opolo'])) {
       (req.session as Record<string, unknown>)['old'] = allInput(req);
-      reply.redirect('/opolo');
+      lredirect(req, reply, '/opolo');
     } else if (hasRole(auth, ['windy'])) {
       (req.session as Record<string, unknown>)['old'] = allInput(req);
-      reply.redirect('/windy');
+      lredirect(req, reply, '/windy');
     } else if (hasRole(auth, ['four'])) {
       (req.session as Record<string, unknown>)['old'] = allInput(req);
-      reply.redirect('/four');
+      lredirect(req, reply, '/four');
     } else if (hasRole(auth, ['supplier'])) {
-      reply.redirect('/Supplier');
+      lredirect(req, reply, '/Supplier');
     } else {
       await render(req, reply, 'home');
     }
@@ -271,7 +271,7 @@ export function registerAuthRoutes(app: FastifyInstance): void {
     delete session['user_id'];
     delete session['intended'];
     (req as { saveSession?: () => Promise<void> }).saveSession?.();
-    reply.redirect('/');
+    lredirect(req, reply, '/');
   });
   registerRoute('logout', '/logout');
 

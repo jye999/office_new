@@ -8,7 +8,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { config } from './config.js';
 import { db } from './db.js';
-import { input } from './http.js';
+import { input, lredirect } from './http.js';
 import type { TemplateValue } from './view.js';
 
 export interface AuthUser {
@@ -79,7 +79,7 @@ export async function requireLogin(req: FastifyRequest, reply: FastifyReply): Pr
   const session = req.session as Record<string, unknown>;
   session['intended'] = intendedUrl(req);
   (req as AuthCache & { saveSession?: () => Promise<void> }).saveSession?.();
-  reply.redirect('/login');
+  lredirect(req, reply, '/login');
 }
 
 // RoleMiddleware (`role:a,b`): no user -> /login; user without any role -> 403 "No Access.".
@@ -90,7 +90,7 @@ export function requireRoles(roles: string | string[]) {
       const session = req.session as Record<string, unknown>;
       session['intended'] = intendedUrl(req);
       (req as AuthCache & { saveSession?: () => Promise<void> }).saveSession?.();
-      reply.redirect('/login');
+      lredirect(req, reply, '/login');
       return;
     }
     if (!hasRole(auth, roles)) {
@@ -102,7 +102,7 @@ export function requireRoles(roles: string | string[]) {
 // `guest` middleware: authenticated -> /home (config('auth.redirect') unset).
 export async function requireGuest(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const auth = await currentUser(req);
-  if (auth.user) reply.redirect('/home');
+  if (auth.user) lredirect(req, reply, '/home');
 }
 
 // ---------------------------------------------------------------- bcrypt

@@ -1,18 +1,27 @@
 import fastifyStatic from '@fastify/static';
 import formbody from '@fastify/formbody';
+import fp from 'fastify-plugin';
 import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 import { config } from './config.js';
 import { db, sql } from './db.js';
 import { registerViewPlugins, render } from './view.js';
-import { registerHttpHelpers } from './http.js';
+import { lredirect, registerHttpHelpers } from './http.js';
 import { registerAuthRoutes } from './modules/auth/routes.js';
 import { registerApiAuthRoutes } from './modules/api/routes.js';
+import { installRouter } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
 
-await app.register(formbody);
-await app.register(multipart, { attachFieldsToBody: false });
+// T03: not-found handler (regex catch-alls + Laravel 404) must be installed
+// before any root-level route registration.
+installRouter(app);
+
+// fp() = global scope: form bodies must be parsed for routes registered on
+// the root app (T02's auth module registered them after this plugin; without
+// fp() the plugin is encapsulated and root routes 415 on urlencoded POSTs).
+await app.register(fp(formbody));
+await app.register(fp(multipart), { attachFieldsToBody: false });
 // registerHttpHelpers before the session plugin: its onSend must run first
 // (onSend hooks are FIFO) so flashed errors/old input are consumed once.
 await app.register(registerHttpHelpers);
