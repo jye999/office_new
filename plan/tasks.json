@@ -1,0 +1,1280 @@
+[
+ {
+  "id": "T00",
+  "title": "Scaffold, config, DB layer, static assets",
+  "phase": 0,
+  "deps": [],
+  "notes": "\n1. Init a pnpm TypeScript project in `~/code/office_new` (keep the existing `plan/` dir). `package.json` scripts:\n   `dev` (tsx watch src/server.ts), `start`, `typecheck` (tsc --noEmit), `test` (vitest run), `parity` (tsx scripts/parity.ts),\n   `db:types` (kysely-codegen). TS strict, ESM, `module: NodeNext`.\n2. Deps: fastify@5, @fastify/formbody, @fastify/multipart, @fastify/static, @fastify/secure-session, @fastify/flash,\n   kysely, mysql2, nunjucks, bcryptjs, zod, dotenv, pusher, ioredis. Dev: typescript, tsx, vitest, kysely-codegen, @types/*.\n3. `.env.example` + `.env` (gitignored) with: PORT=7000, APP_URL=http://localhost:7000, APP_TIMEZONE (copy from\n   `~/code/office/config/app.php` timezone), APP_KEY (random 32 bytes hex, for secure-session), DB_HOST=127.0.0.1, DB_PORT=3306,\n   DB_DATABASE=office, DB_USERNAME, DB_PASSWORD, DB_HWC_DATABASE=hwc, REDIS_HOST=127.0.0.1, REDIS_PORT=6379,\n   PUBLIC_DIR=/home/johnny/code/office/public, OLD_APP_URL=http://localhost:6999, PARITY_EMAIL, PARITY_PASSWORD,\n   SCHEDULER_ENABLED=0. Copy third-party API credentials from `~/code/office/.env` **only when a later task needs them**\n   (not now). Never commit `.env`. Read DB_PASSWORD from `~/code/office/.env` (the local docker MySQL; host is\n   127.0.0.1 from outside docker).\n4. `src/config.ts`: typed, validated (zod) env loader. Fail fast on missing vars.\n5. `src/db.ts`: two Kysely instances over mysql2 pools \u2014 `db` (office) and `hwc` \u2014 with `dateStrings: true`,\n   `supportBigNumbers: true`, `bigNumberStrings: false`, timezone matching Laravel (`'local'` unless config/app.php says\n   otherwise \u2014 check `config/database.php` for a `timezone` key). Export `sql` and `nowDb()` returning\n   `YYYY-MM-DD HH:mm:ss` in APP_TIMEZONE.\n6. Run `kysely-codegen` against office \u2192 `src/db/office.d.ts`, and against hwc \u2192 `src/db/hwc.d.ts`. Commit generated types.\n   Exclude wholesale/presta/saleor/cubecart tables if they live in these DBs (they don't, normally).\n7. `src/server.ts`: Fastify with `ignoreTrailingSlash: true`, formbody, multipart (attachFieldsToBody: false), static serving\n   of PUBLIC_DIR at `/` (wildcard, decorateReply true), `GET /__health` returning `{ok:true, db: <SELECT 1 result>}`.\n8. vitest smoke test for `nowDb()` format.\nVerify: `pnpm typecheck`, `pnpm test`, start server, `curl -s localhost:7000/__health`, `curl -sI localhost:7000/favicon.ico`\nreturns 200, `curl -sI localhost:7000/js/app.js` returns 200.\n",
+  "ctrls": null
+ },
+ {
+  "id": "T01",
+  "title": "Views engine, Blade helper globals, layouts",
+  "phase": 0,
+  "deps": [
+   "T00"
+  ],
+  "notes": "\nBuild `src/view.ts` and port the shared layouts so later tasks only port page bodies.\n1. Nunjucks env over `views/`, autoescape on, `throwOnUndefined: false`. `render(req, reply, name, data)` injects:\n   `auth` ({user, roles}), `errors` (Laravel MessageBag API: has/first/get/all/any/count), `session(key)`, `old(key, def)`.\n2. Globals mimicking PHP/Laravel exactly (each with a vitest test comparing to known PHP output):\n   url(path, params?) [absolute APP_URL-based like Laravel `url()`], asset(path), route(name, params?) [uses named route\n   table from src/router.ts \u2014 stub the import if router isn't built yet], csrf_token(), csrf_field() [`<input type=\"hidden\" name=\"_token\" value=\"...\">`],\n   method_field(m), config(key), trans(key) [port `~/code/office/resources/lang/en/*.php` to `src/lang/en.ts`],\n   date(format, ts?) [PHP date() format chars], number_format(n, dec=0, dp='.', ts=','), round, substr, explode, implode,\n   count, strtoupper, ucfirst, json_encode [PHP escaping: `\\/`, unicode \\uXXXX], in_array, isset, phpEmpty, nl2br, e, hasRole(roles).\n3. laravelcollective/html 5.2 `Form::` and `HTML::` helpers used in views (grep `Form::` and `HTML::` across\n   `~/code/office/resources/views`; implement only the methods used: open, close, model, text, textarea, select, hidden,\n   checkbox, submit, label, token\u2026). Emit identical HTML (attribute order matters \u2014 read\n   `~/code/office/vendor/laravelcollective/html/src/FormBuilder.php`).\n4. Port these layouts/partials to `views/` (same relative path, `.njk`): every view that is `@extends`-ed or `@include`-d\n   by a routed view. Find them: grep `@extends(`/`@include(` across the views listed in `plan/inventory.json`'s controllers\n   (`views` field). At least: `layout`, `unshipped_layout`, `layouts/app`, `layouts/app1`, `includes/header`, `includes/nav`,\n   `partial/*`, `scaffold-interface/layouts/app`, `scaffold-interface/layouts/defaultBootstrap`, `errors/*`, `error/*`.\n   Where a layout reads data (nav counts, user name, notifications), find where PHP provides it (View composers in\n   `app/Providers`, or `Auth::user()` in the layout) and provide it from `render()`.\n5. Test: a test route `/__layout-test` (dev only, behind `NODE_ENV!=='production'`) rendering a page extending `layout`.\nVerify: typecheck, tests. Note any PHP construct you could not map in STATUS.md.\n",
+  "ctrls": null
+ },
+ {
+  "id": "T02",
+  "title": "Auth: login/logout/register/password reset, roles, PDA api-key",
+  "phase": 0,
+  "deps": [
+   "T01"
+  ],
+  "notes": "\n1. Sessions: @fastify/secure-session (key from APP_KEY, cookie `office_session`, httpOnly, sameSite lax) + @fastify/flash.\n2. `src/auth.ts`: `currentUser(req)` loads `os_users` row (minus password/remember_token) + role names via\n   `os_user_has_roles` \u2a1d `os_roles` (cache on req). `hasRole(user, role|roles)`. Guard factory `requireRoles(roles)`:\n   no user \u2192 302 to `/login` (remember intended URL like Laravel `redirect()->guest`), user without any role \u2192 403 body `No Access.`.\n3. Routes from Laravel 5.4 `Route::auth()` (see vendor/laravel/framework/src/Illuminate/Routing/Router.php `auth()`):\n   GET/POST /login, POST /logout, GET/POST /register, GET /password/reset, POST /password/email,\n   GET /password/reset/{token}, POST /password/reset \u2014 with names login, logout, register, password.request,\n   password.email, password.reset. Port views `auth/login`, `auth/register`, `auth/passwords/email`, `auth/passwords/reset`.\n   Login field is `email` (AuthenticatesUsers default) \u2014 confirm in `app/Http/Controllers/Auth/LoginController.php`.\n   Password check: bcryptjs.compare(plain, hash.replace(/^\\$2y\\$/, '$2a$')). On success redirect to intended or `/home`.\n   Failed login: redirect back with `errors.email = trans('auth.failed')` and old input \u2014 same as Laravel.\n   Laravel throttles login (5 tries/min) \u2014 replicate with an in-memory counter.\n   Register / password reset: port behaviour (check RegisterController \u2014 it may be disabled/redirecting); password reset\n   email sending must be behind a `MAIL_ENABLED` flag defaulting to off.\n4. `pdaAuth` preHandler = port of `app/Http/Middleware/AuthenticateApiKey.php` (Bearer / X-Api-Key / api_key input,\n   sha256 \u2192 `os_user_api_tokens.token_hash`). Same 401 JSON bodies.\n5. `auth:api` (api.php group: /api/logout, /api/user, /api/settings/profile, /api/settings/password, /api/pda/api-key):\n   find out how the Vue bundle authenticates (grep `Authorization`, `access_token`, `localStorage` in\n   `~/code/office/resources/assets/js`; check `config/auth.php` api guard driver \u2014 passport or jwt). Implement the same\n   mechanism against the existing `os_oauth_*` tables / JWT secret so the existing compiled `public/js/app.js` keeps working.\n   Document the decision in STATUS.md. If it's Passport personal tokens, validate by looking up the token id in\n   `os_oauth_access_tokens` (JWT signed with `~/code/office/storage/oauth-public.key`).\n6. `GET /`, `/home` \u2192 port HomeController@index role-based redirect logic (it's tiny) so login can be tested end-to-end.\nVerify: tests for bcrypt $2y$ verification and role guard; manual: log in with PARITY_EMAIL on :7000.\n",
+  "ctrls": null
+ },
+ {
+  "id": "T03",
+  "title": "Router helpers + parity harness",
+  "phase": 0,
+  "deps": [
+   "T02"
+  ],
+  "notes": "\n1. `src/router.ts`: `route(app, {verb, path, name, roles?, middleware?, handler})` where verb \u2208 get|post|put|patch|delete|any;\n   `resource(app, base, handlers, {roles, names})` (Laravel resource: index GET base, create GET base/create, store POST base,\n   show GET base/{id}, edit GET base/{id}/edit, update PUT|PATCH base/{id}, destroy DELETE base/{id}; parameter name is\n   the singular of base). Support `_method` spoofing: for POST requests whose body has `_method`, dispatch to the PUT/PATCH/DELETE\n   handler (register POST base/:id for that). Optional params `{id?}` \u2192 register both variants. Laravel `{x}` \u2192 `:x`.\n   Keep a named-route registry; `routeUrl(name, params)` builds absolute URLs like Laravel `route()` (extra params \u2192 query string).\n   Wire `route()` in view.ts to it.\n2. Not-found fallback (`setNotFoundHandler`): replicate Laravel's regex catch-alls in original order (see\n   `plan/inventory.json` routes with `where` set): `/{Supplier?}` where `[\\/Supplier\\.-]*` (roles admin,user,supplier) \u2192\n   SupplierProduct@index; then `/{ListProducts?}`, `/{InventoryCount?}`, `/{InventoryConsolidation?}`, `/{Orders?}` (roles\n   admin,user,remote) \u2192 Product@vue. Handlers are registered later by T26/T30 via `registerFallback(name, handler)`;\n   until then return Laravel's 404 page. Unmatched \u2192 Laravel 404 view (`views/errors/404.njk` if it exists, else Laravel's default).\n3. `src/http.ts`: input(req,k), allInput(req), redirectBack(req, reply) (uses Referer like Laravel), withErrors, withInput,\n   paginate(query, perPage, req) returning Laravel 5.4 LengthAwarePaginator JSON shape.\n4. `scripts/parity.ts`: `pnpm parity --task T10` reads `plan/parity-routes.json[T10]`; or `--urls /a,/b`. Logs into OLD_APP_URL\n   (GET /login \u2192 read `_token` + laravel_session cookie \u2192 POST /login) and the new app (POST /login) with\n   PARITY_EMAIL/PARITY_PASSWORD; fetches each URL from both with `redirect: 'manual'`; compares status, Location header,\n   and body. HTML normalize: collapse whitespace, strip `_token` values / csrf meta, strip APP_URL host differences\n   (old vs new base URL), strip `?id=<mix hash>`. JSON: deep-equal after parse. Prints a unified diff (first 80 lines) per\n   failing URL; exit 1 if any fail. Also writes full outputs to `.parity/<task>/`.\n5. Start the old app if it isn't running: document the exact docker command in `plan/RUNBOOK.md` (from\n   `~/code/office/docker-run-readme.md`; MySQL and Redis are docker containers `mysql` and `redis` on network `stack_default`).\nVerify: `pnpm parity --urls /home,/login` passes (after logging in both).\n",
+  "ctrls": null
+ },
+ {
+  "id": "T04",
+  "title": "Shared helpers: DataTables, Pusher, mail, storage, excel",
+  "phase": 0,
+  "deps": [
+   "T03"
+  ],
+  "notes": "\nOnly build what modules need; each helper gets a unit test.\n1. `src/datatables.ts`: yajra/laravel-datatables-oracle **v6** server-side protocol for a Kysely query: read draw, start,\n   length, search[value], order[i][column|dir], columns[i][data|name|searchable|orderable]; global search = OR LIKE\n   %v% over searchable columns; per-column search; response `{draw, recordsTotal, recordsFiltered, data}` with the same\n   key order and types as yajra v6. Support `editColumn`/`addColumn` callbacks. Read the yajra v6 source in\n   `~/code/office/vendor/yajra` to match edge cases (e.g. length -1 = all).\n   Also port `app/Libraries/DatatablesEditor.php` if it's used by Inventory (check) \u2192 `src/lib/datatables-editor.ts`.\n2. `src/pusher.ts`: thin wrapper reading PUSHER_* (copy names from old .env) \u2014 `trigger(channel, event, data)`.\n3. `src/mail.ts`: nodemailer from MAIL_* env, **no-op + log unless MAIL_ENABLED=1**.\n4. `src/storage.ts`: local disk (PUBLIC_DIR, storage path) + S3 (@aws-sdk/client-s3) mirroring `config/filesystems.php` disks used by the app.\n5. `src/excel.ts`: exceljs helpers to produce xlsx/csv downloads matching maatwebsite/excel 2.1 output used by the app\n   (grep `Excel::create` / `Excel::load` to see which features are used).\n6. `src/images.ts`: sharp-based equivalents of the Intervention calls used (grep `Image::make`).\n",
+  "ctrls": null
+ },
+ {
+  "id": "T10",
+  "title": "Home report, ActionLog, Settings",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Home",
+    null
+   ],
+   [
+    "ActionLog",
+    null
+   ],
+   [
+    "Settings",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T11",
+  "title": "Timesheet, Staffs",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Timesheet",
+    null
+   ],
+   [
+    "Staffs",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T12",
+  "title": "Exec, QueueJob, Price",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Exec",
+    null
+   ],
+   [
+    "QueueJob",
+    null
+   ],
+   [
+    "Price",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T13",
+  "title": "Message, UserMessage",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Message",
+    null
+   ],
+   [
+    "UserMessage",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T14",
+  "title": "Chat, Gpt",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Chat",
+    null
+   ],
+   [
+    "Gpt",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T15",
+  "title": "Keywords, Fba",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Keywords",
+    null
+   ],
+   [
+    "Fba",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T16",
+  "title": "Opolo, OpoloCost",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Opolo",
+    null
+   ],
+   [
+    "OpoloCost",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T17",
+  "title": "Windy, Four",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Windy",
+    null
+   ],
+   [
+    "Four",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T18",
+  "title": "Item, Itemimage",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Item",
+    null
+   ],
+   [
+    "Itemimage",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T19",
+  "title": "FollowUps",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "FollowUps",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T20",
+  "title": "Production, Purchase",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Production",
+    null
+   ],
+   [
+    "Purchase",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T21",
+  "title": "BulkProduction",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "BulkProduction",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T22a",
+  "title": "Reports: Sales, SalesTax, SalesSnapshot",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Report",
+    [
+     "Sales",
+     "SalesTax",
+     "SalesSnapshot"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T22b",
+  "title": "Reports: ProductSales, LowInventory(+export), Receiving, CodeGenerator",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Report",
+    [
+     "ProductSales",
+     "LowInventory",
+     "LowInventoryExport",
+     "Receiving",
+     "CodeGenerator"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T23",
+  "title": "Order (packing, pick list, printing, multi orders)",
+  "phase": 1,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Order",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T24",
+  "title": "PDA API (/api/pda/*) + api-key regeneration",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "JSON-only API used by warehouse handhelds. Write vitest tests that call each endpoint via `app.inject` against the real DB **read-only endpoints only**; for writes, compare SQL against PHP by reading. Keep error JSON bodies and status codes identical.",
+  "ctrls": [
+   [
+    "Pda",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T25a",
+  "title": "Inventory: pages, datatables data, CRUD, response",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Inventory",
+    [
+     "inventory",
+     "inv",
+     "anyData",
+     "create",
+     "update",
+     "delete",
+     "dataResponse",
+     "quickUpdate",
+     "findLocations"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T25b",
+  "title": "Inventory: transfers, upload, consolidation",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "T25a"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Inventory",
+    [
+     "uploadTransfer",
+     "inventoryTransferData",
+     "createTransfer",
+     "updateTransfer",
+     "deleteTransfer",
+     "consolidation",
+     "moveConsolidation"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T26",
+  "title": "Product: Vue SPA shell + catch-all fallbacks + list/get JSON APIs",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `Product@vue` and register it as the fallback handler for ListProducts/InventoryCount/InventoryConsolidation/Orders (see T03). The compiled Vue bundle in `public/js/app.js` calls these JSON endpoints \u2014 their JSON must match exactly (parity compares parsed JSON). Find request params the bundle sends by reading `~/code/office/resources/assets/js/components/*.vue`. Routes in `routes/api.php` outside any auth group were **unauthenticated** in the old app; the inventory marks them `role:admin,user,remote` \u2014 guard them with session auth (intentional security change, the Vue bundle sends the session cookie).",
+  "ctrls": [
+   [
+    "Product",
+    [
+     "vue",
+     "listProducts",
+     "getAjax",
+     "getAjaxBySku",
+     "listProductLocations",
+     "listProductSkus"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T27",
+  "title": "Product: store/update API, images, locations, mass update/delete, thumbnails",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "T26"
+  ],
+  "notes": "`store` is 260 lines \u2014 port carefully, keep statement order (DB writes order matters). Skip any branch that writes to wholesale/presta/saleor/cubecart (out of scope) \u2014 note it in NOTES.md. Marketplace pushes inside store (Shopify/eBay/Etsy) must call the `src/lib` ports; if those don't exist yet, leave a clearly marked `TODO(L0x)` stub that throws, and mark the task `partial`. Routes in `routes/api.php` outside any auth group were **unauthenticated** in the old app; the inventory marks them `role:admin,user,remote` \u2014 guard them with session auth (intentional security change, the Vue bundle sends the session cookie).",
+  "ctrls": [
+   [
+    "Product",
+    [
+     "store",
+     "deleteProduct",
+     "uploadMultipleImage",
+     "deleteImage",
+     "deleteLocation",
+     "updateLocations",
+     "updateDefaultLocation",
+     "createAllThumbnail",
+     "updateLocationByLocId",
+     "massUpdate",
+     "massDelete"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T28",
+  "title": "Product: resource pages, datatables, ship weight, product map, bulk production",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "T27"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Product",
+    [
+     "resource",
+     "index",
+     "anyData",
+     "update",
+     "destroy",
+     "DeleteMsg",
+     "UpdateProductMap",
+     "GetProductShipWeight",
+     "SaveProductShipWeight",
+     "bulkProduction",
+     "viewBulkProduction",
+     "deleteBulkProduction",
+     "uploadBulkProduction"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "T30",
+  "title": "SupplierProduct (+ /{Supplier?} fallback), ProductImage, FaireImageImport",
+  "phase": 2,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Register SupplierProduct@index as the `Supplier` fallback (see T03).",
+  "ctrls": [
+   [
+    "SupplierProduct",
+    null
+   ],
+   [
+    "ProductImage",
+    null
+   ],
+   [
+    "FaireImageImport",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "L01",
+  "title": "Stamps (SOAP) client",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/Stamps.php \u2014 use the `soap` npm package with the WSDL files from `~/code/office` (find *.wsdl). Port every public method used by controllers/commands. Unit-test request building with a mocked SOAP client; never call real purchase methods.` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L02",
+  "title": "FedEx + UPS clients",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/FedexClient.php, UpsClient.php (and whatever jeremy-dunn/php-fedex-api-wrapper / gabrielbull/ups-api calls they make \u2014 check whether FedEx uses the new REST API or legacy SOAP; replicate the same endpoint).` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L03",
+  "title": "Frayun + Usps clients",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/Frayun.php, Usps.php.` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L04",
+  "title": "Amazon SP-API client",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/Amazon.php, AmazonApi.php, and SP-API usage via jlevers/selling-partner-api. First list which methods are still called from routes/commands; MWS-only methods (MarketplaceWebService_*) are dead \u2014 confirm and skip. Use `amazon-sp-api` npm or plain fetch with LWA refresh-token auth.` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L05",
+  "title": "eBay clients",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/eBay.php, eBayApi.php (Trading API XML and/or REST \u2014 replicate whatever is used).` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L06",
+  "title": "Etsy client + OAuth",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/EtsyClient.php, OAuth.php (Etsy v3 OAuth2 via startz/oauth2-etsy; token storage location \u2014 check where tokens are persisted).` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L07",
+  "title": "Shopify client",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/Shopify.php.` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L08",
+  "title": "Walmart client",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/Walmart.php.` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L09",
+  "title": "Houzz + Wayfair clients",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/Houzz.php, Wayfair.php.` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "L10",
+  "title": "Remaining libraries used by in-scope code",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "Port `app/Libraries/List every `app/Libraries/*.php` referenced by in-scope controllers/commands/jobs that has no `src/lib` port yet (exclude Presta*, *Mover, MarketplaceWebService*, Cube*). Port them (e.g. AppSearch, FaireImageImporter, Tongtool if any).` to `src/lib/`.\n- Keep function names (camelCase) and return shapes identical to what callers expect. Grep callers across `~/code/office/app` to see which methods are actually used; port only those (list skipped ones in STATUS.md).\n- Credentials: copy the needed env var names from `~/code/office/.env` / `config/*.php` into `.env.example` (names only) and `.env` (values).\n- Every outbound call goes through one `request()` function per lib so tests can mock it. Add a `DRY_RUN=1` env switch that logs instead of sending for any **write** call (purchase, upload tracking, inventory/price updates, fulfill).\n- vitest: mock HTTP, assert request URL/body/headers for each ported method against what the PHP would send.",
+  "ctrls": null
+ },
+ {
+  "id": "T40",
+  "title": "Carrier routes: Stamps, Fedex, Ups, Frayun",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L01",
+   "L02",
+   "L03"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Stamps",
+    null
+   ],
+   [
+    "Fedex",
+    null
+   ],
+   [
+    "Ups",
+    null
+   ],
+   [
+    "Frayun",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T41",
+  "title": "Wayfair, Tongtool routes",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L09"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Wayfair",
+    null
+   ],
+   [
+    "Tongtool",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T42",
+  "title": "Marketplace callbacks: Etsy, Ebay, Shopify, AmzAd",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07"
+  ],
+  "notes": "OAuth callbacks and eBay account-deletion notification must keep exact URLs (registered with the marketplaces).",
+  "ctrls": [
+   [
+    "Etsy",
+    null
+   ],
+   [
+    "Ebay",
+    null
+   ],
+   [
+    "Shopify",
+    null
+   ],
+   [
+    "AmzAd",
+    null
+   ]
+  ]
+ },
+ {
+  "id": "T43",
+  "title": "Product: marketplace links/imports",
+  "phase": 3,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "T28",
+   "L04",
+   "L05",
+   "L06",
+   "L07"
+  ],
+  "notes": "",
+  "ctrls": [
+   [
+    "Product",
+    [
+     "shopify",
+     "updateShopifyLink",
+     "ImportEtsy",
+     "ImportListing",
+     "ImportAmazon",
+     "ImportAmazonAsin",
+     "RemoveLink"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U1",
+  "title": "Unshipped store pages 1\u20135, enfloral, refreshNotes",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "store1",
+     "store2",
+     "store3",
+     "store4",
+     "store5",
+     "enfloral",
+     "refreshNotes"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U2",
+  "title": "Unshipped store pages 6\u201313",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U1"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "store6",
+     "store7",
+     "store8",
+     "store9",
+     "store10",
+     "store11",
+     "store12",
+     "store13"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U3",
+  "title": "Unshipped store 90/91/92/101, Faire store",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U2"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "store90",
+     "store91",
+     "store92",
+     "store101",
+     "fairestore"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U4",
+  "title": "Faire pick list + allocations",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U3"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "fairePickList",
+     "updateFaireWarehouseStatus",
+     "updateProductDefaultLocation",
+     "saveOrderPickAllocation",
+     "updateFairePickerPacker"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U5",
+  "title": "Summary, processed, search, packing list, all unshipped, pending",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U4"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "getUrls",
+     "summary",
+     "processedOrders",
+     "searchOrder",
+     "PackingList",
+     "allunshipped",
+     "PendingShipment",
+     "createPacking"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U6",
+  "title": "Order actions (notes, assign, priority, done, cache)",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U5"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "getOrder",
+     "removeOrderFromCache",
+     "madeOrder",
+     "progressOrder",
+     "updateOrder",
+     "saveOrderShipDate",
+     "assignOrder",
+     "priorityOrder",
+     "saveOrderNotes",
+     "doneOrder",
+     "getPriority",
+     "clearCache",
+     "submittedOrder"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U7",
+  "title": "Labels and printing",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U6"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "GetLabel",
+     "getOrderLabel",
+     "PrintShipping",
+     "getMultiAmzLabel",
+     "getMultiFrayunLabel",
+     "storeLabel",
+     "Barcode",
+     "LabelCountReport",
+     "getS3Image",
+     "GetAmazonShippingService",
+     "GetAmazonShippingLabel",
+     "getHouzzLabel",
+     "shipHouzzOrder"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U8",
+  "title": "Tracking",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U7"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "trackings",
+     "trackingsAjax",
+     "SearchTracking",
+     "removeTracking",
+     "UploadTracking",
+     "updateAmzTracking",
+     "uploadAmzTracking",
+     "updateEbayTracking",
+     "scanForm"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U9",
+  "title": "eBay order/item/image actions",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U8"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "geteBayItem",
+     "getEbayOrder",
+     "getEbayTran",
+     "updateEbayOrder",
+     "EbayComplete",
+     "geteBayImage",
+     "getRayeBayImage",
+     "UpdateEbayPic",
+     "UpdateRayEbayPic",
+     "loadeBayOrderIntoDB"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "U10",
+  "title": "Amazon/Shopify/Etsy/Houzz actions, descriptions, test endpoints",
+  "phase": 4,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04",
+   "L04",
+   "L05",
+   "L06",
+   "L07",
+   "L09",
+   "U9"
+  ],
+  "notes": "UnshippedController is 4k lines; many store pages are near-duplicates. Port shared private helpers once into `src/modules/unshipped/service.ts` and reuse \u2014 check whether an earlier U-task already ported a helper before writing it again.",
+  "ctrls": [
+   [
+    "Unshipped",
+    [
+     "getAmzImage",
+     "downloadAmzImage",
+     "loadAmzOrderIntoDB",
+     "RequestAmzOrderReport",
+     "GetAmzOrderReport",
+     "ShopifyDesc",
+     "FulfillShopify",
+     "getEbayDesc",
+     "getStoreDesc",
+     "getEtsyDesc",
+     "getEtsyListing",
+     "Houzz",
+     "Test",
+     "TestAmzApi"
+    ]
+   ]
+  ]
+ },
+ {
+  "id": "J1",
+  "title": "Scheduler + queue infrastructure",
+  "phase": 5,
+  "deps": [
+   "T00",
+   "T01",
+   "T02",
+   "T03",
+   "T04"
+  ],
+  "notes": "\n1. BullMQ on existing Redis, queue prefix `office_new` (must not collide with Laravel's queue keys).\n2. `src/jobs/scheduler.ts`: register repeatable jobs mirroring every **uncommented** `$schedule->command(...)` in\n   `~/code/office/app/Console/Kernel.php` (same cron expressions, same timezone). Only registers when SCHEDULER_ENABLED=1.\n3. `src/jobs/worker.ts` process + `pnpm worker` script; `pnpm sync <action> [arg1]` CLI equivalent to `php artisan sync`.\n4. Port `app/Jobs/*` (MassPrintLabel, AmzMassPrintLabel, FrayunMassPrintLabel, DownloadLabel, QueuePing) as BullMQ jobs, and\n   wire their dispatch sites (grep `dispatch(` / `Queue::push`) in already-ported modules. QueueJob pages (T12) must show the new queue's state the same way.\n5. Port `PdaApiKeyCommand` and `FaireImportImages` commands as `pnpm` scripts.\nAction handlers themselves are J2\u2013J6; register them via a `actions` map, unknown action \u2192 same error text as Runner.php.\n",
+  "ctrls": null
+ },
+ {
+  "id": "J2",
+  "title": "Sync actions: Amazon (orders report, shipped, inventory, images, FBA reports)",
+  "phase": 5,
+  "deps": [
+   "J1"
+  ],
+  "notes": "Port the `Runner.php` (`~/code/office/app/Console/Commands/Runner.php`) actions whose name matches /amazon|amz|fba|merchant-listing|amazon-orders/ \u2014 prioritise the\nones scheduled (uncommented) in Kernel.php; port commented-out ones only if they are also callable from a route/page (grep the action name).\nEach action becomes a function in `src/jobs/actions/<area>.ts` registered in the actions map. Writes to marketplaces go through the lib `DRY_RUN`\nswitch. Test each with `DRY_RUN=1 pnpm sync <action>` and record the output in STATUS.md.",
+  "ctrls": null
+ },
+ {
+  "id": "J3",
+  "title": "Sync actions: eBay",
+  "phase": 5,
+  "deps": [
+   "J1"
+  ],
+  "notes": "Port the `Runner.php` (`~/code/office/app/Console/Commands/Runner.php`) actions whose name matches /ebay|raystore/ \u2014 prioritise the\nones scheduled (uncommented) in Kernel.php; port commented-out ones only if they are also callable from a route/page (grep the action name).\nEach action becomes a function in `src/jobs/actions/<area>.ts` registered in the actions map. Writes to marketplaces go through the lib `DRY_RUN`\nswitch. Test each with `DRY_RUN=1 pnpm sync <action>` and record the output in STATUS.md.",
+  "ctrls": null
+ },
+ {
+  "id": "J4",
+  "title": "Sync actions: Walmart",
+  "phase": 5,
+  "deps": [
+   "J1"
+  ],
+  "notes": "Port the `Runner.php` (`~/code/office/app/Console/Commands/Runner.php`) actions whose name matches /walmart/ \u2014 prioritise the\nones scheduled (uncommented) in Kernel.php; port commented-out ones only if they are also callable from a route/page (grep the action name).\nEach action becomes a function in `src/jobs/actions/<area>.ts` registered in the actions map. Writes to marketplaces go through the lib `DRY_RUN`\nswitch. Test each with `DRY_RUN=1 pnpm sync <action>` and record the output in STATUS.md.",
+  "ctrls": null
+ },
+ {
+  "id": "J5",
+  "title": "Sync actions: Shopify, Houzz, Etsy",
+  "phase": 5,
+  "deps": [
+   "J1"
+  ],
+  "notes": "Port the `Runner.php` (`~/code/office/app/Console/Commands/Runner.php`) actions whose name matches /shopify|houzz|etsy/ \u2014 prioritise the\nones scheduled (uncommented) in Kernel.php; port commented-out ones only if they are also callable from a route/page (grep the action name).\nEach action becomes a function in `src/jobs/actions/<area>.ts` registered in the actions map. Writes to marketplaces go through the lib `DRY_RUN`\nswitch. Test each with `DRY_RUN=1 pnpm sync <action>` and record the output in STATUS.md.",
+  "ctrls": null
+ },
+ {
+  "id": "J6",
+  "title": "Sync actions: windy, mermaid, stats, email reports, thumbnails, recal-inv, remaining",
+  "phase": 5,
+  "deps": [
+   "J1"
+  ],
+  "notes": "Port the `Runner.php` (`~/code/office/app/Console/Commands/Runner.php`) actions whose name matches /windy|mermaid|stats|email|thumbnail|images|recal|track-shipment|scanform|keywords|test/ \u2014 prioritise the\nones scheduled (uncommented) in Kernel.php; port commented-out ones only if they are also callable from a route/page (grep the action name).\nEach action becomes a function in `src/jobs/actions/<area>.ts` registered in the actions map. Writes to marketplaces go through the lib `DRY_RUN`\nswitch. Test each with `DRY_RUN=1 pnpm sync <action>` and record the output in STATUS.md.",
+  "ctrls": null
+ },
+ {
+  "id": "C1",
+  "title": "Full parity sweep + cutover runbook",
+  "phase": 6,
+  "deps": [
+   "U10",
+   "J6",
+   "T43"
+  ],
+  "notes": "\n1. Generate a list of every GET route from inventory.json not excluded; run parity against all safe ones with real ids. Fix nothing in other\n   modules yourself \u2014 record failures per task id in STATUS.md so they can be re-run.\n2. Write `plan/RUNBOOK.md` cutover section: build/start commands (systemd units or docker compose for web + worker), env checklist,\n   steps: stop PHP cron \u2192 set SCHEDULER_ENABLED=1 \u2192 switch port/proxy \u2192 smoke test checklist \u2192 rollback steps.\n3. Grep the old repo for any route/command not covered by any task (compare inventory.json against registered routes \u2014\n   add a `pnpm routes:check` script that lists missing ones).\n",
+  "ctrls": null
+ }
+]

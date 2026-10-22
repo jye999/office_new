@@ -1,0 +1,8608 @@
+{
+ "routes": [
+  {
+   "file": "routes/web.php",
+   "line": 14,
+   "verb": "get",
+   "path": "/",
+   "controller": "Home",
+   "action": "index",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "home"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 16,
+   "verb": "get",
+   "path": "/home",
+   "controller": "Home",
+   "action": "index",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "home"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 17,
+   "verb": "any",
+   "path": "/ebayClosureNotification",
+   "controller": "Ebay",
+   "action": "closureNotification",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ebayClosureNotification"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 18,
+   "verb": "post",
+   "path": "/ebayAccept",
+   "controller": "Ebay",
+   "action": "ebayAccept",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ebayAccept"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 19,
+   "verb": "post",
+   "path": "/ebayReject",
+   "controller": "Ebay",
+   "action": "ebayReject",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ebayReject"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 20,
+   "verb": "get",
+   "path": "/echo",
+   "controller": "AmzAd",
+   "action": "Test",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "echo"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 22,
+   "verb": "any",
+   "path": "/etsy-callback-url",
+   "controller": "Etsy",
+   "action": "callback",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "etsy-callback-url"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 23,
+   "verb": "any",
+   "path": "/etsy-auth-request",
+   "controller": "Etsy",
+   "action": "sendAuthRequest",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "etsy-auth-request"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 28,
+   "verb": "get",
+   "path": "/generateDescription",
+   "controller": "Gpt",
+   "action": "generateDescription",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "generateDescription"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 30,
+   "verb": "get",
+   "path": "/chat",
+   "controller": "Chat",
+   "action": "index",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "chat"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 31,
+   "verb": "post",
+   "path": "/chat/send",
+   "controller": "Chat",
+   "action": "send",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "chat.send"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 32,
+   "verb": "post",
+   "path": "/chat/transcribe",
+   "controller": "Chat",
+   "action": "transcribe",
+   "middleware": [
+    "web"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "chat.transcribe"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 35,
+   "verb": "get",
+   "path": "/report",
+   "controller": "Home",
+   "action": "report",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "report"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 36,
+   "verb": "any",
+   "path": "/timesheet",
+   "controller": "Timesheet",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "timesheet"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 37,
+   "verb": "any",
+   "path": "/runTimesheet",
+   "controller": "Timesheet",
+   "action": "RunReport",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "runTimesheet"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 38,
+   "verb": "get",
+   "path": "/getTimesheet",
+   "controller": "Timesheet",
+   "action": "GetTimesheet",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getTimesheet"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 39,
+   "verb": "post",
+   "path": "/saveTimesheet",
+   "controller": "Timesheet",
+   "action": "SaveTimesheet",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "saveTimesheet"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 40,
+   "verb": "get",
+   "path": "/getTimesheetReport",
+   "controller": "Timesheet",
+   "action": "GetTimesheetReport",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getTimesheetReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 41,
+   "verb": "get",
+   "path": "/getTimesheetRangeReport",
+   "controller": "Timesheet",
+   "action": "GetTimesheetRangeReport",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getTimesheetRangeReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 42,
+   "verb": "post",
+   "path": "/deleteTimesheet",
+   "controller": "Timesheet",
+   "action": "DeleteTimesheet",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "deleteTimesheet"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 44,
+   "verb": "get",
+   "path": "/logs",
+   "controller": "LogViewer",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 46,
+   "verb": "resource",
+   "path": "/staffs",
+   "controller": "Staffs",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 47,
+   "verb": "get",
+   "path": "/exec",
+   "controller": "Exec",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "exec"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 48,
+   "verb": "post",
+   "path": "/exec.run",
+   "controller": "Exec",
+   "action": "runit",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "exec.run"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 52,
+   "verb": "get",
+   "path": "/SalesReport",
+   "controller": "Report",
+   "action": "Sales",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "SalesReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 53,
+   "verb": "get",
+   "path": "/SalesTaxReport",
+   "controller": "Report",
+   "action": "SalesTax",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "SalesTaxReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 54,
+   "verb": "get",
+   "path": "/SalesSnapshotReport",
+   "controller": "Report",
+   "action": "SalesSnapshot",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "SalesSnapshotReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 55,
+   "verb": "get",
+   "path": "/ProductSalesReport",
+   "controller": "Report",
+   "action": "ProductSales",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ProductSalesReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 56,
+   "verb": "get",
+   "path": "/LowInventoryReport",
+   "controller": "Report",
+   "action": "LowInventory",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "LowInventoryReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 57,
+   "verb": "get",
+   "path": "/LowInventoryReport/export",
+   "controller": "Report",
+   "action": "LowInventoryExport",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "LowInventoryReportExport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 58,
+   "verb": "get",
+   "path": "/ReceivingReport",
+   "controller": "Report",
+   "action": "Receiving",
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ReceivingReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 59,
+   "verb": "get",
+   "path": "/queue-monitor",
+   "controller": "closure",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 65,
+   "verb": "resource",
+   "path": "/opolo",
+   "controller": "Opolo",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,opolo"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 66,
+   "verb": "get",
+   "path": "/opolo.index",
+   "controller": "Opolo",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,opolo"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "opolo.index"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 67,
+   "verb": "get",
+   "path": "/opolo/{id}/delete",
+   "controller": "Opolo",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,opolo"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 68,
+   "verb": "get",
+   "path": "/opolo/{id}/deleteMsg",
+   "controller": "Opolo",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,opolo"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 72,
+   "verb": "resource",
+   "path": "/windy",
+   "controller": "Windy",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,windy"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 73,
+   "verb": "get",
+   "path": "/windy.index",
+   "controller": "Windy",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,windy"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "windy.index"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 74,
+   "verb": "post",
+   "path": "/windy.export",
+   "controller": "Windy",
+   "action": "export",
+   "middleware": [
+    "web",
+    "role:admin,user,windy"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "windy.export"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 76,
+   "verb": "get",
+   "path": "/windy/{id}/delete",
+   "controller": "Windy",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,windy"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 77,
+   "verb": "get",
+   "path": "/windy/{id}/deleteMsg",
+   "controller": "Windy",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,windy"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 81,
+   "verb": "resource",
+   "path": "/four",
+   "controller": "Four",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,four"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 82,
+   "verb": "get",
+   "path": "/four.index",
+   "controller": "Four",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,four"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "four.index"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 83,
+   "verb": "post",
+   "path": "/four.export",
+   "controller": "Four",
+   "action": "export",
+   "middleware": [
+    "web",
+    "role:admin,user,four"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "four.export"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 85,
+   "verb": "post",
+   "path": "/four.ebay",
+   "controller": "Four",
+   "action": "importEbay",
+   "middleware": [
+    "web",
+    "role:admin,user,four"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "four.ebay"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 86,
+   "verb": "get",
+   "path": "/four/{id}/delete",
+   "controller": "Four",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,four"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 87,
+   "verb": "get",
+   "path": "/four/{id}/deleteMsg",
+   "controller": "Four",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,four"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 91,
+   "verb": "any",
+   "path": "/{Supplier?}",
+   "controller": "SupplierProduct",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": [
+    "Supplier",
+    "[\\/Supplier\\.-]*"
+   ],
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 92,
+   "verb": "any",
+   "path": "/SupplierProduct/{id?}",
+   "controller": "SupplierProduct",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 95,
+   "verb": "get",
+   "path": "/api/supplierproducts",
+   "controller": "SupplierProduct",
+   "action": "listProducts",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 96,
+   "verb": "post",
+   "path": "/api/supplierproducts",
+   "controller": "SupplierProduct",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 97,
+   "verb": "get",
+   "path": "/api/supplierproduct/{id}",
+   "controller": "SupplierProduct",
+   "action": "getAjax",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 99,
+   "verb": "post",
+   "path": "/api/supplierproduct/{id?}",
+   "controller": "SupplierProduct",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 100,
+   "verb": "delete",
+   "path": "/api/supplierproduct/{id}",
+   "controller": "SupplierProduct",
+   "action": "deleteProduct",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 101,
+   "verb": "post",
+   "path": "/api/supplierproduct/{id}/images",
+   "controller": "SupplierProduct",
+   "action": "uploadMultipleImage",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 102,
+   "verb": "delete",
+   "path": "/api/supplierproduct/{id}/images/{image_id}",
+   "controller": "SupplierProduct",
+   "action": "deleteImage",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 103,
+   "verb": "post",
+   "path": "/api/supplierproduct/{id}/messages",
+   "controller": "SupplierProduct",
+   "action": "addMessage",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 104,
+   "verb": "get",
+   "path": "/api/supplierproduct/{id}/messages",
+   "controller": "SupplierProduct",
+   "action": "loadMessages",
+   "middleware": [
+    "web",
+    "role:admin,user,supplier"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 108,
+   "verb": "post",
+   "path": "/exec.refreshAmz",
+   "controller": "Exec",
+   "action": "refreshAmz",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "exec.refreshAmz"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 109,
+   "verb": "get",
+   "path": "/refreshAmzImg",
+   "controller": "Exec",
+   "action": "getRefreshAmz",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "refreshAmzImg"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 110,
+   "verb": "get",
+   "path": "/amz_signin",
+   "controller": "AmzAd",
+   "action": "signin",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "amzSignIn"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 113,
+   "verb": "get",
+   "path": "/geturls",
+   "controller": "Unshipped",
+   "action": "getUrls",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "geturls"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 114,
+   "verb": "get",
+   "path": "/msg",
+   "controller": "Message",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "msg"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 115,
+   "verb": "get",
+   "path": "/reloadAllMsg",
+   "controller": "Message",
+   "action": "reloadAll",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "reloadAllMsg"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 116,
+   "verb": "get",
+   "path": "/summary",
+   "controller": "Unshipped",
+   "action": "summary",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "summary"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 117,
+   "verb": "get",
+   "path": "/processed",
+   "controller": "Unshipped",
+   "action": "processedOrders",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "processed"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 118,
+   "verb": "post",
+   "path": "/searchOrder",
+   "controller": "Unshipped",
+   "action": "searchOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "searchOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 120,
+   "verb": "any",
+   "path": "/PackingList",
+   "controller": "Unshipped",
+   "action": "PackingList",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "PackingList"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 121,
+   "verb": "any",
+   "path": "/allunshipped",
+   "controller": "Unshipped",
+   "action": "allunshipped",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "allunshipped"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 123,
+   "verb": "get",
+   "path": "/fairePickList",
+   "controller": "Unshipped",
+   "action": "fairePickList",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "fairePickList"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 124,
+   "verb": "post",
+   "path": "/updateFaireWarehouseStatus",
+   "controller": "Unshipped",
+   "action": "updateFaireWarehouseStatus",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateFaireWarehouseStatus"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 125,
+   "verb": "post",
+   "path": "/updateProductDefaultLocation",
+   "controller": "Unshipped",
+   "action": "updateProductDefaultLocation",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateProductDefaultLocation"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 126,
+   "verb": "post",
+   "path": "/saveOrderPickAllocation",
+   "controller": "Unshipped",
+   "action": "saveOrderPickAllocation",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "saveOrderPickAllocation"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 127,
+   "verb": "post",
+   "path": "/updateFairePickerPacker",
+   "controller": "Unshipped",
+   "action": "updateFairePickerPacker",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateFairePickerPacker"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 128,
+   "verb": "get",
+   "path": "/unshippedFaire",
+   "controller": "Unshipped",
+   "action": "fairestore",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshippedFaire"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 129,
+   "verb": "get",
+   "path": "/unshipped91",
+   "controller": "Unshipped",
+   "action": "store91",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped91"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 130,
+   "verb": "get",
+   "path": "/unshipped101",
+   "controller": "Unshipped",
+   "action": "store101",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped101"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 131,
+   "verb": "get",
+   "path": "/unshipped90",
+   "controller": "Unshipped",
+   "action": "store90",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped90"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 132,
+   "verb": "get",
+   "path": "/unshipped92",
+   "controller": "Unshipped",
+   "action": "store92",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped92"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 133,
+   "verb": "get",
+   "path": "/unshipped13",
+   "controller": "Unshipped",
+   "action": "store13",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped13"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 134,
+   "verb": "get",
+   "path": "/unshipped12",
+   "controller": "Unshipped",
+   "action": "store12",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped12"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 135,
+   "verb": "get",
+   "path": "/unshipped11",
+   "controller": "Unshipped",
+   "action": "store11",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped11"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 136,
+   "verb": "get",
+   "path": "/unshipped10",
+   "controller": "Unshipped",
+   "action": "store10",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped10"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 137,
+   "verb": "get",
+   "path": "/unshipped9",
+   "controller": "Unshipped",
+   "action": "store9",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped9"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 138,
+   "verb": "get",
+   "path": "/unshipped8",
+   "controller": "Unshipped",
+   "action": "store8",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped8"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 139,
+   "verb": "get",
+   "path": "/unshipped7",
+   "controller": "Unshipped",
+   "action": "store7",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped7"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 140,
+   "verb": "get",
+   "path": "/unshipped6",
+   "controller": "Unshipped",
+   "action": "store6",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped6"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 141,
+   "verb": "get",
+   "path": "/unshipped5",
+   "controller": "Unshipped",
+   "action": "store5",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped5"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 142,
+   "verb": "get",
+   "path": "/enfloral",
+   "controller": "Unshipped",
+   "action": "enfloral",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "enfloral"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 143,
+   "verb": "get",
+   "path": "/unshipped4",
+   "controller": "Unshipped",
+   "action": "store4",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped4"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 144,
+   "verb": "get",
+   "path": "/unshipped3",
+   "controller": "Unshipped",
+   "action": "store3",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped3"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 145,
+   "verb": "get",
+   "path": "/unshipped2",
+   "controller": "Unshipped",
+   "action": "store2",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped2"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 146,
+   "verb": "any",
+   "path": "/unshipped1",
+   "controller": "Unshipped",
+   "action": "store1",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped1"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 147,
+   "verb": "any",
+   "path": "/unshipped1-refreshNotes",
+   "controller": "Unshipped",
+   "action": "refreshNotes",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "unshipped1-refreshNotes"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 148,
+   "verb": "get",
+   "path": "/PendingShipment",
+   "controller": "Unshipped",
+   "action": "PendingShipment",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "PendingShipment"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 149,
+   "verb": "any",
+   "path": "/GetLabel",
+   "controller": "Unshipped",
+   "action": "GetLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 150,
+   "verb": "any",
+   "path": "/GetHouzzLabel",
+   "controller": "Unshipped",
+   "action": "getHouzzLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetHouzzLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 151,
+   "verb": "any",
+   "path": "/ShipHouzzOrder",
+   "controller": "Unshipped",
+   "action": "shipHouzzOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ShipHouzzOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 152,
+   "verb": "any",
+   "path": "/updateProductMap",
+   "controller": "Product",
+   "action": "UpdateProductMap",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateProductMap"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 153,
+   "verb": "any",
+   "path": "/GetProductShipWeight",
+   "controller": "Product",
+   "action": "GetProductShipWeight",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetProductShipWeight"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 154,
+   "verb": "any",
+   "path": "/SaveProductShipWeight",
+   "controller": "Product",
+   "action": "SaveProductShipWeight",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "SaveProductShipWeight"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 156,
+   "verb": "any",
+   "path": "/Keywords",
+   "controller": "Keywords",
+   "action": "Index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Keywords"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 157,
+   "verb": "any",
+   "path": "/AddKeywords",
+   "controller": "Keywords",
+   "action": "AddKeyword",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "AddKeywords"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 158,
+   "verb": "any",
+   "path": "/AddAsin",
+   "controller": "Keywords",
+   "action": "AddAsin",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "AddAsin"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 159,
+   "verb": "any",
+   "path": "/GetRank",
+   "controller": "Keywords",
+   "action": "GetRank",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetRank"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 161,
+   "verb": "any",
+   "path": "/ShopifyDesc",
+   "controller": "Unshipped",
+   "action": "ShopifyDesc",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ShopifyDesc"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 162,
+   "verb": "any",
+   "path": "/FulfillShopify",
+   "controller": "Unshipped",
+   "action": "FulfillShopify",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FulfillShopify"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 163,
+   "verb": "any",
+   "path": "/getEbayItem",
+   "controller": "Unshipped",
+   "action": "geteBayItem",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getEbayItem"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 164,
+   "verb": "any",
+   "path": "/getAmzImage",
+   "controller": "Unshipped",
+   "action": "getAmzImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getAmzImage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 165,
+   "verb": "any",
+   "path": "/downloadAmzImage",
+   "controller": "Unshipped",
+   "action": "downloadAmzImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "downloadAmzImage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 166,
+   "verb": "any",
+   "path": "/getEbayOrder",
+   "controller": "Unshipped",
+   "action": "getEbayOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getEbayOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 167,
+   "verb": "any",
+   "path": "/getEbayTran",
+   "controller": "Unshipped",
+   "action": "getEbayTran",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getEbayTran"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 168,
+   "verb": "any",
+   "path": "/updateEbayOrder",
+   "controller": "Unshipped",
+   "action": "updateEbayOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateEbayOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 169,
+   "verb": "any",
+   "path": "/EbayComplete",
+   "controller": "Unshipped",
+   "action": "EbayComplete",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "EbayComplete"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 170,
+   "verb": "any",
+   "path": "/geteBayImage",
+   "controller": "Unshipped",
+   "action": "geteBayImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "geteBayImage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 171,
+   "verb": "any",
+   "path": "/getRayeBayImage",
+   "controller": "Unshipped",
+   "action": "getRayeBayImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getRayeBayImage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 172,
+   "verb": "any",
+   "path": "/updateEbayTracking",
+   "controller": "Unshipped",
+   "action": "updateEbayTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateEbayTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 173,
+   "verb": "any",
+   "path": "/loadeBayOrderIntoDB",
+   "controller": "Unshipped",
+   "action": "loadeBayOrderIntoDB",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "loadeBayOrderIntoDB"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 174,
+   "verb": "any",
+   "path": "/loadAmzOrderIntoDB",
+   "controller": "Unshipped",
+   "action": "loadAmzOrderIntoDB",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "loadAmzOrderIntoDB"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 175,
+   "verb": "any",
+   "path": "/submittedOrder",
+   "controller": "Unshipped",
+   "action": "submittedOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "submittedOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 176,
+   "verb": "any",
+   "path": "/UploadTracking",
+   "controller": "Unshipped",
+   "action": "UploadTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "UploadTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 177,
+   "verb": "any",
+   "path": "/RequestAmzOrderReport",
+   "controller": "Unshipped",
+   "action": "RequestAmzOrderReport",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "RequestAmzOrderReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 178,
+   "verb": "any",
+   "path": "/GetAmzOrderReport",
+   "controller": "Unshipped",
+   "action": "GetAmzOrderReport",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetAmzOrderReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 179,
+   "verb": "any",
+   "path": "/UpdateEbayPic",
+   "controller": "Unshipped",
+   "action": "UpdateEbayPic",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "UpdateEbayPic"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 180,
+   "verb": "any",
+   "path": "/UpdateRayEbayPic",
+   "controller": "Unshipped",
+   "action": "UpdateRayEbayPic",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "UpdateRayEbayPic"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 181,
+   "verb": "any",
+   "path": "/PrintShipping",
+   "controller": "Unshipped",
+   "action": "PrintShipping",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "PrintShipping"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 182,
+   "verb": "any",
+   "path": "/SearchTracking",
+   "controller": "Unshipped",
+   "action": "SearchTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "SearchTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 183,
+   "verb": "any",
+   "path": "/LabelCountReport",
+   "controller": "Unshipped",
+   "action": "LabelCountReport",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "LabelCountReport"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 184,
+   "verb": "any",
+   "path": "/Barcode",
+   "controller": "Unshipped",
+   "action": "Barcode",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Barcode"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 186,
+   "verb": "any",
+   "path": "/Test",
+   "controller": "Unshipped",
+   "action": "Test",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Test"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 187,
+   "verb": "any",
+   "path": "/TestAmzApi",
+   "controller": "Unshipped",
+   "action": "TestAmzApi",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Test"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 189,
+   "verb": "any",
+   "path": "/getOrder",
+   "controller": "Unshipped",
+   "action": "getOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 190,
+   "verb": "any",
+   "path": "/removeOrderFromCache",
+   "controller": "Unshipped",
+   "action": "removeOrderFromCache",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "removeOrderFromCache"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 191,
+   "verb": "any",
+   "path": "/madeOrder",
+   "controller": "Unshipped",
+   "action": "madeOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "madeOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 192,
+   "verb": "any",
+   "path": "/progressOrder",
+   "controller": "Unshipped",
+   "action": "progressOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "progressOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 194,
+   "verb": "any",
+   "path": "/updateOrder",
+   "controller": "Unshipped",
+   "action": "updateOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 196,
+   "verb": "any",
+   "path": "/updateAmzTracking",
+   "controller": "Unshipped",
+   "action": "updateAmzTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "updateAmzTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 197,
+   "verb": "any",
+   "path": "/trackings",
+   "controller": "Unshipped",
+   "action": "trackings",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "trackings"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 198,
+   "verb": "any",
+   "path": "/trackingsAjax",
+   "controller": "Unshipped",
+   "action": "trackingsAjax",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "trackingsAjax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 200,
+   "verb": "any",
+   "path": "/scanform",
+   "controller": "Unshipped",
+   "action": "scanForm",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "scanForm"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 202,
+   "verb": "any",
+   "path": "/removeTracking",
+   "controller": "Unshipped",
+   "action": "removeTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "removeTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 204,
+   "verb": "any",
+   "path": "/uploadAmzTracking",
+   "controller": "Unshipped",
+   "action": "uploadAmzTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "uploadAmzTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 206,
+   "verb": "any",
+   "path": "/getMultiAmzLabel",
+   "controller": "Unshipped",
+   "action": "getMultiAmzLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getMultiAmzLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 207,
+   "verb": "any",
+   "path": "/getMultiFrayunLabel",
+   "controller": "Unshipped",
+   "action": "getMultiFrayunLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getMultiFrayunLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 208,
+   "verb": "post",
+   "path": "/storeLabel",
+   "controller": "Unshipped",
+   "action": "storeLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "storeLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 210,
+   "verb": "any",
+   "path": "/getMultiCleanse",
+   "controller": "Stamps",
+   "action": "getMultiCleanse",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getMultiCleanse"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 211,
+   "verb": "any",
+   "path": "/buyMultiLabel",
+   "controller": "Stamps",
+   "action": "buyMultiLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "buyMultiLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 212,
+   "verb": "any",
+   "path": "/getCleanse",
+   "controller": "Stamps",
+   "action": "getCleanse",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getCleanse"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 213,
+   "verb": "any",
+   "path": "/buyLabel",
+   "controller": "Stamps",
+   "action": "buyLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "buyLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 214,
+   "verb": "any",
+   "path": "/cancelLabel",
+   "controller": "Stamps",
+   "action": "cancelLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "cancelLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 215,
+   "verb": "any",
+   "path": "/stampsAccount",
+   "controller": "Stamps",
+   "action": "getAccount",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "stampsAccount"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 216,
+   "verb": "any",
+   "path": "/stampsReload",
+   "controller": "Stamps",
+   "action": "Reload",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "stampsReload"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 217,
+   "verb": "any",
+   "path": "/printScanForm",
+   "controller": "Stamps",
+   "action": "printScanForm",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "printScanForm"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 218,
+   "verb": "any",
+   "path": "/getStampsUrl",
+   "controller": "Stamps",
+   "action": "getStampsUrl",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getStampsUrl"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 219,
+   "verb": "any",
+   "path": "/checkCleanseAddress",
+   "controller": "Stamps",
+   "action": "checkCleanseAddress",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "checkCleanseAddress"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 220,
+   "verb": "any",
+   "path": "/frayunBuyLabel",
+   "controller": "Frayun",
+   "action": "buyLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "frayunBuyLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 221,
+   "verb": "any",
+   "path": "/frayunBalance",
+   "controller": "Frayun",
+   "action": "getBalance",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "frayunBalance"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 222,
+   "verb": "any",
+   "path": "/frayunDownloadLabel",
+   "controller": "Frayun",
+   "action": "downloadLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "frayunDownloadLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 224,
+   "verb": "any",
+   "path": "/saveOrderShipDate",
+   "controller": "Unshipped",
+   "action": "saveOrderShipDate",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "saveOrderShipDate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 225,
+   "verb": "any",
+   "path": "/assignOrder",
+   "controller": "Unshipped",
+   "action": "assignOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "assignOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 226,
+   "verb": "any",
+   "path": "/priorityOrder",
+   "controller": "Unshipped",
+   "action": "priorityOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "priorityOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 227,
+   "verb": "any",
+   "path": "/saveOrderNotes",
+   "controller": "Unshipped",
+   "action": "saveOrderNotes",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "saveOrderNotes"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 228,
+   "verb": "any",
+   "path": "/doneOrder",
+   "controller": "Unshipped",
+   "action": "doneOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "doneOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 229,
+   "verb": "any",
+   "path": "/getPriority",
+   "controller": "Unshipped",
+   "action": "getPriority",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getPriority"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 231,
+   "verb": "resource",
+   "path": "/FollowUps",
+   "controller": "FollowUps",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 232,
+   "verb": "any",
+   "path": "/FollowUps.show",
+   "controller": "FollowUps",
+   "action": "show",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.show"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 233,
+   "verb": "any",
+   "path": "/FollowUps.store",
+   "controller": "FollowUps",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.store"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 234,
+   "verb": "any",
+   "path": "/FollowUps.update",
+   "controller": "FollowUps",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.update"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 235,
+   "verb": "any",
+   "path": "/FollowUps.updateFollowUp",
+   "controller": "FollowUps",
+   "action": "updateFollowUp",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.updateFollowUp"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 236,
+   "verb": "any",
+   "path": "/FollowUps.destroy",
+   "controller": "FollowUps",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.destroy"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 237,
+   "verb": "any",
+   "path": "/FollowUps.findOrder",
+   "controller": "FollowUps",
+   "action": "findCustomerByOrderId",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.findOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 238,
+   "verb": "get",
+   "path": "/FollowUps.ajax",
+   "controller": "FollowUps",
+   "action": "ajaxindex",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 239,
+   "verb": "post",
+   "path": "/FollowUps.updateTracking",
+   "controller": "FollowUps",
+   "action": "updateTracking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FollowUps.updateTracking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 241,
+   "verb": "resource",
+   "path": "/BulkProduction",
+   "controller": "BulkProduction",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 242,
+   "verb": "any",
+   "path": "/BulkProduction.show",
+   "controller": "BulkProduction",
+   "action": "show",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.show"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 243,
+   "verb": "any",
+   "path": "/BulkProduction.store",
+   "controller": "BulkProduction",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.store"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 244,
+   "verb": "any",
+   "path": "/BulkProduction.update",
+   "controller": "BulkProduction",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.update"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 245,
+   "verb": "any",
+   "path": "/BulkProduction.updateFollowUp",
+   "controller": "BulkProduction",
+   "action": "updateFollowUp",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.updateFollowUp"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 246,
+   "verb": "any",
+   "path": "/BulkProduction.destroy",
+   "controller": "BulkProduction",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.destroy"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 247,
+   "verb": "get",
+   "path": "/BulkProduction.ajax",
+   "controller": "BulkProduction",
+   "action": "ajaxindex",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 248,
+   "verb": "post",
+   "path": "/BulkProduction.updateImages",
+   "controller": "BulkProduction",
+   "action": "updateImages",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "BulkProduction.updateImages"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 250,
+   "verb": "resource",
+   "path": "/Production",
+   "controller": "Production",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 251,
+   "verb": "any",
+   "path": "/Production.show",
+   "controller": "Production",
+   "action": "show",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Production.show"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 252,
+   "verb": "any",
+   "path": "/Production.store",
+   "controller": "Production",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Production.store"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 253,
+   "verb": "any",
+   "path": "/Production.update",
+   "controller": "Production",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Production.update"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 254,
+   "verb": "any",
+   "path": "/Production.updateFollowUp",
+   "controller": "Production",
+   "action": "updateFollowUp",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Production.updateFollowUp"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 255,
+   "verb": "any",
+   "path": "/Production.destroy",
+   "controller": "Production",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Production.destroy"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 256,
+   "verb": "get",
+   "path": "/Production.ajax",
+   "controller": "Production",
+   "action": "ajaxindex",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Production.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 258,
+   "verb": "resource",
+   "path": "/Purchase",
+   "controller": "Purchase",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 259,
+   "verb": "any",
+   "path": "/Purchase.show",
+   "controller": "Purchase",
+   "action": "show",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Purchase.show"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 260,
+   "verb": "any",
+   "path": "/Purchase.store",
+   "controller": "Purchase",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Purchase.store"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 261,
+   "verb": "any",
+   "path": "/Purchase.update",
+   "controller": "Purchase",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Purchase.update"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 262,
+   "verb": "any",
+   "path": "/Purchase.updateFollowUp",
+   "controller": "Purchase",
+   "action": "updateFollowUp",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Purchase.updateFollowUp"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 263,
+   "verb": "any",
+   "path": "/Purchase.destroy",
+   "controller": "Purchase",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Purchase.destroy"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 264,
+   "verb": "get",
+   "path": "/Purchase.ajax",
+   "controller": "Purchase",
+   "action": "ajaxindex",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Purchase.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 266,
+   "verb": "resource",
+   "path": "/Settings",
+   "controller": "Settings",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 268,
+   "verb": "post",
+   "path": "/Settings.savePackingText",
+   "controller": "Settings",
+   "action": "savePackingText",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Settings.savePackingText"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 269,
+   "verb": "post",
+   "path": "/Settings.saveQuickSearch",
+   "controller": "Settings",
+   "action": "saveQuickSearch",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Settings.saveQuickSearch"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 271,
+   "verb": "get",
+   "path": "/clearCache",
+   "controller": "Unshipped",
+   "action": "clearCache",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "clearCache"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 273,
+   "verb": "get",
+   "path": "/OrderHistory",
+   "controller": "Orders",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "OrderHistory",
+   "excluded_reason": "controller class does not exist (dead route)"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 274,
+   "verb": "post",
+   "path": "/SaveOrder",
+   "controller": "Orders",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "SaveOrder",
+   "excluded_reason": "controller class does not exist (dead route)"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 275,
+   "verb": "post",
+   "path": "/UpdateShippedOrder",
+   "controller": "Orders",
+   "action": "updateShip",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "UpdateShippedOrder",
+   "excluded_reason": "controller class does not exist (dead route)"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 277,
+   "verb": "get",
+   "path": "/ebayDesc",
+   "controller": "Unshipped",
+   "action": "getEbayDesc",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ebayDesc"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 278,
+   "verb": "get",
+   "path": "/storeDesc",
+   "controller": "Unshipped",
+   "action": "getStoreDesc",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "storeDesc"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 279,
+   "verb": "get",
+   "path": "/etsyDesc",
+   "controller": "Unshipped",
+   "action": "getEtsyDesc",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "etsyDesc"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 280,
+   "verb": "get",
+   "path": "/etsyListing",
+   "controller": "Unshipped",
+   "action": "getEtsyListing",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "etsyListing"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 282,
+   "verb": "get",
+   "path": "/price",
+   "controller": "Price",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "price"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 283,
+   "verb": "get",
+   "path": "/price.ajax",
+   "controller": "Price",
+   "action": "ajaxindex",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "price.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 284,
+   "verb": "get",
+   "path": "/price.getRequest.ajax",
+   "controller": "Price",
+   "action": "ajaxGetRequest",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "price.getRequest.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 286,
+   "verb": "get",
+   "path": "/ProcessOrders",
+   "controller": "Batch",
+   "action": "ProcessOrders",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "ProcessOrders",
+   "excluded_reason": "controller class does not exist (dead route)"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 288,
+   "verb": "get",
+   "path": "/ShopifyCallBack",
+   "controller": "Shopify",
+   "action": "CallBack",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ShopifyCallBack"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 298,
+   "verb": "resource",
+   "path": "/order",
+   "controller": "Order",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 299,
+   "verb": "get",
+   "path": "/order/{id}/show",
+   "controller": "Order",
+   "action": "show",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 300,
+   "verb": "post",
+   "path": "/order/{id}/update",
+   "controller": "Order",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 301,
+   "verb": "get",
+   "path": "/order/{id}/delete",
+   "controller": "Order",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 302,
+   "verb": "get",
+   "path": "/order/{id}/deleteMsg",
+   "controller": "Order",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 303,
+   "verb": "post",
+   "path": "/getMultiOrders",
+   "controller": "Order",
+   "action": "getMultiOrders",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getMultiOrders"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 305,
+   "verb": "resource",
+   "path": "/item",
+   "controller": "Item",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 306,
+   "verb": "post",
+   "path": "/item/{id}/update",
+   "controller": "Item",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 307,
+   "verb": "get",
+   "path": "/item/{id}/delete",
+   "controller": "Item",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 308,
+   "verb": "get",
+   "path": "/item/{id}/deleteMsg",
+   "controller": "Item",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 309,
+   "verb": "post",
+   "path": "/upload.item.image",
+   "controller": "Item",
+   "action": "uploadImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 312,
+   "verb": "resource",
+   "path": "/itemimage",
+   "controller": "Itemimage",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 313,
+   "verb": "post",
+   "path": "/itemimage/{id}/update",
+   "controller": "Itemimage",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 314,
+   "verb": "get",
+   "path": "/itemimage/{id}/delete",
+   "controller": "Itemimage",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 315,
+   "verb": "get",
+   "path": "/itemimage/{id}/deleteMsg",
+   "controller": "Itemimage",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 317,
+   "verb": "get",
+   "path": "/Houzz.ajax",
+   "controller": "Unshipped",
+   "action": "Houzz",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Houzz.ajax"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 318,
+   "verb": "any",
+   "path": "/getOrderLabel",
+   "controller": "Unshipped",
+   "action": "getOrderLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getOrderLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 319,
+   "verb": "any",
+   "path": "/getS3Image",
+   "controller": "Unshipped",
+   "action": "getS3Image",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getS3Image"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 321,
+   "verb": "get",
+   "path": "/FBA.Health",
+   "controller": "Fba",
+   "action": "Health",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FBA.Health"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 322,
+   "verb": "get",
+   "path": "/FBA.Orders",
+   "controller": "Fba",
+   "action": "Orders",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FBA.Orders"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 323,
+   "verb": "get",
+   "path": "/FBA.Inventory",
+   "controller": "Fba",
+   "action": "Inventory",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FBA.Inventory"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 324,
+   "verb": "get",
+   "path": "/FBA.Age",
+   "controller": "Fba",
+   "action": "Age",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "FBA.Age"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 326,
+   "verb": "get",
+   "path": "/createPacking",
+   "controller": "Unshipped",
+   "action": "createPacking",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "createPacking"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 327,
+   "verb": "get",
+   "path": "/getUserMsg",
+   "controller": "UserMessage",
+   "action": "getUserMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getUserMsg"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 328,
+   "verb": "post",
+   "path": "/flagUserMsg",
+   "controller": "UserMessage",
+   "action": "flagUserMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "flagUserMsg"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 329,
+   "verb": "post",
+   "path": "/deleteMsg",
+   "controller": "UserMessage",
+   "action": "deleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "deleteMsg"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 330,
+   "verb": "get",
+   "path": "/showMessage",
+   "controller": "UserMessage",
+   "action": "showMessage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "showMessage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 331,
+   "verb": "get",
+   "path": "/showSentMessage",
+   "controller": "UserMessage",
+   "action": "showSentMessage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "showSentMessage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 332,
+   "verb": "post",
+   "path": "/sendMessage",
+   "controller": "UserMessage",
+   "action": "sendMessage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "sendMessage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 333,
+   "verb": "any",
+   "path": "/getUserList",
+   "controller": "UserMessage",
+   "action": "getUserList",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "getUserList"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 334,
+   "verb": "any",
+   "path": "/messageFileUpload",
+   "controller": "UserMessage",
+   "action": "upload",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "messageFileUpload"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 336,
+   "verb": "any",
+   "path": "/packing",
+   "controller": "Order",
+   "action": "packing",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "packing"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 338,
+   "verb": "any",
+   "path": "/pickList",
+   "controller": "Order",
+   "action": "pickList",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "pickList"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 339,
+   "verb": "any",
+   "path": "/printing",
+   "controller": "Order",
+   "action": "printing",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "printing"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 341,
+   "verb": "resource",
+   "path": "/product",
+   "controller": "Product",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 342,
+   "verb": "any",
+   "path": "/products",
+   "controller": "Product",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 343,
+   "verb": "any",
+   "path": "/products.data",
+   "controller": "Product",
+   "action": "anyData",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.data"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 344,
+   "verb": "get",
+   "path": "/products.shopify",
+   "controller": "Product",
+   "action": "shopify",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.shopify"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 345,
+   "verb": "post",
+   "path": "/products.shopify",
+   "controller": "Product",
+   "action": "updateShopifyLink",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.shopify"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 346,
+   "verb": "get",
+   "path": "/products.importEtsy",
+   "controller": "Product",
+   "action": "ImportEtsy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.importEtsy"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 347,
+   "verb": "any",
+   "path": "/products.ImportListing",
+   "controller": "Product",
+   "action": "ImportListing",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.ImportListing"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 348,
+   "verb": "get",
+   "path": "/products.ImportAmazon",
+   "controller": "Product",
+   "action": "ImportAmazon",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.ImportAmazon"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 349,
+   "verb": "post",
+   "path": "/products.ImportAmazonAsin",
+   "controller": "Product",
+   "action": "ImportAmazonAsin",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.ImportAmazonAsin"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 350,
+   "verb": "post",
+   "path": "/products.RemoveLink",
+   "controller": "Product",
+   "action": "RemoveLink",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.RemoveLink"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 351,
+   "verb": "get",
+   "path": "/products.bulk",
+   "controller": "Product",
+   "action": "bulkProduction",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.bulk"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 352,
+   "verb": "get",
+   "path": "/products.viewbulk",
+   "controller": "Product",
+   "action": "viewBulkProduction",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.viewbulk"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 353,
+   "verb": "delete",
+   "path": "/products.deleteBulk",
+   "controller": "Product",
+   "action": "deleteBulkProduction",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.deleteBulk"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 354,
+   "verb": "post",
+   "path": "/products.uploadBulk",
+   "controller": "Product",
+   "action": "uploadBulkProduction",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.uploadBulk"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 359,
+   "verb": "post",
+   "path": "/product/{id}/update",
+   "controller": "Product",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 360,
+   "verb": "get",
+   "path": "/product/{id}/delete",
+   "controller": "Product",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 361,
+   "verb": "get",
+   "path": "/product/{id}/deleteMsg",
+   "controller": "Product",
+   "action": "DeleteMsg",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 363,
+   "verb": "get",
+   "path": "/inventory",
+   "controller": "Inventory",
+   "action": "inventory",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 365,
+   "verb": "get",
+   "path": "/inv",
+   "controller": "Inventory",
+   "action": "inv",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 366,
+   "verb": "any",
+   "path": "/inventory.data",
+   "controller": "Inventory",
+   "action": "anyData",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.data"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 367,
+   "verb": "put",
+   "path": "/inventory.create",
+   "controller": "Inventory",
+   "action": "create",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.create"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 368,
+   "verb": "post",
+   "path": "/inventory.update",
+   "controller": "Inventory",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.update"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 369,
+   "verb": "delete",
+   "path": "/inventory.delete",
+   "controller": "Inventory",
+   "action": "delete",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.delete"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 370,
+   "verb": "any",
+   "path": "/inventory.response",
+   "controller": "Inventory",
+   "action": "dataResponse",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.response"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 371,
+   "verb": "post",
+   "path": "/inventory.upload",
+   "controller": "Inventory",
+   "action": "uploadTransfer",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.upload"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 373,
+   "verb": "any",
+   "path": "/inventory.transferdata",
+   "controller": "Inventory",
+   "action": "inventoryTransferData",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.transferdata"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 374,
+   "verb": "put",
+   "path": "/inventory.createTransfer",
+   "controller": "Inventory",
+   "action": "createTransfer",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.createTransfer"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 375,
+   "verb": "post",
+   "path": "/inventory.updateTransfer",
+   "controller": "Inventory",
+   "action": "updateTransfer",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.updateTransfer"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 376,
+   "verb": "delete",
+   "path": "/inventory.deleteTransfer",
+   "controller": "Inventory",
+   "action": "deleteTransfer",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.deleteTransfer"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 377,
+   "verb": "post",
+   "path": "/inventory.quickUpdate",
+   "controller": "Inventory",
+   "action": "quickUpdate",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.quickUpdate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 378,
+   "verb": "get",
+   "path": "/inventory.findLocations",
+   "controller": "Inventory",
+   "action": "findLocations",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "inventory.findLocations"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 380,
+   "verb": "get",
+   "path": "/vue",
+   "controller": "Product",
+   "action": "vue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "vue"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 382,
+   "verb": "get",
+   "path": "/productImage",
+   "controller": "ProductImage",
+   "action": "getUpload",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "productImage"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 383,
+   "verb": "post",
+   "path": "/productImageUpload",
+   "controller": "ProductImage",
+   "action": "postUpload",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "productImageUpload"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 384,
+   "verb": "post",
+   "path": "/productImageUploadDelete",
+   "controller": "ProductImage",
+   "action": "deleteUpload",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "productImageUploadDelete"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 386,
+   "verb": "get",
+   "path": "/productImageOnServer",
+   "controller": "ProductImage",
+   "action": "getServerImages",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "productImageOnServer"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 388,
+   "verb": "get",
+   "path": "/manage-opolo",
+   "controller": "OpoloCost",
+   "action": "manageOpolo",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 389,
+   "verb": "resource",
+   "path": "/opolocost",
+   "controller": "OpoloCost",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 391,
+   "verb": "resource",
+   "path": "/opolocost",
+   "controller": "OpoloCost",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 392,
+   "verb": "any",
+   "path": "/opolocost.show",
+   "controller": "OpoloCost",
+   "action": "show",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "opolocost.show"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 393,
+   "verb": "any",
+   "path": "/opolocost.store",
+   "controller": "OpoloCost",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "opolocost.store"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 394,
+   "verb": "any",
+   "path": "/opolocost.update",
+   "controller": "OpoloCost",
+   "action": "update",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "opolocost.update"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 395,
+   "verb": "any",
+   "path": "/opolocost.destroy",
+   "controller": "OpoloCost",
+   "action": "destroy",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "opolocost.destroy"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 396,
+   "verb": "get",
+   "path": "/opolocost.ajaxData",
+   "controller": "OpoloCost",
+   "action": "ajaxData",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "opolocost.ajaxData"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 398,
+   "verb": "get",
+   "path": "/EtsyTokenRequest",
+   "controller": "Etsy",
+   "action": "getTokenRequest",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "EtsyTokenRequest"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 399,
+   "verb": "get",
+   "path": "/Etsy2TokenRequest",
+   "controller": "Etsy",
+   "action": "getTokenRequest2",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Etsy2TokenRequest"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 400,
+   "verb": "get",
+   "path": "/Etsy3TokenRequest",
+   "controller": "Etsy",
+   "action": "getTokenRequest3",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Etsy3TokenRequest"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 401,
+   "verb": "get",
+   "path": "/EtsyTest",
+   "controller": "Etsy",
+   "action": "Test",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "EtsyTest"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 403,
+   "verb": "post",
+   "path": "/GetAmazonShippingService",
+   "controller": "Unshipped",
+   "action": "GetAmazonShippingService",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetAmazonShippingService"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 404,
+   "verb": "post",
+   "path": "/GetAmazonShippingLabel",
+   "controller": "Unshipped",
+   "action": "GetAmazonShippingLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "GetAmazonShippingLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 407,
+   "verb": "get",
+   "path": "/queue",
+   "controller": "QueueJob",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "queue"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 408,
+   "verb": "get",
+   "path": "/queue.print",
+   "controller": "QueueJob",
+   "action": "print",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "queue.print"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 409,
+   "verb": "get",
+   "path": "/queue.stuck",
+   "controller": "QueueJob",
+   "action": "stuck",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "queue.stuck"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 410,
+   "verb": "get",
+   "path": "/queue.reset_stuck",
+   "controller": "QueueJob",
+   "action": "resetStuck",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "queue.reset_stuck"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 411,
+   "verb": "any",
+   "path": "/{ListProducts?}",
+   "controller": "Product",
+   "action": "vue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": [
+    "ListProducts",
+    "[\\/ListProducts\\.-]*"
+   ],
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 412,
+   "verb": "any",
+   "path": "/{InventoryCount?}",
+   "controller": "Product",
+   "action": "vue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": [
+    "InventoryCount",
+    "[\\/InventoryCount\\.-]*"
+   ],
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 413,
+   "verb": "any",
+   "path": "/{InventoryConsolidation?}",
+   "controller": "Product",
+   "action": "vue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": [
+    "InventoryConsolidation",
+    "[\\/InventoryConsolidation\\.-]*"
+   ],
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 414,
+   "verb": "any",
+   "path": "/Product/{id}",
+   "controller": "Product",
+   "action": "vue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 415,
+   "verb": "any",
+   "path": "/{Orders?}",
+   "controller": "Product",
+   "action": "vue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": [
+    "Orders",
+    "[\\/Orders\\.-]*"
+   ],
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 417,
+   "verb": "any",
+   "path": "/fedex.getOneRate",
+   "controller": "Fedex",
+   "action": "getOneRate",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "fedex.getOneRate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 418,
+   "verb": "any",
+   "path": "/fedex.getrate",
+   "controller": "Fedex",
+   "action": "getRate",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "fedex.getrate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 419,
+   "verb": "any",
+   "path": "/fedex.getLabel",
+   "controller": "Fedex",
+   "action": "getLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "fedex.getLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 420,
+   "verb": "any",
+   "path": "/fedex.validate",
+   "controller": "Fedex",
+   "action": "validateAddress",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "fedex.validate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 421,
+   "verb": "any",
+   "path": "/fedex.void",
+   "controller": "Fedex",
+   "action": "voidLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "fedex.void"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 423,
+   "verb": "any",
+   "path": "/ups.getrate",
+   "controller": "Ups",
+   "action": "getRate",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ups.getrate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 424,
+   "verb": "any",
+   "path": "/ups.getLabel",
+   "controller": "Ups",
+   "action": "getLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ups.getLabel"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 425,
+   "verb": "any",
+   "path": "/ups.validate",
+   "controller": "Ups",
+   "action": "validateAddress",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ups.validate"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 426,
+   "verb": "any",
+   "path": "/ups.void",
+   "controller": "Ups",
+   "action": "voidLabel",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "ups.void"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 428,
+   "verb": "post",
+   "path": "/actionLog",
+   "controller": "ActionLog",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "actionLog"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 429,
+   "verb": "get",
+   "path": "/actionLogs",
+   "controller": "ActionLog",
+   "action": "index",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "actionLogs"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 438,
+   "verb": "get",
+   "path": "/api/product.sku",
+   "controller": "Product",
+   "action": "getAjaxBySku",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "/api/product.sku"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 439,
+   "verb": "get",
+   "path": "/product.sku",
+   "controller": "Product",
+   "action": "getAjaxBySku",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "product.sku"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 440,
+   "verb": "get",
+   "path": "/api/product/{id}",
+   "controller": "Product",
+   "action": "getAjax",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 442,
+   "verb": "post",
+   "path": "/api/product/{id?}",
+   "controller": "Product",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 443,
+   "verb": "delete",
+   "path": "/api/product/{id}",
+   "controller": "Product",
+   "action": "deleteProduct",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 444,
+   "verb": "post",
+   "path": "/api/product/{id}/images",
+   "controller": "Product",
+   "action": "uploadMultipleImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 445,
+   "verb": "delete",
+   "path": "/api/product/{id}/images/{image_id}",
+   "controller": "Product",
+   "action": "deleteImage",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 447,
+   "verb": "delete",
+   "path": "/api/product/{id}/locations/{location_id}",
+   "controller": "Product",
+   "action": "deleteLocation",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 448,
+   "verb": "post",
+   "path": "/api/product/{id}/locations",
+   "controller": "Product",
+   "action": "updateLocations",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 449,
+   "verb": "post",
+   "path": "/api/product/{id}/default-location",
+   "controller": "Product",
+   "action": "updateDefaultLocation",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 450,
+   "verb": "get",
+   "path": "/api/createAllThumbnail",
+   "controller": "Product",
+   "action": "createAllThumbnail",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 460,
+   "verb": "post",
+   "path": "/api/location",
+   "controller": "Product",
+   "action": "updateLocationByLocId",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 461,
+   "verb": "get",
+   "path": "/api/inventory/consolidation",
+   "controller": "Inventory",
+   "action": "consolidation",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 462,
+   "verb": "post",
+   "path": "/api/inventory/consolidation/move",
+   "controller": "Inventory",
+   "action": "moveConsolidation",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 465,
+   "verb": "resource",
+   "path": "/Wayfair",
+   "controller": "Wayfair",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 466,
+   "verb": "any",
+   "path": "/Wayfair.store",
+   "controller": "Wayfair",
+   "action": "store",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Wayfair.store"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 467,
+   "verb": "any",
+   "path": "/Wayfair.registerOrder",
+   "controller": "Wayfair",
+   "action": "registerOrder",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Wayfair.registerOrder"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 468,
+   "verb": "any",
+   "path": "/Wayfair.packingSlip",
+   "controller": "Wayfair",
+   "action": "packingSlip",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Wayfair.packingSlip"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 469,
+   "verb": "any",
+   "path": "/Wayfair.picklist",
+   "controller": "Wayfair",
+   "action": "picklist",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Wayfair.picklist"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 471,
+   "verb": "resource",
+   "path": "/Tongtool",
+   "controller": "Tongtool",
+   "action": null,
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/web.php",
+   "line": 472,
+   "verb": "any",
+   "path": "/Tongtool.picklist",
+   "controller": "Tongtool",
+   "action": "picklist",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "Tongtool.picklist"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 473,
+   "verb": "get",
+   "path": "/queue.ping",
+   "controller": "QueueJob",
+   "action": "PingQueue",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "queue.ping"
+  },
+  {
+   "file": "routes/web.php",
+   "line": 474,
+   "verb": "get",
+   "path": "/CodeGeneratorReport",
+   "controller": "Report",
+   "action": "CodeGenerator",
+   "middleware": [
+    "web",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "CodeGeneratorReport"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 17,
+   "verb": "post",
+   "path": "/api/logout",
+   "controller": "Login",
+   "action": "logout",
+   "middleware": [
+    "api",
+    "auth:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 19,
+   "verb": "get",
+   "path": "/api/user",
+   "controller": "closure",
+   "action": null,
+   "middleware": [
+    "api",
+    "auth:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 23,
+   "verb": "patch",
+   "path": "/api/settings/profile",
+   "controller": "Settings",
+   "action": "updateProfile",
+   "middleware": [
+    "api",
+    "auth:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 24,
+   "verb": "patch",
+   "path": "/api/settings/password",
+   "controller": "Settings",
+   "action": "updatePassword",
+   "middleware": [
+    "api",
+    "auth:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 26,
+   "verb": "post",
+   "path": "/api/pda/api-key",
+   "controller": "Pda",
+   "action": "regenerateApiKey",
+   "middleware": [
+    "api",
+    "auth:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 31,
+   "verb": "post",
+   "path": "/api/login",
+   "controller": "Login",
+   "action": "login",
+   "middleware": [
+    "api",
+    "guest:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 32,
+   "verb": "post",
+   "path": "/api/register",
+   "controller": "Register",
+   "action": "register",
+   "middleware": [
+    "api",
+    "guest:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 33,
+   "verb": "post",
+   "path": "/api/password/email",
+   "controller": "ForgotPassword",
+   "action": "sendResetLinkEmail",
+   "middleware": [
+    "api",
+    "guest:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 34,
+   "verb": "post",
+   "path": "/api/password/reset",
+   "controller": "ResetPassword",
+   "action": "reset",
+   "middleware": [
+    "api",
+    "guest:api"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 38,
+   "verb": "get",
+   "path": "/api/products",
+   "controller": "Product",
+   "action": "listProducts",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 39,
+   "verb": "post",
+   "path": "/api/products/import-faire-images",
+   "controller": "FaireImageImport",
+   "action": "import",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null,
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 40,
+   "verb": "post",
+   "path": "/api/product",
+   "controller": "Product",
+   "action": "store",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "product.store",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 41,
+   "verb": "post",
+   "path": "/api/products.update",
+   "controller": "Product",
+   "action": "massUpdate",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.update",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 42,
+   "verb": "post",
+   "path": "/api/products.delete",
+   "controller": "Product",
+   "action": "massDelete",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "products.delete",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 44,
+   "verb": "get",
+   "path": "/api/product.sku",
+   "controller": "Product",
+   "action": "getAjaxBySku",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "product.sku",
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 45,
+   "verb": "get",
+   "path": "/api/product/{id}",
+   "controller": "Product",
+   "action": "getAjax",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 47,
+   "verb": "post",
+   "path": "/api/product/{id?}",
+   "controller": "Product",
+   "action": "store",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 48,
+   "verb": "delete",
+   "path": "/api/product/{id}",
+   "controller": "Product",
+   "action": "deleteProduct",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 49,
+   "verb": "post",
+   "path": "/api/product/{id}/images",
+   "controller": "Product",
+   "action": "uploadMultipleImage",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 50,
+   "verb": "delete",
+   "path": "/api/product/{id}/images/{image_id}",
+   "controller": "Product",
+   "action": "deleteImage",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 52,
+   "verb": "delete",
+   "path": "/api/product/{id}/locations/{location_id}",
+   "controller": "Product",
+   "action": "deleteLocation",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 53,
+   "verb": "post",
+   "path": "/api/product/{id}/locations",
+   "controller": "Product",
+   "action": "updateLocations",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 54,
+   "verb": "post",
+   "path": "/api/product/{id}/default-location",
+   "controller": "Product",
+   "action": "updateDefaultLocation",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 55,
+   "verb": "get",
+   "path": "/api/createAllThumbnail",
+   "controller": "Product",
+   "action": "createAllThumbnail",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 56,
+   "verb": "get",
+   "path": "/api/orders",
+   "controller": "Order",
+   "action": "ListOrders",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "orders",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 57,
+   "verb": "get",
+   "path": "/api/wholesale.categories",
+   "controller": "Product",
+   "action": "getWholesaleCategories",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "wholesale.categories",
+   "excluded_reason": "wholesale out of scope"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 58,
+   "verb": "post",
+   "path": "/api/wholesale.copy",
+   "controller": "Product",
+   "action": "copyProductToWholesale",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": "wholesale.copy",
+   "excluded_reason": "wholesale out of scope"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 61,
+   "verb": "get",
+   "path": "/api/productLocations",
+   "controller": "Product",
+   "action": "listProductLocations",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "productLocations",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 62,
+   "verb": "get",
+   "path": "/api/productSkus",
+   "controller": "Product",
+   "action": "listProductSkus",
+   "middleware": [
+    "api",
+    "role:admin,user,remote"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": "productSkus",
+   "security_change": "was unauthenticated in old app; now requires session login (roles admin,user,remote)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 63,
+   "verb": "post",
+   "path": "/api/location",
+   "controller": "Product",
+   "action": "updateLocationByLocId",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 64,
+   "verb": "get",
+   "path": "/api/inventory/consolidation",
+   "controller": "Inventory",
+   "action": "consolidation",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 65,
+   "verb": "post",
+   "path": "/api/inventory/consolidation/move",
+   "controller": "Inventory",
+   "action": "moveConsolidation",
+   "middleware": [
+    "api"
+   ],
+   "where": null,
+   "excluded": true,
+   "name": null,
+   "excluded_reason": "shadowed by identical web.php route (web registered after api)"
+  },
+  {
+   "file": "routes/api.php",
+   "line": 68,
+   "verb": "get",
+   "path": "/api/pda/location",
+   "controller": "Pda",
+   "action": "locationInquiry",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 69,
+   "verb": "get",
+   "path": "/api/pda/sku",
+   "controller": "Pda",
+   "action": "skuInquiry",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 70,
+   "verb": "post",
+   "path": "/api/pda/inventory/qty",
+   "controller": "Pda",
+   "action": "updateQtyBySkuLocation",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 71,
+   "verb": "post",
+   "path": "/api/pda/inventory/link",
+   "controller": "Pda",
+   "action": "addSkuLocation",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 72,
+   "verb": "delete",
+   "path": "/api/pda/inventory/link",
+   "controller": "Pda",
+   "action": "removeSkuLocation",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 73,
+   "verb": "get",
+   "path": "/api/pda/transactions/sku",
+   "controller": "Pda",
+   "action": "transactionsBySku",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 74,
+   "verb": "get",
+   "path": "/api/pda/transactions/location",
+   "controller": "Pda",
+   "action": "transactionsByLocation",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 75,
+   "verb": "get",
+   "path": "/api/pda/receiving",
+   "controller": "Pda",
+   "action": "receivingIndex",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 76,
+   "verb": "post",
+   "path": "/api/pda/receiving",
+   "controller": "Pda",
+   "action": "receivingStore",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  },
+  {
+   "file": "routes/api.php",
+   "line": 77,
+   "verb": "patch",
+   "path": "/api/pda/receiving/{id}",
+   "controller": "Pda",
+   "action": "receivingUpdate",
+   "middleware": [
+    "api",
+    "pda.auth"
+   ],
+   "where": null,
+   "excluded": false,
+   "name": null
+  }
+ ],
+ "controllers": {
+  "ActionLogController": {
+   "file": "app/Http/Controllers/ActionLogController.php",
+   "lines": 39,
+   "methods": {
+    "__construct": [
+     20,
+     23
+    ],
+    "index": [
+     24,
+     29
+    ],
+    "store": [
+     30,
+     39
+    ]
+   },
+   "views": [
+    "actionlogs.index"
+   ],
+   "libraries": [],
+   "models": [
+    "ActionLog"
+   ],
+   "tables": []
+  },
+  "AmzAdController": {
+   "file": "app/Http/Controllers/AmzAdController.php",
+   "lines": 28,
+   "methods": {
+    "__construct": [
+     14,
+     19
+    ],
+    "signin": [
+     20,
+     23
+    ],
+    "Test": [
+     24,
+     28
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "BulkProductionController": {
+   "file": "app/Http/Controllers/BulkProductionController.php",
+   "lines": 264,
+   "methods": {
+    "__construct": [
+     14,
+     22
+    ],
+    "index": [
+     23,
+     29
+    ],
+    "ajaxindex": [
+     30,
+     41
+    ],
+    "create": [
+     42,
+     51
+    ],
+    "store": [
+     52,
+     92
+    ],
+    "show": [
+     93,
+     108
+    ],
+    "edit": [
+     109,
+     121
+    ],
+    "update": [
+     122,
+     140
+    ],
+    "updateBulkProduction": [
+     141,
+     189
+    ],
+    "destroy": [
+     190,
+     216
+    ],
+    "updateImages": [
+     217,
+     264
+    ]
+   },
+   "views": [
+    "BulkProduction.create",
+    "BulkProduction.edit",
+    "BulkProduction.index"
+   ],
+   "libraries": [],
+   "models": [
+    "BulkProduction"
+   ],
+   "tables": []
+  },
+  "ChatController": {
+   "file": "app/Http/Controllers/ChatController.php",
+   "lines": 133,
+   "methods": {
+    "__construct": [
+     14,
+     18
+    ],
+    "index": [
+     19,
+     23
+    ],
+    "send": [
+     24,
+     62
+    ],
+    "safeJsonResponse": [
+     63,
+     70
+    ],
+    "transcribe": [
+     71,
+     133
+    ]
+   },
+   "views": [
+    "chat"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "Controller": {
+   "file": "app/Http/Controllers/Controller.php",
+   "lines": 14,
+   "methods": {},
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "EbayController": {
+   "file": "app/Http/Controllers/EbayController.php",
+   "lines": 64,
+   "methods": {
+    "__construct": [
+     23,
+     27
+    ],
+    "closureNotification": [
+     28,
+     48
+    ],
+    "ebayAccept": [
+     49,
+     57
+    ],
+    "ebayReject": [
+     58,
+     64
+    ]
+   },
+   "views": [],
+   "libraries": [
+    "eBayApi"
+   ],
+   "models": [
+    "EbayNotification"
+   ],
+   "tables": []
+  },
+  "EtsyController": {
+   "file": "app/Http/Controllers/EtsyController.php",
+   "lines": 272,
+   "methods": {
+    "__construct": [
+     25,
+     41
+    ],
+    "index": [
+     42,
+     50
+    ],
+    "callback": [
+     51,
+     104
+    ],
+    "sendAuthRequest": [
+     105,
+     120
+    ],
+    "getTokenRequest": [
+     121,
+     161
+    ],
+    "getTokenRequest2": [
+     162,
+     203
+    ],
+    "getTokenRequest3": [
+     204,
+     243
+    ],
+    "Test": [
+     244,
+     272
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [
+    "EtsyIntegration"
+   ],
+   "tables": []
+  },
+  "ExecController": {
+   "file": "app/Http/Controllers/ExecController.php",
+   "lines": 68,
+   "methods": {
+    "__construct": [
+     14,
+     19
+    ],
+    "index": [
+     20,
+     28
+    ],
+    "runit": [
+     29,
+     42
+    ],
+    "getRefreshAmz": [
+     43,
+     50
+    ],
+    "refreshAmz": [
+     51,
+     68
+    ]
+   },
+   "views": [
+    "exec.amazon-refresh",
+    "exec.index"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "FaireImageImportController": {
+   "file": "app/Http/Controllers/FaireImageImportController.php",
+   "lines": 29,
+   "methods": {
+    "import": [
+     10,
+     29
+    ]
+   },
+   "views": [],
+   "libraries": [
+    "FaireImageImporter"
+   ],
+   "models": [],
+   "tables": []
+  },
+  "FbaController": {
+   "file": "app/Http/Controllers/FbaController.php",
+   "lines": 69,
+   "methods": {
+    "__construct": [
+     20,
+     26
+    ],
+    "Health": [
+     27,
+     32
+    ],
+    "Age": [
+     33,
+     38
+    ],
+    "Orders": [
+     39,
+     62
+    ],
+    "Inventory": [
+     63,
+     69
+    ]
+   },
+   "views": [
+    "fba.age",
+    "fba.health",
+    "fba.inventory",
+    "fba.orders"
+   ],
+   "libraries": [
+    "Amazon"
+   ],
+   "models": [
+    "AfnInventory",
+    "FbaAge",
+    "FbaHealth",
+    "FbaOrder",
+    "ReportTime"
+   ],
+   "tables": []
+  },
+  "FedexController": {
+   "file": "app/Http/Controllers/FedexController.php",
+   "lines": 241,
+   "methods": {
+    "__construct": [
+     52,
+     55
+    ],
+    "getRate": [
+     56,
+     91
+    ],
+    "getOneRate": [
+     92,
+     134
+    ],
+    "validateAddress": [
+     135,
+     146
+    ],
+    "getLabel": [
+     187,
+     221
+    ],
+    "voidLabel": [
+     222,
+     241
+    ]
+   },
+   "views": [],
+   "libraries": [
+    "FedexClient",
+    "Stamps"
+   ],
+   "models": [
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "RecordNote",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "FollowUpsController": {
+   "file": "app/Http/Controllers/FollowUpsController.php",
+   "lines": 292,
+   "methods": {
+    "__construct": [
+     14,
+     21
+    ],
+    "index": [
+     22,
+     28
+    ],
+    "ajaxindex": [
+     29,
+     40
+    ],
+    "create": [
+     41,
+     50
+    ],
+    "store": [
+     51,
+     98
+    ],
+    "show": [
+     99,
+     115
+    ],
+    "edit": [
+     116,
+     128
+    ],
+    "update": [
+     129,
+     161
+    ],
+    "updateTracking": [
+     162,
+     177
+    ],
+    "updateFollowUp": [
+     178,
+     236
+    ],
+    "destroy": [
+     237,
+     263
+    ],
+    "findCustomerByOrderId": [
+     264,
+     292
+    ]
+   },
+   "views": [
+    "followups.create",
+    "followups.edit",
+    "followups.index",
+    "followups.show"
+   ],
+   "libraries": [],
+   "models": [
+    "Followup",
+    "GrantOrder"
+   ],
+   "tables": []
+  },
+  "FourController": {
+   "file": "app/Http/Controllers/FourController.php",
+   "lines": 341,
+   "methods": {
+    "__construct": [
+     18,
+     24
+    ],
+    "index": [
+     25,
+     39
+    ],
+    "store": [
+     40,
+     82
+    ],
+    "importEbay": [
+     83,
+     109
+    ],
+    "loadUnshipped": [
+     110,
+     270
+    ],
+    "export": [
+     271,
+     315
+    ],
+    "DeleteMsg": [
+     316,
+     330
+    ],
+    "destroy": [
+     331,
+     341
+    ]
+   },
+   "views": [
+    "four.index"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantOrder",
+    "GrantOrderDetail",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "FrayunController": {
+   "file": "app/Http/Controllers/FrayunController.php",
+   "lines": 261,
+   "methods": {
+    "__construct": [
+     42,
+     46
+    ],
+    "getBalance": [
+     47,
+     55
+    ],
+    "buyLabel": [
+     56,
+     219
+    ],
+    "downloadLabel": [
+     220,
+     230
+    ],
+    "cancelLabel": [
+     231,
+     247
+    ],
+    "printScanForm": [
+     248,
+     261
+    ]
+   },
+   "views": [
+    "frayunbalance"
+   ],
+   "libraries": [
+    "Frayun",
+    "Usps"
+   ],
+   "models": [
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "RecordNote",
+    "ShippingRateChart",
+    "ShippingZoneChart",
+    "ShippingZoneChartException",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "FunnyController": {
+   "file": "app/Http/Controllers/FunnyController.php",
+   "lines": 167,
+   "methods": {
+    "index": [
+     25,
+     36
+    ],
+    "create": [
+     37,
+     49
+    ],
+    "store": [
+     50,
+     83
+    ],
+    "show": [
+     84,
+     102
+    ],
+    "edit": [
+     103,
+     122
+    ],
+    "update": [
+     123,
+     143
+    ],
+    "DeleteMsg": [
+     144,
+     159
+    ],
+    "destroy": [
+     160,
+     167
+    ]
+   },
+   "views": [
+    "funny.create",
+    "funny.edit",
+    "funny.index",
+    "funny.show"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "GptController": {
+   "file": "app/Http/Controllers/GptController.php",
+   "lines": 24,
+   "methods": {
+    "__construct": [
+     14,
+     19
+    ],
+    "generateDescription": [
+     20,
+     24
+    ]
+   },
+   "views": [
+    "gpt.desc"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "HomeController": {
+   "file": "app/Http/Controllers/HomeController.php",
+   "lines": 44,
+   "methods": {
+    "__construct": [
+     14,
+     23
+    ],
+    "index": [
+     24,
+     44
+    ]
+   },
+   "views": [
+    "home"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "InventoryController": {
+   "file": "app/Http/Controllers/InventoryController.php",
+   "lines": 812,
+   "methods": {
+    "__construct": [
+     29,
+     41
+    ],
+    "index": [
+     42,
+     47
+    ],
+    "inventory": [
+     48,
+     59
+    ],
+    "inv": [
+     60,
+     68
+    ],
+    "vue": [
+     69,
+     76
+    ],
+    "create": [
+     77,
+     102
+    ],
+    "update": [
+     103,
+     130
+    ],
+    "delete": [
+     131,
+     137
+    ],
+    "anyData": [
+     138,
+     167
+    ],
+    "inventoryTransferData": [
+     168,
+     187
+    ],
+    "recalAll": [
+     188,
+     208
+    ],
+    "recalculateInventory": [
+     209,
+     285
+    ],
+    "createTransfer": [
+     286,
+     329
+    ],
+    "updateTransfer": [
+     330,
+     378
+    ],
+    "uploadTransfer": [
+     379,
+     387
+    ],
+    "deleteTransfer": [
+     388,
+     400
+    ],
+    "dataResponse": [
+     401,
+     431
+    ],
+    "quickUpdate": [
+     432,
+     507
+    ],
+    "findLocations": [
+     508,
+     557
+    ],
+    "consolidation": [
+     558,
+     670
+    ],
+    "moveConsolidation": [
+     671,
+     761
+    ],
+    "applyOneConsolidationMove": [
+     762,
+     812
+    ]
+   },
+   "views": [
+    "inventory.index",
+    "inventory.inv",
+    "inventory.planning",
+    "inventory.vue"
+   ],
+   "libraries": [
+    "DatatablesEditor",
+    "Shopify",
+    "eBay"
+   ],
+   "models": [
+    "Inventory",
+    "InventoryImage",
+    "InventoryTransfer",
+    "Product",
+    "ProductLocation",
+    "Staff",
+    "User"
+   ],
+   "tables": [
+    "product_locations"
+   ]
+  },
+  "ItemController": {
+   "file": "app/Http/Controllers/ItemController.php",
+   "lines": 215,
+   "methods": {
+    "index": [
+     29,
+     40
+    ],
+    "create": [
+     41,
+     53
+    ],
+    "store": [
+     54,
+     99
+    ],
+    "show": [
+     100,
+     118
+    ],
+    "edit": [
+     119,
+     138
+    ],
+    "update": [
+     139,
+     164
+    ],
+    "DeleteMsg": [
+     165,
+     180
+    ],
+    "destroy": [
+     181,
+     188
+    ],
+    "uploadImage": [
+     189,
+     215
+    ]
+   },
+   "views": [
+    "item.create",
+    "item.edit",
+    "item.index",
+    "item.show"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "ItemimageController": {
+   "file": "app/Http/Controllers/ItemimageController.php",
+   "lines": 172,
+   "methods": {
+    "index": [
+     25,
+     36
+    ],
+    "create": [
+     37,
+     49
+    ],
+    "store": [
+     50,
+     86
+    ],
+    "show": [
+     87,
+     105
+    ],
+    "edit": [
+     106,
+     125
+    ],
+    "update": [
+     126,
+     148
+    ],
+    "DeleteMsg": [
+     149,
+     164
+    ],
+    "destroy": [
+     165,
+     172
+    ]
+   },
+   "views": [
+    "itemimage.create",
+    "itemimage.edit",
+    "itemimage.index",
+    "itemimage.show"
+   ],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "KeywordsController": {
+   "file": "app/Http/Controllers/KeywordsController.php",
+   "lines": 122,
+   "methods": {
+    "__construct": [
+     17,
+     21
+    ],
+    "Index": [
+     22,
+     29
+    ],
+    "AddKeyword": [
+     30,
+     47
+    ],
+    "AddAsin": [
+     48,
+     69
+    ],
+    "GetRank": [
+     70,
+     122
+    ]
+   },
+   "views": [
+    "keywords.index"
+   ],
+   "libraries": [],
+   "models": [
+    "Keyword",
+    "KeywordTrend",
+    "Staff"
+   ],
+   "tables": [
+    "keywords"
+   ]
+  },
+  "MessageController": {
+   "file": "app/Http/Controllers/MessageController.php",
+   "lines": 236,
+   "methods": {
+    "__construct": [
+     5,
+     7
+    ],
+    "getHeaders": [
+     8,
+     11
+    ],
+    "updateTextIfEmpty": [
+     12,
+     21
+    ],
+    "index": [
+     22,
+     109
+    ],
+    "reloadAll": [
+     110,
+     123
+    ],
+    "saveMessage": [
+     124,
+     149
+    ],
+    "report": [
+     150,
+     184
+    ],
+    "getInventory": [
+     185,
+     211
+    ],
+    "scheduleInventoryReport": [
+     212,
+     217
+    ],
+    "getOrder": [
+     218,
+     236
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": [
+    "Messages"
+   ]
+  },
+  "OpoloController": {
+   "file": "app/Http/Controllers/OpoloController.php",
+   "lines": 125,
+   "methods": {
+    "__construct": [
+     19,
+     24
+    ],
+    "index": [
+     25,
+     37
+    ],
+    "store": [
+     38,
+     99
+    ],
+    "DeleteMsg": [
+     100,
+     115
+    ],
+    "destroy": [
+     116,
+     125
+    ]
+   },
+   "views": [
+    "opolo.index"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "OpoloCostController": {
+   "file": "app/Http/Controllers/OpoloCostController.php",
+   "lines": 104,
+   "methods": {
+    "ajaxData": [
+     15,
+     37
+    ],
+    "index": [
+     38,
+     48
+    ],
+    "store": [
+     49,
+     60
+    ],
+    "show": [
+     61,
+     77
+    ],
+    "update": [
+     78,
+     96
+    ],
+    "destroy": [
+     97,
+     104
+    ]
+   },
+   "views": [
+    "followups.show",
+    "opolocost.index"
+   ],
+   "libraries": [],
+   "models": [
+    "OpoloCost"
+   ],
+   "tables": []
+  },
+  "OrderController": {
+   "file": "app/Http/Controllers/OrderController.php",
+   "lines": 403,
+   "methods": {
+    "index": [
+     35,
+     46
+    ],
+    "create": [
+     47,
+     59
+    ],
+    "store": [
+     60,
+     108
+    ],
+    "show": [
+     109,
+     164
+    ],
+    "edit": [
+     165,
+     184
+    ],
+    "update": [
+     185,
+     205
+    ],
+    "DeleteMsg": [
+     206,
+     221
+    ],
+    "destroy": [
+     222,
+     228
+    ],
+    "packing": [
+     229,
+     240
+    ],
+    "getMultiOrders": [
+     241,
+     247
+    ],
+    "printing": [
+     248,
+     288
+    ],
+    "ListOrders": [
+     289,
+     325
+    ],
+    "pickList": [
+     326,
+     403
+    ]
+   },
+   "views": [
+    "order.create",
+    "order.edit",
+    "order.index",
+    "order.packing",
+    "order.pickList",
+    "order.print",
+    "order.show"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantOrder",
+    "GrantOrderDetail",
+    "HwcProduct",
+    "Staff"
+   ],
+   "tables": []
+  },
+  "PdaController": {
+   "file": "app/Http/Controllers/PdaController.php",
+   "lines": 585,
+   "methods": {
+    "regenerateApiKey": [
+     21,
+     49
+    ],
+    "locationInquiry": [
+     50,
+     74
+    ],
+    "skuInquiry": [
+     75,
+     98
+    ],
+    "updateQtyBySkuLocation": [
+     99,
+     167
+    ],
+    "addSkuLocation": [
+     168,
+     224
+    ],
+    "removeSkuLocation": [
+     225,
+     270
+    ],
+    "transactionsBySku": [
+     271,
+     290
+    ],
+    "transactionsByLocation": [
+     291,
+     312
+    ],
+    "receivingIndex": [
+     313,
+     335
+    ],
+    "receivingStore": [
+     336,
+     405
+    ],
+    "receivingUpdate": [
+     406,
+     477
+    ],
+    "findLocationRow": [
+     478,
+     489
+    ],
+    "paginateTransactions": [
+     490,
+     516
+    ],
+    "paginateReceiving": [
+     517,
+     542
+    ],
+    "receivingLineSnapshot": [
+     543,
+     560
+    ],
+    "formatReceivingDateField": [
+     561,
+     577
+    ],
+    "logTransaction": [
+     578,
+     585
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [
+    "PdaInventoryTransaction",
+    "PdaReceivingLine",
+    "Product",
+    "ProductLocation",
+    "UserApiToken"
+   ],
+   "tables": []
+  },
+  "PriceController": {
+   "file": "app/Http/Controllers/PriceController.php",
+   "lines": 32,
+   "methods": {
+    "__construct": [
+     5,
+     12
+    ],
+    "index": [
+     13,
+     17
+    ],
+    "ajaxindex": [
+     18,
+     24
+    ],
+    "ajaxGetRequest": [
+     25,
+     32
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "ProductController": {
+   "file": "app/Http/Controllers/ProductController.php",
+   "lines": 1479,
+   "methods": {
+    "__construct": [
+     43,
+     48
+    ],
+    "vue": [
+     49,
+     58
+    ],
+    "index": [
+     59,
+     77
+    ],
+    "create": [
+     78,
+     84
+    ],
+    "deleteProduct": [
+     85,
+     102
+    ],
+    "store": [
+     103,
+     362
+    ],
+    "massDelete": [
+     363,
+     382
+    ],
+    "massUpdate": [
+     383,
+     481
+    ],
+    "getAjax": [
+     482,
+     488
+    ],
+    "getAjaxBySku": [
+     489,
+     507
+    ],
+    "show": [
+     508,
+     526
+    ],
+    "edit": [
+     527,
+     544
+    ],
+    "update": [
+     545,
+     591
+    ],
+    "DeleteMsg": [
+     592,
+     606
+    ],
+    "destroy": [
+     607,
+     613
+    ],
+    "uploadImage": [
+     614,
+     640
+    ],
+    "search": [
+     641,
+     646
+    ],
+    "anyData": [
+     647,
+     658
+    ],
+    "listProducts": [
+     659,
+     699
+    ],
+    "shopify": [
+     700,
+     706
+    ],
+    "updateShopifyLink": [
+     707,
+     738
+    ],
+    "ImportEtsy": [
+     739,
+     755
+    ],
+    "ImportListing": [
+     756,
+     833
+    ],
+    "ImportAmazon": [
+     834,
+     850
+    ],
+    "ImportAmazonAsin": [
+     851,
+     1011
+    ],
+    "RemoveLink": [
+     1012,
+     1031
+    ],
+    "UpdateProductMap": [
+     1032,
+     1060
+    ],
+    "GetProductShipWeight": [
+     1061,
+     1070
+    ],
+    "SaveProductShipWeight": [
+     1071,
+     1094
+    ],
+    "uploadMultipleImage": [
+     1095,
+     1145
+    ],
+    "deleteImage": [
+     1146,
+     1157
+    ],
+    "deleteLocation": [
+     1158,
+     1169
+    ],
+    "updateLocations": [
+     1170,
+     1210
+    ],
+    "updateDefaultLocation": [
+     1211,
+     1239
+    ],
+    "updateLocationByLocId": [
+     1240,
+     1280
+    ],
+    "createAllThumbnail": [
+     1281,
+     1299
+    ],
+    "getWholesaleCategories": [
+     1300,
+     1309
+    ],
+    "copyProductToWholesale": [
+     1310,
+     1336
+    ],
+    "listProductLocations": [
+     1337,
+     1394
+    ],
+    "listProductSkus": [
+     1395,
+     1412
+    ],
+    "bulkProduction": [
+     1413,
+     1422
+    ],
+    "viewBulkProduction": [
+     1423,
+     1435
+    ],
+    "deleteBulkProduction": [
+     1436,
+     1459
+    ],
+    "uploadBulkProduction": [
+     1460,
+     1479
+    ]
+   },
+   "views": [
+    "product.bulk",
+    "product.create",
+    "product.edit",
+    "product.importAmazon",
+    "product.importEtsy",
+    "product.index",
+    "product.show",
+    "product.viewbulk",
+    "product.vue"
+   ],
+   "libraries": [
+    "Amazon",
+    "EtsyClient",
+    "Houzz",
+    "Presta",
+    "Shopify",
+    "Walmart",
+    "eBay"
+   ],
+   "models": [
+    "Product",
+    "ProductImage",
+    "ProductLocation",
+    "ProductMap",
+    "ProductShipWeight",
+    "ReportTime",
+    "ShopifyProductView",
+    "ShopifyVariantLink"
+   ],
+   "tables": [
+    "MERCHANT_LISTING",
+    "etsy_listings",
+    "products"
+   ]
+  },
+  "ProductImageController": {
+   "file": "app/Http/Controllers/ProductImageController.php",
+   "lines": 218,
+   "methods": {
+    "getUpload": [
+     18,
+     22
+    ],
+    "postUpload": [
+     23,
+     30
+    ],
+    "getServerImages": [
+     31,
+     53
+    ],
+    "deleteUpload": [
+     54,
+     69
+    ],
+    "upload": [
+     70,
+     126
+    ],
+    "createUniqueFilename": [
+     127,
+     141
+    ],
+    "original": [
+     142,
+     153
+    ],
+    "icon": [
+     154,
+     165
+    ],
+    "delete": [
+     166,
+     218
+    ]
+   },
+   "views": [
+    "pages.upload"
+   ],
+   "libraries": [],
+   "models": [
+    "ProductImage"
+   ],
+   "tables": []
+  },
+  "ProductionController": {
+   "file": "app/Http/Controllers/ProductionController.php",
+   "lines": 263,
+   "methods": {
+    "__construct": [
+     14,
+     17
+    ],
+    "array_key_exists": [
+     18,
+     31
+    ],
+    "index": [
+     32,
+     38
+    ],
+    "ajaxindex": [
+     39,
+     50
+    ],
+    "create": [
+     51,
+     60
+    ],
+    "store": [
+     61,
+     110
+    ],
+    "show": [
+     111,
+     127
+    ],
+    "edit": [
+     128,
+     140
+    ],
+    "update": [
+     141,
+     181
+    ],
+    "updateProduction": [
+     182,
+     234
+    ],
+    "destroy": [
+     235,
+     263
+    ]
+   },
+   "views": [
+    "Productions.show",
+    "productions.create",
+    "productions.edit",
+    "productions.index"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantOrder",
+    "Production"
+   ],
+   "tables": []
+  },
+  "PurchaseController": {
+   "file": "app/Http/Controllers/PurchaseController.php",
+   "lines": 275,
+   "methods": {
+    "__construct": [
+     14,
+     17
+    ],
+    "array_key_exists": [
+     18,
+     31
+    ],
+    "index": [
+     32,
+     38
+    ],
+    "ajaxindex": [
+     39,
+     50
+    ],
+    "create": [
+     51,
+     60
+    ],
+    "store": [
+     61,
+     108
+    ],
+    "show": [
+     109,
+     124
+    ],
+    "edit": [
+     125,
+     137
+    ],
+    "update": [
+     138,
+     181
+    ],
+    "updatePurchase": [
+     182,
+     246
+    ],
+    "destroy": [
+     247,
+     275
+    ]
+   },
+   "views": [
+    "purchase.edit",
+    "purchases.create",
+    "purchases.index"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantOrder",
+    "Purchase"
+   ],
+   "tables": []
+  },
+  "QueueJobController": {
+   "file": "app/Http/Controllers/QueueJobController.php",
+   "lines": 105,
+   "methods": {
+    "index": [
+     21,
+     27
+    ],
+    "PingQueue": [
+     28,
+     76
+    ],
+    "stuck": [
+     77,
+     87
+    ],
+    "resetStuck": [
+     88,
+     105
+    ]
+   },
+   "views": [
+    "queuejob.index",
+    "queuejob.pdf",
+    "queuejob.stuck"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantOrder",
+    "QueueJob",
+    "QueueJobOrder",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "ReportController": {
+   "file": "app/Http/Controllers/ReportController.php",
+   "lines": 691,
+   "methods": {
+    "__construct": [
+     18,
+     24
+    ],
+    "Sales": [
+     25,
+     38
+    ],
+    "SalesSnapshot": [
+     39,
+     408
+    ],
+    "sort_objects_by_units": [
+     409,
+     414
+    ],
+    "TopBizReportProducts": [
+     415,
+     422
+    ],
+    "TopAmzProducts": [
+     423,
+     433
+    ],
+    "TopNonAmzProducts": [
+     434,
+     441
+    ],
+    "ProductByWrods": [
+     442,
+     532
+    ],
+    "ProductSales": [
+     533,
+     559
+    ],
+    "SalesTax": [
+     560,
+     573
+    ],
+    "Receiving": [
+     574,
+     617
+    ],
+    "CodeGenerator": [
+     618,
+     626
+    ],
+    "LowInventory": [
+     627,
+     638
+    ],
+    "LowInventoryExport": [
+     639,
+     668
+    ],
+    "getLowInventoryRows": [
+     669,
+     691
+    ]
+   },
+   "views": [
+    "report.codegenerator",
+    "report.lowinventory",
+    "report.productsales",
+    "report.receiving",
+    "report.sales",
+    "report.salessnapshot",
+    "report.salestax"
+   ],
+   "libraries": [],
+   "models": [
+    "AmazonBizReport",
+    "PdaReceivingLine",
+    "SalesSummary"
+   ],
+   "tables": []
+  },
+  "SettingsController": {
+   "file": "app/Http/Controllers/SettingsController.php",
+   "lines": 66,
+   "methods": {
+    "__construct": [
+     15,
+     17
+    ],
+    "index": [
+     18,
+     24
+    ],
+    "savePackingText": [
+     25,
+     45
+    ],
+    "saveQuickSearch": [
+     46,
+     66
+    ]
+   },
+   "views": [
+    "settings"
+   ],
+   "libraries": [],
+   "models": [
+    "Setting"
+   ],
+   "tables": []
+  },
+  "ShopifyController": {
+   "file": "app/Http/Controllers/ShopifyController.php",
+   "lines": 14,
+   "methods": {
+    "__construct": [
+     5,
+     7
+    ],
+    "CallBack": [
+     8,
+     14
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "StaffsController": {
+   "file": "app/Http/Controllers/StaffsController.php",
+   "lines": 122,
+   "methods": {
+    "index": [
+     19,
+     35
+    ],
+    "create": [
+     36,
+     46
+    ],
+    "store": [
+     47,
+     64
+    ],
+    "show": [
+     65,
+     78
+    ],
+    "edit": [
+     79,
+     92
+    ],
+    "update": [
+     93,
+     112
+    ],
+    "destroy": [
+     113,
+     122
+    ]
+   },
+   "views": [
+    "staffs.create",
+    "staffs.edit",
+    "staffs.index",
+    "staffs.show"
+   ],
+   "libraries": [],
+   "models": [
+    "Staff"
+   ],
+   "tables": []
+  },
+  "StampsController": {
+   "file": "app/Http/Controllers/StampsController.php",
+   "lines": 407,
+   "methods": {
+    "__construct": [
+     39,
+     41
+    ],
+    "Reload": [
+     42,
+     52
+    ],
+    "getAccount": [
+     53,
+     57
+    ],
+    "checkCleanseAddress": [
+     58,
+     67
+    ],
+    "getCleanse": [
+     68,
+     122
+    ],
+    "getMultiCleanse": [
+     123,
+     227
+    ],
+    "domesticUpsServices": [
+     228,
+     231
+    ],
+    "appendDomesticUpsRates": [
+     232,
+     272
+    ],
+    "addressToArray": [
+     273,
+     285
+    ],
+    "json_clean_decode": [
+     286,
+     300
+    ],
+    "buyLabel": [
+     301,
+     369
+    ],
+    "cancelLabel": [
+     370,
+     386
+    ],
+    "printScanForm": [
+     387,
+     398
+    ],
+    "getStampsUrl": [
+     399,
+     407
+    ]
+   },
+   "views": [],
+   "libraries": [
+    "Stamps"
+   ],
+   "models": [
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "RecordNote",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "SupplierProductController": {
+   "file": "app/Http/Controllers/SupplierProductController.php",
+   "lines": 238,
+   "methods": {
+    "__construct": [
+     31,
+     36
+    ],
+    "index": [
+     37,
+     48
+    ],
+    "store": [
+     49,
+     71
+    ],
+    "listProducts": [
+     72,
+     121
+    ],
+    "uploadMultipleImage": [
+     122,
+     154
+    ],
+    "getAjax": [
+     155,
+     161
+    ],
+    "deleteProduct": [
+     162,
+     188
+    ],
+    "deleteImage": [
+     189,
+     202
+    ],
+    "createAllThumbnail": [
+     203,
+     221
+    ],
+    "addMessage": [
+     222,
+     231
+    ],
+    "loadMessages": [
+     232,
+     238
+    ]
+   },
+   "views": [
+    "supplier.index"
+   ],
+   "libraries": [],
+   "models": [
+    "SupplierProduct",
+    "SupplierProductImage",
+    "SupplierProductMessage"
+   ],
+   "tables": []
+  },
+  "SupplierProductImageController": {
+   "file": "app/Http/Controllers/SupplierProductImageController.php",
+   "lines": 215,
+   "methods": {
+    "getUpload": [
+     18,
+     22
+    ],
+    "postUpload": [
+     23,
+     30
+    ],
+    "getServerImages": [
+     31,
+     53
+    ],
+    "deleteUpload": [
+     54,
+     69
+    ],
+    "upload": [
+     70,
+     126
+    ],
+    "createUniqueFilename": [
+     127,
+     141
+    ],
+    "original": [
+     142,
+     153
+    ],
+    "icon": [
+     154,
+     165
+    ],
+    "delete": [
+     166,
+     215
+    ]
+   },
+   "views": [
+    "pages.upload"
+   ],
+   "libraries": [],
+   "models": [
+    "SupplierProductImage"
+   ],
+   "tables": []
+  },
+  "TimesheetController": {
+   "file": "app/Http/Controllers/TimesheetController.php",
+   "lines": 119,
+   "methods": {
+    "__construct": [
+     12,
+     15
+    ],
+    "index": [
+     16,
+     25
+    ],
+    "RunReport": [
+     26,
+     28
+    ],
+    "GetTimesheetReport": [
+     29,
+     42
+    ],
+    "GetTimesheetRangeReport": [
+     43,
+     56
+    ],
+    "GetTimesheet": [
+     57,
+     83
+    ],
+    "SaveTimesheet": [
+     84,
+     107
+    ],
+    "DeleteTimesheet": [
+     108,
+     119
+    ]
+   },
+   "views": [
+    "timesheet.index",
+    "timesheet.run"
+   ],
+   "libraries": [],
+   "models": [
+    "Timesheet"
+   ],
+   "tables": []
+  },
+  "TongtoolController": {
+   "file": "app/Http/Controllers/TongtoolController.php",
+   "lines": 73,
+   "methods": {
+    "__construct": [
+     21,
+     29
+    ],
+    "index": [
+     30,
+     40
+    ],
+    "picklist": [
+     41,
+     73
+    ]
+   },
+   "views": [
+    "tongtool.index"
+   ],
+   "libraries": [
+    "Wayfair"
+   ],
+   "models": [
+    "GrantOrder",
+    "Product",
+    "Setting",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "UnshippedController": {
+   "file": "app/Http/Controllers/UnshippedController.php",
+   "lines": 4074,
+   "methods": {
+    "__construct": [
+     42,
+     48
+    ],
+    "getItemImage": [
+     49,
+     62
+    ],
+    "getInventory": [
+     63,
+     103
+    ],
+    "getAmzUnshippedItems": [
+     104,
+     152
+    ],
+    "downloadAmzImage": [
+     153,
+     192
+    ],
+    "storeLabel": [
+     193,
+     211
+    ],
+    "store2": [
+     212,
+     253
+    ],
+    "allunshipped": [
+     254,
+     294
+    ],
+    "processedOrders": [
+     295,
+     310
+    ],
+    "PendingShipment": [
+     311,
+     339
+    ],
+    "geteBayAwaitingShipment": [
+     340,
+     437
+    ],
+    "store4": [
+     438,
+     474
+    ],
+    "store11": [
+     475,
+     513
+    ],
+    "store12": [
+     514,
+     550
+    ],
+    "store13": [
+     551,
+     585
+    ],
+    "faireorderPick": [
+     586,
+     593
+    ],
+    "fairestore": [
+     594,
+     614
+    ],
+    "updateFaireWarehouseStatus": [
+     615,
+     624
+    ],
+    "updateFairePickerPacker": [
+     625,
+     640
+    ],
+    "updateProductDefaultLocation": [
+     641,
+     673
+    ],
+    "saveOrderPickAllocation": [
+     674,
+     720
+    ],
+    "fairePickList": [
+     721,
+     905
+    ],
+    "loadPickAllocations": [
+     906,
+     924
+    ],
+    "loadProcessedFaireOrderIds": [
+     925,
+     944
+    ],
+    "faireOrderAlreadyProcessed": [
+     945,
+     955
+    ],
+    "groupPickListItems": [
+     956,
+     1006
+    ],
+    "ensureFaireOrderAllocations": [
+     1007,
+     1076
+    ],
+    "seedPickAllocations": [
+     1077,
+     1128
+    ],
+    "store3": [
+     1129,
+     1177
+    ],
+    "refreshNotes": [
+     1178,
+     1216
+    ],
+    "GenerateQuickSearch": [
+     1217,
+     1243
+    ],
+    "store1": [
+     1244,
+     1275
+    ],
+    "store6": [
+     1276,
+     1308
+    ],
+    "store90": [
+     1309,
+     1357
+    ],
+    "store92": [
+     1358,
+     1404
+    ],
+    "store101": [
+     1405,
+     1450
+    ],
+    "store91": [
+     1451,
+     1489
+    ],
+    "store7": [
+     1490,
+     1523
+    ],
+    "store8": [
+     1524,
+     1556
+    ],
+    "store9": [
+     1557,
+     1615
+    ],
+    "store10": [
+     1616,
+     1667
+    ],
+    "getHouzzLabel": [
+     1668,
+     1677
+    ],
+    "shipHouzzOrder": [
+     1678,
+     1686
+    ],
+    "removeOrderFromCache": [
+     1687,
+     1704
+    ],
+    "getOrder": [
+     1705,
+     1711
+    ],
+    "json_clean_decode": [
+     1712,
+     1728
+    ],
+    "updateEbayTracking": [
+     1729,
+     1749
+    ],
+    "updateAmzTracking": [
+     1750,
+     1823
+    ],
+    "uploadAmzTracking": [
+     1824,
+     1865
+    ],
+    "trackings": [
+     1866,
+     1874
+    ],
+    "trackingsAjax": [
+     1875,
+     1907
+    ],
+    "removeTracking": [
+     1908,
+     1915
+    ],
+    "madeOrder": [
+     1916,
+     1950
+    ],
+    "progressOrder": [
+     1951,
+     1980
+    ],
+    "priorityOrder": [
+     1981,
+     2001
+    ],
+    "saveOrderNotes": [
+     2002,
+     2013
+    ],
+    "doneOrder": [
+     2014,
+     2033
+    ],
+    "getPriority": [
+     2034,
+     2042
+    ],
+    "clearCache": [
+     2043,
+     2047
+    ],
+    "geteBayItem": [
+     2048,
+     2062
+    ],
+    "getAmzImage": [
+     2063,
+     2073
+    ],
+    "getEbayOrder": [
+     2074,
+     2081
+    ],
+    "getEbayTran": [
+     2082,
+     2091
+    ],
+    "updateEbayOrder": [
+     2092,
+     2123
+    ],
+    "updateOrder": [
+     2124,
+     2206
+    ],
+    "EbayComplete": [
+     2207,
+     2216
+    ],
+    "getEbayDesc": [
+     2217,
+     2226
+    ],
+    "getStoreDesc": [
+     2227,
+     2241
+    ],
+    "getEtsyDesc": [
+     2242,
+     2256
+    ],
+    "getEtsyListing": [
+     2257,
+     2267
+    ],
+    "UpdateEbayPic": [
+     2268,
+     2277
+    ],
+    "UpdateRayEbayPic": [
+     2278,
+     2287
+    ],
+    "geteBayImage": [
+     2288,
+     2366
+    ],
+    "getRayeBayImage": [
+     2367,
+     2415
+    ],
+    "reloadAmzInventory": [
+     2416,
+     2444
+    ],
+    "loadAmzOrderIntoDB": [
+     2445,
+     2531
+    ],
+    "loadeBayOrderIntoDB": [
+     2532,
+     2701
+    ],
+    "assignOrder": [
+     2702,
+     2720
+    ],
+    "saveOrderShipDate": [
+     2721,
+     2731
+    ],
+    "submittedOrder": [
+     2732,
+     2740
+    ],
+    "BatchUploadAmazon": [
+     2741,
+     2758
+    ],
+    "BatchUploadeBay": [
+     2759,
+     2779
+    ],
+    "UploadTracking": [
+     2780,
+     2785
+    ],
+    "RequestAmzOrderReport": [
+     2786,
+     2793
+    ],
+    "GetAmzOrderReport": [
+     2794,
+     2818
+    ],
+    "UpdateAmzShipped": [
+     2819,
+     2833
+    ],
+    "GetLabel": [
+     2834,
+     2842
+    ],
+    "UpdateEtsyOrders": [
+     2843,
+     2912
+    ],
+    "PrintShipping": [
+     2913,
+     2917
+    ],
+    "SearchTracking": [
+     2918,
+     2934
+    ],
+    "searchOrder": [
+     2935,
+     2947
+    ],
+    "LabelCountReport": [
+     2948,
+     2961
+    ],
+    "UpdateEbayEmptyImage": [
+     2962,
+     3027
+    ],
+    "store5": [
+     3028,
+     3059
+    ],
+    "enfloral": [
+     3060,
+     3089
+    ],
+    "FulfillShopify": [
+     3090,
+     3117
+    ],
+    "ShopifyDesc": [
+     3118,
+     3129
+    ],
+    "logout": [
+     3130,
+     3135
+    ],
+    "Summary": [
+     3136,
+     3141
+    ],
+    "Houzz": [
+     3142,
+     3149
+    ],
+    "getS3Image": [
+     3150,
+     3160
+    ],
+    "getOrderLabel": [
+     3161,
+     3222
+    ],
+    "createPacking": [
+     3223,
+     3228
+    ],
+    "scanForm": [
+     3229,
+     3259
+    ],
+    "ConvertToWalmart": [
+     3260,
+     3486
+    ],
+    "PackingList": [
+     3487,
+     3616
+    ],
+    "GetAmazonShippingService": [
+     3617,
+     3637
+    ],
+    "GetAmazonShippingLabel": [
+     3638,
+     3696
+    ],
+    "uncompress": [
+     3697,
+     3707
+    ],
+    "getMultiAmzLabel": [
+     3708,
+     3724
+    ],
+    "getMultiFrayunLabel": [
+     3725,
+     3740
+    ],
+    "t1": [
+     3741,
+     3767
+    ],
+    "Barcode": [
+     3768,
+     3772
+    ],
+    "replaceWords": [
+     3773,
+     3781
+    ],
+    "TestAmzApi": [
+     3782,
+     3827
+    ],
+    "Test": [
+     3828,
+     3884
+    ],
+    "TestKeyword": [
+     3885,
+     4074
+    ]
+   },
+   "views": [
+    "PendingShipment",
+    "PrintShipping",
+    "allunshipped",
+    "amzPics",
+    "auth/logout",
+    "barcode",
+    "ebayPics",
+    "enfloral",
+    "fairePickList",
+    "packing",
+    "packinglist",
+    "processed",
+    "scanform",
+    "shopifyDesc",
+    "submitted",
+    "summary",
+    "test",
+    "trackings",
+    "unshipped1",
+    "unshipped10",
+    "unshipped101",
+    "unshipped11",
+    "unshipped12",
+    "unshipped13",
+    "unshipped2",
+    "unshipped3",
+    "unshipped4",
+    "unshipped5",
+    "unshipped6",
+    "unshipped7",
+    "unshipped8",
+    "unshipped9",
+    "unshipped90",
+    "unshipped91",
+    "unshipped92",
+    "unshippedFaire"
+   ],
+   "libraries": [
+    "Amazon",
+    "AmazonApi",
+    "EtsyClient",
+    "Houzz",
+    "Shopify",
+    "eBay"
+   ],
+   "models": [
+    "FaireOrder",
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "HwcProduct",
+    "Product",
+    "ProductLocation",
+    "RecordNote",
+    "Setting",
+    "Staff",
+    "Tracking",
+    "ViewSummary"
+   ],
+   "tables": [
+    "faire_orders",
+    "faire_processed_orders",
+    "order_pick_allocations"
+   ]
+  },
+  "UpsController": {
+   "file": "app/Http/Controllers/UpsController.php",
+   "lines": 190,
+   "methods": {
+    "__construct": [
+     52,
+     55
+    ],
+    "getRate": [
+     56,
+     86
+    ],
+    "validateAddress": [
+     87,
+     98
+    ],
+    "getLabel": [
+     128,
+     162
+    ],
+    "voidLabel": [
+     163,
+     190
+    ]
+   },
+   "views": [],
+   "libraries": [
+    "Stamps",
+    "UpsClient"
+   ],
+   "models": [
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "RecordNote",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "UserMessageController": {
+   "file": "app/Http/Controllers/UserMessageController.php",
+   "lines": 203,
+   "methods": {
+    "__construct": [
+     17,
+     20
+    ],
+    "getUserMsg": [
+     21,
+     38
+    ],
+    "flagUserMsg": [
+     39,
+     60
+    ],
+    "showMessage": [
+     61,
+     77
+    ],
+    "showSentMessage": [
+     78,
+     87
+    ],
+    "sendMessage": [
+     88,
+     138
+    ],
+    "upload": [
+     139,
+     181
+    ],
+    "deleteMsg": [
+     182,
+     195
+    ],
+    "getUserList": [
+     196,
+     203
+    ]
+   },
+   "views": [
+    "message.index",
+    "message.sent"
+   ],
+   "libraries": [],
+   "models": [
+    "UserMessage"
+   ],
+   "tables": []
+  },
+  "UspsController": {
+   "file": "app/Http/Controllers/UspsController.php",
+   "lines": 42,
+   "methods": {
+    "__construct": [
+     21,
+     25
+    ],
+    "getRate": [
+     26,
+     42
+    ]
+   },
+   "views": [],
+   "libraries": [
+    "Usps"
+   ],
+   "models": [
+    "GrantInventory",
+    "GrantOrder",
+    "GrantOrderDetail",
+    "RecordNote",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "WayfairController": {
+   "file": "app/Http/Controllers/WayfairController.php",
+   "lines": 273,
+   "methods": {
+    "__construct": [
+     21,
+     29
+    ],
+    "index": [
+     30,
+     35
+    ],
+    "getTokenFromDB": [
+     36,
+     63
+    ],
+    "registerOrder": [
+     64,
+     99
+    ],
+    "packingSlip": [
+     100,
+     113
+    ],
+    "store": [
+     114,
+     246
+    ],
+    "picklist": [
+     247,
+     273
+    ]
+   },
+   "views": [
+    "wayfair.index"
+   ],
+   "libraries": [
+    "Wayfair"
+   ],
+   "models": [
+    "GrantOrder",
+    "Product",
+    "Setting",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "WindyController": {
+   "file": "app/Http/Controllers/WindyController.php",
+   "lines": 314,
+   "methods": {
+    "__construct": [
+     18,
+     24
+    ],
+    "index": [
+     25,
+     39
+    ],
+    "store": [
+     40,
+     82
+    ],
+    "loadUnshipped": [
+     83,
+     243
+    ],
+    "export": [
+     244,
+     288
+    ],
+    "DeleteMsg": [
+     289,
+     303
+    ],
+    "destroy": [
+     304,
+     314
+    ]
+   },
+   "views": [
+    "windy.index"
+   ],
+   "libraries": [],
+   "models": [
+    "GrantOrder",
+    "GrantOrderDetail",
+    "Tracking"
+   ],
+   "tables": []
+  },
+  "AuthController": {
+   "file": "app/Http/Controllers/Auth/AuthController.php",
+   "lines": 19,
+   "methods": {
+    "register": [
+     11,
+     19
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [
+    "User"
+   ],
+   "tables": []
+  },
+  "ForgotPasswordController": {
+   "file": "app/Http/Controllers/Auth/ForgotPasswordController.php",
+   "lines": 33,
+   "methods": {
+    "__construct": [
+     28,
+     33
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "ResetPasswordController": {
+   "file": "app/Http/Controllers/Auth/ResetPasswordController.php",
+   "lines": 33,
+   "methods": {
+    "__construct": [
+     28,
+     33
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "LoginController": {
+   "file": "app/Http/Controllers/Auth/LoginController.php",
+   "lines": 40,
+   "methods": {
+    "__construct": [
+     35,
+     40
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "ApiLoginController": {
+   "file": "app/Http/Controllers/Auth/ApiLoginController.php",
+   "lines": 93,
+   "methods": {
+    "__construct": [
+     36,
+     46
+    ],
+    "attemptLogin": [
+     47,
+     65
+    ],
+    "sendLoginResponse": [
+     66,
+     87
+    ],
+    "logout": [
+     88,
+     93
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  },
+  "RegisterController": {
+   "file": "app/Http/Controllers/Auth/RegisterController.php",
+   "lines": 72,
+   "methods": {
+    "__construct": [
+     37,
+     47
+    ],
+    "validator": [
+     48,
+     62
+    ],
+    "create": [
+     63,
+     72
+    ]
+   },
+   "views": [],
+   "libraries": [],
+   "models": [],
+   "tables": []
+  }
+ }
+}

@@ -1,0 +1,183 @@
+{
+ "T10": [
+  "/",
+  "/home",
+  "/actionLogs"
+ ],
+ "T11": [
+  "/timesheet",
+  "/getTimesheet",
+  "/getTimesheetReport",
+  "/getTimesheetRangeReport"
+ ],
+ "T12": [
+  "/queue",
+  "/queue.stuck",
+  "/price",
+  "/price.ajax"
+ ],
+ "T13": [
+  "/msg",
+  "/getUserMsg",
+  "/showMessage",
+  "/showSentMessage",
+  "/getUserList"
+ ],
+ "T14": [
+  "/chat",
+  "/generateDescription"
+ ],
+ "T15": [
+  "/Keywords",
+  "/FBA.Health",
+  "/FBA.Orders",
+  "/FBA.Inventory",
+  "/FBA.Age"
+ ],
+ "T16": [
+  "/opolo.index",
+  "/opolocost.show",
+  "/opolocost.ajaxData"
+ ],
+ "T17": [
+  "/windy.index",
+  "/four.index"
+ ],
+ "T18": [],
+ "T19": [
+  "/FollowUps.show",
+  "/FollowUps.findOrder",
+  "/FollowUps.ajax"
+ ],
+ "T20": [
+  "/Production.show",
+  "/Production.ajax",
+  "/Purchase.show",
+  "/Purchase.ajax"
+ ],
+ "T21": [
+  "/BulkProduction.show",
+  "/BulkProduction.ajax"
+ ],
+ "T22a": [
+  "/SalesReport",
+  "/SalesTaxReport",
+  "/SalesSnapshotReport"
+ ],
+ "T22b": [
+  "/ProductSalesReport",
+  "/LowInventoryReport",
+  "/ReceivingReport",
+  "/CodeGeneratorReport"
+ ],
+ "T23": [
+  "/packing",
+  "/pickList",
+  "/printing",
+  "/api/orders"
+ ],
+ "T24": [
+  "/api/pda/location",
+  "/api/pda/sku",
+  "/api/pda/transactions/sku",
+  "/api/pda/transactions/location",
+  "/api/pda/receiving"
+ ],
+ "T25a": [
+  "/inventory",
+  "/inv",
+  "/inventory.data",
+  "/inventory.response",
+  "/inventory.findLocations"
+ ],
+ "T25b": [
+  "/inventory.transferdata",
+  "/api/inventory/consolidation"
+ ],
+ "T26": [
+  "/vue",
+  "/api/product.sku",
+  "/product.sku",
+  "/api/products",
+  "/api/productLocations",
+  "/api/productSkus"
+ ],
+ "T27": [],
+ "T28": [
+  "/products",
+  "/products.data",
+  "/products.bulk",
+  "/products.viewbulk"
+ ],
+ "T30": [
+  "/api/supplierproducts",
+  "/productImageOnServer"
+ ],
+ "T40": [
+  "/getMultiCleanse",
+  "/getCleanse",
+  "/stampsAccount",
+  "/getStampsUrl",
+  "/checkCleanseAddress",
+  "/fedex.getOneRate",
+  "/fedex.getrate",
+  "/fedex.validate",
+  "/ups.getrate",
+  "/ups.validate",
+  "/frayunBalance"
+ ],
+ "T41": [
+  "/Wayfair.packingSlip",
+  "/Wayfair.picklist",
+  "/Tongtool.picklist"
+ ],
+ "T42": [
+  "/EtsyTest",
+  "/ShopifyCallBack",
+  "/echo",
+  "/amz_signin"
+ ],
+ "T43": [
+  "/products.shopify"
+ ],
+ "U1": [
+  "/enfloral"
+ ],
+ "U2": [],
+ "U3": [],
+ "U4": [
+  "/fairePickList"
+ ],
+ "U5": [
+  "/processed",
+  "/PackingList",
+  "/createPacking"
+ ],
+ "U6": [
+  "/submittedOrder",
+  "/getOrder",
+  "/getPriority"
+ ],
+ "U7": [
+  "/Barcode",
+  "/getS3Image"
+ ],
+ "U8": [],
+ "U9": [
+  "/getEbayItem",
+  "/getEbayOrder",
+  "/getEbayTran",
+  "/geteBayImage",
+  "/getRayeBayImage"
+ ],
+ "U10": [
+  "/ShopifyDesc",
+  "/getAmzImage",
+  "/GetAmzOrderReport",
+  "/TestAmzApi",
+  "/ebayDesc",
+  "/etsyDesc",
+  "/etsyListing",
+  "/Houzz.ajax"
+ ]
+}
