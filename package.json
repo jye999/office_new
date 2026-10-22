@@ -1,0 +1,38 @@
+{
+  "name": "office_new",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "parity": "tsx scripts/parity.ts",
+    "db:types": "bash -c 'set -a; . ./.env; set +a; kysely-codegen --url \"mysql://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_DATABASE\" --out-file src/db/office.d.ts && kysely-codegen --url \"mysql://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_HWC_DATABASE\" --out-file src/db/hwc.d.ts'"
+  },
+  "dependencies": {
+    "@fastify/flash": "^6.0.6",
+    "@fastify/formbody": "^9.0.1",
+    "@fastify/multipart": "^10.1.6",
+    "@fastify/secure-session": "^8.4.1",
+    "@fastify/static": "^10.1.7",
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^18.0.8",
+    "fastify": "^5.12.7",
+    "ioredis": "^5.11.1",
+    "kysely": "^0.29.7",
+    "mysql2": "^3.24.6",
+    "nunjucks": "^3.2.4",
+    "pusher": "^5.3.4",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "@types/nunjucks": "^3.2.6",
+    "kysely-codegen": "^0.20.0",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}

@@ -1,0 +1,25 @@
+import 'dotenv/config';
+import { z } from 'zod';
+
+const EnvSchema = z.object({
+  PORT: z.coerce.number().int().positive(),
+  APP_URL: z.string().url(),
+  APP_TIMEZONE: z.string().min(1),
+  APP_KEY: z.string().regex(/^[0-9a-f]{64}$/, 'APP_KEY must be 64 hex chars (32 random bytes)'),
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number().int().positive(),
+  DB_DATABASE: z.string().min(1),
+  DB_USERNAME: z.string().min(1),
+  DB_PASSWORD: z.string(),
+  DB_HWC_DATABASE: z.string().min(1),
+  REDIS_HOST: z.string().min(1),
+  REDIS_PORT: z.coerce.number().int().positive(),
+  PUBLIC_DIR: z.string().min(1),
+  OLD_APP_URL: z.string().url(),
+  // Used only by scripts/parity.ts (T03); allowed to be empty until then.
+  PARITY_EMAIL: z.string(),
+  PARITY_PASSWORD: z.string(),
+  SCHEDULER_ENABLED: z.enum(['0', '1']).default('0'),
+});
+
+export const config = EnvSchema.parse(process.env);

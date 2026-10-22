@@ -6,6 +6,7 @@ for (const id of args.ids) {
     agent: "worker",
     model: "D:\\models\\Swift-Qwen3.8-27B-Q5_K_M.gguf:medium",
     cwd: "/home/johnny/code/office_new",
+    timeoutMs: 7200000,
     task: `You are porting a PHP Laravel app to TypeScript. Your task id is ${id}.
 
 1. Read /home/johnny/code/office_new/plan/CONVENTIONS.md, then plan/PLAN.md, then plan/tasks/${id}.md. Follow the task file exactly.
