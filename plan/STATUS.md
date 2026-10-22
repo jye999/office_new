@@ -21,3 +21,9 @@ View engine + Blade globals + shared layouts.
 - Verified: pnpm typecheck clean; pnpm test 27/27 (globals vs known PHP output, FormBuilder HTML exactness incl. attribute order + PUT spoofing, MessageBag, layout-test render integration via fastify inject); server on :7000 → GET /__layout-test = 200, 20.6 KB, title override + all globals render.
 - Not verified: unshipped_layout.njk and massPrint.njk were converted from Blade by script + hand-fix and are not rendered end-to-end (they only render once their pages are ported, T04+).
 - Manual checklist (when first page body lands): spot-check one page's Form:: fields against a screenshot of the old app; confirm dc_subject is acceptable to remain empty on non-blog pages.
+
+## T02 — partial
+Worker (Qwen) timed out at 2h while starting its end-to-end login check; code finished and committed by supervisor.
+- Files: src/auth.ts (session, currentUser, roles, guards, PDA api-key), src/http.ts, src/modules/auth/routes.ts, src/modules/api/routes.ts, views/auth/*, views/home.njk, test/auth.test.ts.
+- Verified (supervisor): typecheck OK; 39/39 tests pass; DB has no leftover temp user/token rows.
+- Not verified: real login against :7000 with a live account, `auth:api` (Passport token) compatibility with the existing Vue bundle, password-reset flow. Re-check when T03's parity harness can log in.

@@ -109,6 +109,13 @@ and comment. Translate only the Blade/PHP parts.
 If a view needs a PHP construct not in this table, add a helper to `src/view.ts` with a unit test, and note it in
 `plan/STATUS.md` so later tasks reuse it.
 
+## Commands that must terminate
+
+- One-off scripts must end with `await db.destroy(); await hwc.destroy();` (and `await app.close()`), or the open MySQL pools keep the process alive forever.
+- Wrap anything that might not exit in `timeout 60 …`. Test HTTP behaviour with `app.inject()` in vitest instead of starting a server.
+- If you do start a server, stop it before you finish. Never leave a process listening on :7000.
+- Delete scratch files (`dbg.*`, `tmp-*`) before committing.
+
 ## Definition of done (every task)
 
 1. `pnpm typecheck` passes. `pnpm test` passes.

@@ -588,14 +588,21 @@ export interface RenderContext {
 // Per-request template context: auth/errors/session/old/form + static globals.
 export async function buildContext(req: FastifyRequest, data: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
   const auth: Auth = await currentUser(req);
+  // SAFETY: req.session is the @fastify/secure-session proxy (get/set by key);
+  // property reads/writes go through it, so clearing a key here persists on send.
   const sessionData = (req.session as unknown as Record<string, TemplateValue> | undefined) ?? {};
   const flashStore = sessionData['flash'] as Record<string, TemplateValue> | undefined;
   const flashErrors = flashStore?.['errors'];
   const errors = makeMessageBag((flashErrors as Record<string, string[]>) ?? {});
-  const oldInput = (key: string): TemplateValue => {
-    const old = sessionData['old'];
-    return (old as Record<string, TemplateValue> | undefined)?.[key] ?? null;
-  };
+  // Snapshot old input now: the template calls old() lazily, after consumption
+  // below has cleared the session key.
+  const oldSnapshot = sessionData['old'] as Record<string, TemplateValue> | undefined;
+  // Laravel consumes flashed errors/old input on display: drop them from the
+  // session (same object as sessionData, the secure-session proxy) so the next
+  // request renders clean; the cookie is saved on send.
+  if (flashStore && Object.keys(flashStore).length > 0) sessionData['flash'] = {};
+  if (oldSnapshot) sessionData['old'] = undefined;
+  const oldInput = (key: string): TemplateValue => oldSnapshot?.[key] ?? null;
   const requestInput = (key: string): TemplateValue => {
     const all = { ...((req.query as Record<string, TemplateValue>) ?? {}), ...((req.body as Record<string, TemplateValue>) ?? {}) };
     return all[key] ?? null;
@@ -679,6 +686,10 @@ export async function registerViewPlugins(app: FastifyInstance): Promise<void> {
   await app.register(fastifySecureSession, {
     secret: appConfig.APP_KEY,
     salt: 't01_session_salt', // secure-session requires a 16-byte salt
+    // T02: session cookie contract (httpOnly, sameSite lax). cookieName sets the
+    // cookie; the request property stays `session` (required by @fastify/flash).
+    cookieName: 'office_session',
+    cookie: { httpOnly: true, sameSite: 'lax', path: '/' },
   });
   await app.register(fastifyFlash);
 }
