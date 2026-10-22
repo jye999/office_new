@@ -1,0 +1,405 @@
+<style>
+.navbar-nav > li > a {
+    font-size: 16px !important;
+}
+
+.dropdown-menu > li > a {
+    font-size: 15px !important;
+}
+
+.navbar .glyphicon {
+    font-size: 18px;
+}
+
+</style>
+
+    <!-- Navbar -->
+    <div class="navbar navbar-default navbar-inverse">
+            <div>
+                <div class="navbar-header">
+                    <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+                </div>
+          <div class="collapse navbar-collapse navbar-ex1-collapse">
+            <ul class="nav navbar-nav">
+
+            <li id="summary"><a href="{{ route('summary') }}"><span class="glyphicon glyphicon-home" aria-hidden="true"></span></a></li>
+            <li><a href="https://1drv.ms/f/c/3c3543350209fd5f/IgDzJ7g4KV87RqyY8OXhI1NGAcunLkBvNxznmY4_8KBvJiI?e=d6rwUC" target="_blank"><span class="glyphicon glyphicon-file" aria-hidden="true"></span></a></li>
+              <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  Stores <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+{% if hasRole(['user','remote']) %}
+              <li id="unshipped2"><a href="{{ route('unshipped2') }}">1 - Amazon</a></li>
+              <!-- <li id="unshipped9"><a href="{{ route('unshipped9') }}">2 - Walmart</a></li> -->
+              <li id="unshipped5"><a href="{{ route('unshipped5') }}">3 - Shopify</a></li>
+              <li id="unshipped4"><a href="{{ route('unshipped4') }}">4 - Etsy Retail 1</a></li>
+              <li id="unshipped12"><a href="{{ route('unshipped12') }}">5 - Etsy Corsage Boutonniere</a></li>
+              <li id="unshipped11"><a href="{{ route('unshipped11') }}">6 - Etsy Floral Supply</a></li>
+             <li id="unshipped1"><a href="{{ route('unshipped1') }}">7- eBay Retail</a></li> 
+              <li id="enfloral"><a href="{{ route('enfloral') }}">8 - Enfloral</a></li>
+              <li id="fairePickList"><a href="{{ route('fairePickList') }}">9 - Faire Pick List</a></li>
+              <li id="unshipped90"><a href="{{ route('unshipped90') }}">10 - WINDY</a></li>
+              <li id="unshipped92"><a href="{{ route('unshipped92') }}">11 - MERMAID</a></li>
+              <!-- <li id="unshipped101"><a href="{{ route('unshipped101') }}">10 - TEMU</a></li> -->
+              <li id="allunshipped"><a href="{{ route('allunshipped') }}">Unshipped</a></li>
+              <li id="processed"><a href="{{ route('processed') }}">Processed Orders (500)</a></li>
+              <!--<li id="PendingShipment"><a href="{{ route('PendingShipment') }}">Amazon - Confirm</a></li>-->
+
+{% endif %}
+
+{% if hasRole('user') %}
+              <!--<li id="unshipped10"><a href="{{ route('unshipped10') }}">10 - Walmart DSV</a></li>-->
+              <li id="queue"><a href="{{ route('queue') }}">Job Queue</a></li>
+              <li id="queue-stuck"><a href="{{ route('queue.stuck') }}">Orders Stuck in Queue</a></li>
+{% endif %}
+            </ul>
+            </li>
+{% if hasRole(['user','remote']) %}
+              <li id="tracking"><a href="{{ route('trackings') }}">Tracking</a></li>
+              <li id="followup"><a href="{{ route('FollowUps.index') }}">Follow Up</a></li>
+              <li id="bulk-production"><a href="{{ route('BulkProduction.index') }}">Bulk Production</a></li>
+              <li id="Wayfair-upload"><a href="{{ route('Wayfair.index') }}">Wayfair</a></li>
+              <!--<li id="production"><a href="{{ route('Production.index') }}">Production</a></li>-->
+              <!--<li id="purchase"><a href="{{ route('Purchase.index') }}">Purchase</a></li>-->
+              <li id="products"><a href="/ListProducts">Products</a></li>
+              <!--<li id="inventory"><a href="{{ route('inventory') }}">Inventory</a></li>-->
+
+              <li id="getRefreshAmz"><a href="{{ url('refreshAmzImg') }}">Refresh Amazon Image</a></li>
+              <li id="code-generator"><a href="{{ route('CodeGeneratorReport') }}">Code Generator</a></li>
+              <!--<li id="supplier"><a href="/Supplier">Supplier</a></li>-->
+
+                    <!--
+              <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  Opolo <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+            <li id="opolocost"><a href="{{ url('opolocost') }}">Opolo Cost</a></li>
+              <li id="opolo"><a href="{{ route('opolo.index') }}">Opolo Upload</a></li>
+            </ul>
+            </li>
+-->
+
+{% endif %}
+
+
+{% if hasRole('admin') %}
+<li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                  Reports <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+            <li ><a href="{{ url('SalesReport') }}">Today Sales</a></li>
+            <li ><a href="{{ route('SalesSnapshotReport') }}">Snapshot</a></li>
+              <li ><a href="{{ route('ProductSalesReport') }}">Product Sales</a></li>
+            <li ><a href="{{ route('LowInventoryReport') }}">Low Inventory</a></li>
+            <li ><a href="{{ url('SalesTaxReport') }}">Sales Tax</a></li>
+            <li ><a href="{{ route('ReceivingReport') }}">Receiving</a></li>
+              <li id="actionlogs"><a href="{{ url('actionLogs') }}">Action Logs</a></li>
+            </ul>
+            </li>
+
+{% endif %}
+              <li class="dropdown">
+                  <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                    <span class="glyphicon glyphicon-list-alt"></span>  <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+
+{% if hasRole(['user','remote']) %}
+              <li id="gpt-copy-writer"><a href="{{ url('/generateDescription') }}">GPT Copy Writer</a></li>
+              <li id="fba-health"><a href="{{ url('/FBA.Health') }}">FBA Health</a></li>
+              <li id="fba-orders"><a href="{{ url('/FBA.Orders') }}">FBA Orders</a></li>
+              <li id="fba-inventory"><a href="{{ url('/FBA.Inventory') }}">FBA Inventory</a></li>
+              <li id="fba-age"><a href="{{ url('/FBA.Age') }}">FBA Age</a></li>
+{% endif %}
+
+{% if hasRole('admin') %}
+<li id="dashboard"><a href="{{ url('dashboard') }}">Dashboard</a></li>
+              <li id="scaffold"><a href="{{ url('/scaffold') }}">Scaffold</a></li>
+              <li id="exec"><a href="{{ url('exec') }}">Exec</a></li>
+              <!--<li id="runtime"><a href="{{ route('runTimesheet') }}">Run Timesheet Report</a></li>-->
+              <li id="submittedOrder"><a href="{{ route('submittedOrder') }}">Submitted Order</a></li>
+              <li id="logs"><a href="{{ url('logs') }}" target="_blank">Logs</a></li>
+              <li id="settings"><a href="{{ route('Settings.index') }}">Settings</a></li>
+              <li id="frayunbalance"><a href="{{ route('frayunBalance') }}">Frayun Balance</a></li>
+              <!--<li><a href="{{ url(config('backpack.base.route_prefix', 'admin') + '/backup') }}"><i class="fa fa-hdd-o"></i> <span>Backups</span></a></li>--><!-- HTML comments do not hide nunjucks tags (same as Blade); kept valid -->
+
+              <li id="settings"><a href="/queue-monitor" target="_blank">Queue</a></li>
+              <li id="bulkUpload"><a href="{{ route('products.bulk') }}">Bulk Production Edit</a></li>
+{% endif %}
+              </ul>
+              </li>
+
+            </ul>
+            <ul class="nav navbar-nav pull-right">
+{% if hasRole(['user','remote','admin']) %}
+              <li>
+                <a href="{{ route('chat') }}" target="_blank" title="AI Chat Assistant">
+                  <span class="glyphicon glyphicon-comment" aria-hidden="true"></span> AI Chat
+                </a>
+              </li>
+              <li>
+                <a href="#" data-toggle="modal" data-target="#quickInventoryModal">
+                  <span class="glyphicon glyphicon-edit" aria-hidden="true"></span>
+                </a>
+              </li>
+{% endif %}
+              <li >
+                <a href="{{ url('logout') }}"
+                onclick="event.preventDefault();
+                      document.getElementById('logout-form').submit();"> {{ (auth.user.username if isset(auth.user.username) else auth.user.email) | safe }} Sign out</a>
+
+                    <form id="logout-form" action="{{ url('/logout') }}" method="POST" style="display: none;">
+                        {{ csrf_field() | safe }}
+                    </form>
+
+              </li>
+              </ul>
+          </div>
+            </div>
+    </div>
+    <!-- ./ navbar -->
+
+    <!-- AI Chat opens in new window via target="_blank" link in nav -->
+
+    <!-- Quick Inventory Update Modal -->
+    <div class="modal fade" id="quickInventoryModal" tabindex="-1" role="dialog" aria-labelledby="quickInventoryModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title" id="quickInventoryModalLabel">Quick Inventory Update</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="quickInventoryForm">
+                        <div class="form-group">
+                            <label for="quickInventorySku">SKU <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="quickInventorySku" name="sku" required placeholder="Enter SKU">
+                        </div>
+                        <div class="form-group">
+                            <label for="quickInventoryLocation">Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="quickInventoryLocation" name="location" required placeholder="Enter location">
+                        </div>
+                        <div class="form-group">
+                            <label for="quickInventoryQty">Quantity <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="quickInventoryQty" name="qty" required placeholder="Enter quantity" min="0">
+                        </div>
+                        <div id="quickInventoryError" class="alert alert-danger" style="display: none;"></div>
+                        <div id="quickInventorySuccess" style="display: none;">
+                            <div class="alert alert-success">
+                                <strong>Success!</strong> Inventory updated successfully.
+                            </div>
+                            <h5>Current Inventory for SKU: <span id="quickInventorySkuDisplay"></span></h5>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Location</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quickInventoryResults">
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="quickInventoryFindResults" style="display: none;">
+                            <h5>Inventory Locations for SKU: <span id="quickInventoryFindSkuDisplay"></span>*</h5>
+                            <p class="text-muted small">*Showing all SKUs starting with the entered pattern</p>
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>SKU</th>
+                                        <th>Location</th>
+                                        <th>Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quickInventoryFindResultsBody">
+                                </tbody>
+                            </table>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <div class="pull-left">
+                        <button type="button" class="btn btn-info" id="quickInventoryFindBtn">
+                            <span class="glyphicon glyphicon-search"></span> Find Location
+                        </button>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" id="quickInventorySubmitBtn">Update Inventory</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    $(document).ready(function() {
+        // Reset modal when closed
+        $('#quickInventoryModal').on('hidden.bs.modal', function () {
+            $('#quickInventoryForm')[0].reset();
+            $('#quickInventoryError').hide();
+            $('#quickInventorySuccess').hide();
+            $('#quickInventoryFindResults').hide();
+        });
+
+        // Handle form submission
+        $('#quickInventorySubmitBtn').on('click', function() {
+            $('#quickInventoryFindResults').hide();
+            $('#quickInventoryError').hide();
+            $('#quickInventorySuccess').hide();
+            
+            
+            var sku = $('#quickInventorySku').val().trim();
+            var location = $('#quickInventoryLocation').val().trim();
+            var qty = $('#quickInventoryQty').val();
+
+            // Basic validation
+            if (!sku || !location || qty === '') {
+                $('#quickInventoryError').text('Please fill in all fields.').show();
+                $('#quickInventorySuccess').hide();
+                return;
+            }
+
+            // Disable button and show loading
+            var $btn = $(this);
+            $btn.prop('disabled', true).text('Updating...');
+            $('#quickInventoryError').hide();
+            $('#quickInventorySuccess').hide();
+
+            // Submit via AJAX
+            $.ajax({
+                url: '{{ route("inventory.quickUpdate") }}',
+                method: 'POST',
+                data: {
+                    sku: sku,
+                    location: location,
+                    qty: qty,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Display success message and results
+                        $('#quickInventorySkuDisplay').text(response.sku);
+                        var tbody = $('#quickInventoryResults');
+                        tbody.empty();
+                        
+                        if (response.locations && response.locations.length > 0) {
+                            $.each(response.locations, function(index, item) {
+                                tbody.append('<tr><td>' + item.location + '</td><td>' + item.qty + '</td></tr>');
+                            });
+                        } else {
+                            tbody.append('<tr><td colspan="2" class="text-center">No inventory found</td></tr>');
+                        }
+                        
+                        $('#quickInventorySuccess').show();
+                        $('#quickInventoryError').hide();
+                    } else {
+                        $('#quickInventoryError').text(response.message || 'An error occurred.').show();
+                        $('#quickInventorySuccess').hide();
+                    }
+                },
+                error: function(xhr) {
+                    var errorMsg = 'An error occurred.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    } else if (xhr.status === 404) {
+                        errorMsg = 'SKU not found.';
+                    }
+                    $('#quickInventoryError').text(errorMsg).show();
+                    $('#quickInventorySuccess').hide();
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).text('Update Inventory');
+                }
+            });
+        });
+
+        // Allow Enter key to submit
+        $('#quickInventoryForm input').on('keypress', function(e) {
+            if (e.which === 13) {
+                e.preventDefault();
+                $('#quickInventorySubmitBtn').click();
+            }
+        });
+
+        // Handle Find Location button
+        $('#quickInventoryFindBtn').on('click', function() {
+            $('#quickInventoryFindResults').hide();
+            $('#quickInventoryError').hide();
+            $('#quickInventorySuccess').hide();
+            var sku = $('#quickInventorySku').val().trim();
+
+            // Basic validation
+            if (!sku) {
+                $('#quickInventoryError').text('Please enter a SKU to find locations.').show();
+                $('#quickInventorySuccess').hide();
+                $('#quickInventoryFindResults').hide();
+                return;
+            }
+
+            // Disable button and show loading
+            var $btn = $(this);
+            $btn.prop('disabled', true).html('<span class="glyphicon glyphicon-refresh glyphicon-spin"></span> Searching...');
+            $('#quickInventoryError').hide();
+            $('#quickInventorySuccess').hide();
+
+            // Submit via AJAX
+            $.ajax({
+                url: '{{ route("inventory.findLocations") }}',
+                method: 'GET',
+                data: {
+                    sku: sku
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Display results
+                        $('#quickInventoryFindSkuDisplay').text(response.sku_pattern);
+                        var tbody = $('#quickInventoryFindResultsBody');
+                        tbody.empty();
+                        
+                        if (response.locations && response.locations.length > 0) {
+                            $.each(response.locations, function(index, item) {
+                                tbody.append('<tr><td>' + item.sku + '</td><td>' + item.location + '</td><td>' + item.qty + '</td></tr>');
+                            });
+                        } else {
+                            tbody.append('<tr><td colspan="3" class="text-center">No inventory found for this SKU pattern</td></tr>');
+                        }
+                        
+                        $('#quickInventoryFindResults').show();
+                        $('#quickInventoryError').hide();
+                    } else {
+                        $('#quickInventoryError').text(response.message || 'An error occurred.').show();
+                        $('#quickInventoryFindResults').hide();
+                    }
+                },
+                error: function(xhr) {
+                    var errorMsg = 'An error occurred.';
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON && xhr.responseJSON.error) {
+                        errorMsg = xhr.responseJSON.error;
+                    } else if (xhr.status === 404) {
+                        errorMsg = 'SKU not found.';
+                    }
+                    $('#quickInventoryError').text(errorMsg).show();
+                    $('#quickInventoryFindResults').hide();
+                },
+                complete: function() {
+                    $btn.prop('disabled', false).html('<span class="glyphicon glyphicon-search"></span> Find Location');
+                }
+            });
+        });
+    });
+    </script>

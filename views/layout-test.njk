@@ -1,0 +1,22 @@
+{% extends "layout.njk" %}
+{% block title %}Layout Test{% endblock %}
+{% block styles %}<link rel="stylesheet" href="/test-styles.css">{% endblock %}
+{% block scripts %}<script>var layoutTest = true;</script>{% endblock %}
+{% block content %}
+<div id="layout-test">
+  <p>config: {{ config('app.name') }}</p>
+  <p>trans: {{ trans('auth.failed') }}</p>
+  <p>csrf: {{ csrf_token() }}</p>
+  <form>
+    {{ csrf_field() }}
+  </form>
+  <p>flash: {{ flash }}</p>
+  <p>old: {{ old('sku', 'none') }}</p>
+  <p>session: {{ session('nope') }}</p>
+  <p>errors: {{ errors.count() }} any={{ errors.any() }}</p>
+  <p>{% if hasRole(['user','admin']) %}in-role{% else %}out-of-role{% endif %}</p>
+  <p>date: {{ date('Y-m-d', 1700000000) }} | num: {{ number_format(1234.5, 2) }}</p>
+  <p>json: {{ json_encode({a: 1, b: 'x/y'} ) }}</p>
+  <p>form: {{ form.label('name') }}{{ form.text('name', 'v') }}{{ form.select('s', {a: 'A'}, 'a') }}{{ form.close() }}</p>
+</div>
+{% endblock %}

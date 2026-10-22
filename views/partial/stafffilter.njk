@@ -1,0 +1,6 @@
+<select id="filterAssign" name="filterAssign" class="select">
+    <option value=""></option>
+    {% for s in staffs %}
+        <option value="{{ s.name }}">{{ s.name }}</option>
+    {% endfor %}
+  </select>

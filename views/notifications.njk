@@ -1,0 +1,67 @@
+{% if errors.count() > 0 %}
+<div class="alert alert-danger alert-block">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<h4>Error</h4>
+	Please check the form below for errors
+</div>
+{% endif %}
+
+{% set message = session('success') %}
+{% if message %}
+<div class="alert alert-success alert-block">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<h4>Success</h4>
+    {% if is_array(message) %}
+        {% for m in message %}
+            {{ m }}
+        {% endfor %}
+    {% else %}
+        {{ message }}
+    {% endif %}
+</div>
+{% endif %}
+
+{% set message = session('error') %}
+{% if message %}
+<div class="alert alert-danger alert-block">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<h4>Error</h4>
+    {% if is_array(message) %}
+    {% for m in message %}
+    {{ m }}
+    {% endfor %}
+    {% else %}
+    {{ message }}
+    {% endif %}
+</div>
+{% endif %}
+
+{% set message = session('warning') %}
+{% if message %}
+<div class="alert alert-warning alert-block">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<h4>Warning</h4>
+    {% if is_array(message) %}
+    {% for m in message %}
+    {{ m }}
+    {% endfor %}
+    {% else %}
+    {{ message }}
+    {% endif %}
+</div>
+{% endif %}
+
+{% set message = session('info') %}
+{% if message %}
+<div class="alert alert-info alert-block">
+	<button type="button" class="close" data-dismiss="alert">&times;</button>
+	<h4>Info</h4>
+    {% if is_array(message) %}
+    {% for m in message %}
+    {{ m }}
+    {% endfor %}
+    {% else %}
+    {{ message }}
+    {% endif %}
+</div>
+{% endif %}

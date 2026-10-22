@@ -1,0 +1,3455 @@
+<!DOCTYPE html>
+
+<html lang="en">
+{% include "includes/header.njk" %}
+
+<body>
+<script>
+
+    var addImageToGallery = function(image){
+        $("#picHolder a").each(function(){
+            if(image == $(this).prop('href')){
+                return;
+            }
+        });
+        if(image!=null && image!=''){
+            $("#picHolder").append('<a class="group1" href="'+image+'" >link</a>');
+        }
+    }
+</script>
+<style>
+@media print
+{
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+    .row-fluid {
+        display: none !important;
+    }
+}
+.rotate90 {
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -o-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+    transform: rotate(90deg);
+}
+.rainbow-text {
+  background-image: linear-gradient(to left, violet, indigo, blue, green, yellow, orange, red);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.actionBtn {
+    margin-bottom:10px;
+}
+</style>
+{% include "includes/nav.njk" %}
+
+<!-- Notifications -->
+{% include "notifications.njk" %}
+<!-- ./ notifications -->
+
+    <!-- Content -->
+    <!-- Container -->
+    <a href="?showDesktop=true" class="hidden-lg hidden-md hidden-sm">Show Desktop Version</a>
+    <div class="container-fluid"  >
+<span class="no-print hidden-xs" style="width:100px;font-size:16px"><input type="checkbox" id="urgentChk" name="urgentChk" > Show Urgent Only</span>  <span  class="no-print">|</span>
+<span class="no-print hidden-xs" style="width:100px;font-size:16px"><input type="checkbox" id="priorityChk" name="priorityChk" > Show Priority Only</span>  <span  class="no-print">|</span>
+<span class="no-print hidden-xs" style="width:100px;font-size:16px"><input type="checkbox" id="processingChk" name="processingChk" > Show Processing Only</span>  <span  class="no-print">|</span>
+
+<span class="no-print hidden-xs" style="width:100px;font-size:16px">Made <select id="filterMade" class="select">
+    <option value=""></option>
+    <option value="Made" >Made</option>
+    <option value="Not Made" >Not Made</option>
+    </select> <span  class="no-print">|</span>
+</span>
+<span class="no-print hidden-xs" style="width:100px;font-size:16px"><input type="checkbox" id="singleChk" name="singleChk" > Show Single Order Only</span>
+
+<span class="no-print hidden-xs" style="width:100px"><button id="btnPickListByOrder">Pick List By Order</button></span>
+<span class="no-print hidden-xs" style="width:100px"><button id="btnPickListByItem">Pick List By Item</button></span>
+
+<span class="no-print hidden-xs" style="width:100px;margin-left:100px;font-size:16px" ><button id="btnMassPrint" class="btn btn-primary">Mass shipping</button></span>
+<span class="no-print hidden-xs" style="width:100px;margin-left:100px;font-size:16px" ><button id="btnAmzMassPrint" class="btn btn-primary" style="display:none">Amz Mass shipping</button></span>
+<span class="no-print hidden-xs" style="width:100px;margin-left:100px;font-size:16px" ><button id="btnFrayunMassPrint" class="btn btn-primary" style="display:none">Frayun Mass shipping</button></span>
+<div class="no-print hidden-xs" style="float:right;font-size:16px">
+Priority <span style="width:20px; background-color:#CC0066">&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;
+Made <span style="width:20px; background-color:gray">&nbsp;&nbsp;&nbsp;&nbsp;</span>&nbsp;&nbsp;&nbsp;&nbsp;
+</div>
+      {% block content %}{% endblock %}
+
+
+    <div class="modal fade" id="waitModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Please wait</h4>
+                </div>
+                <div class="modal-body" id="print-body">
+                </div>
+              </div>
+          </div>
+      </div>
+    <div class="modal fade" id="printModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Print Label</h4>
+                </div>
+                <div class="modal-body" id="print-body">
+                    <div style="width:45%;float:left">
+                        <div class="control-group">
+                            <input type="hidden" name="order-id" id="order-id">
+                            <div class="controls" id="product-items">
+
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <input type="hidden" name="shipLevel" id="shipLevel">
+                            <label class="control-label" for="fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="fullname" id="fullname">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="address1">Address 1</label>
+                            <div class="controls">
+                                <input type="text" name="address1" id="address1">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="address2">Address 2</label>
+                            <div class="controls">
+                                <input type="text" name="address2" id="address2">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="city">City</label>
+                            <div class="controls">
+                                <input type="text" name="city" id="city">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="state">State</label>
+                            <div class="controls">
+                                <input type="text" name="state" id="state">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="zipcode">zipcode</label>
+                            <div class="controls">
+                                <input type="text" name="zipcode" id="zipcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="postalcode">postalcode</label>
+                            <div class="controls">
+                                <input type="text" name="postalcode" id="postalcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="country">Country</label>
+                            <div class="controls">
+                                <input type="text" name="country" id="country">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="phone">Phone</label>
+                            <div class="controls">
+                                <input type="text" name="phone" id="phone">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+                        <div class="control-group">
+                            <label class="control-label" for="weight">Weight</label>
+                            <div class="controls">
+                                <input type="text" name="pound" id="pound" class="input-mini" style="width:30px"> lb
+                                <input type="text" name="ounce" id="ounce" class="input-mini" style="width:30px"> oz
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="dimensions">Dimensions</label>
+                            <div class="controls">
+                                <input type="text" name="height" id="height" class="input-mini" style="width:30px"> x
+                                <input type="text" name="width" id="width" class="input-mini" style="width:30px"> x
+                                <input type="text" name="length" id="length" class="input-mini" style="width:30px">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="package-type">Package Type</label>
+                            <div class="controls">
+                                <select id="package-type" name="package-type">
+                                    <option value="Thick Envelope">Thick Envelope</option>
+                                    <option value="Package" selected="selected">Package</option>
+                                    <option value="Flat Rate Box">Flat Rate Box</option>
+                                    <option value="Small Flat Rate Box">Small Flat Rate Box</option>
+                                    <option value="Large Flat Rate Box">Large Flat Rate Box</option>
+                                    <option value="Flat Rate Envelope">Flat Rate Envelope</option>
+                                    <option value="Flat Rate Padded Envelope">Flat Rate Padded Envelope</option>
+                                    <option value="Large Package">Large Package</option>
+                                    <option value="Oversized Package">Oversized Package</option>
+                                    <option value="Regional Rate Box A">Regional Rate Box A</option>
+                                    <option value="Regional Rate Box B">Regional Rate Box B</option>
+                                    <option value="Regional Rate Box C">Regional Rate Box C</option>
+                                    <option value="Legal Flat Rate Envelope">Legal Flat Rate Envelope</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="declareValue">Declare Value</label>
+                            <div class="controls">
+                                <input type="text" name="declareValue" id="declareValue" class="input-mini">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="insurance">Buy Insurance</label>
+                            <div class="controls">
+                                <input type="text" name="insurance" id="insurance" class="input-mini">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="signature">Add Signature</label>
+                            <div class="controls">
+                                <input type="checkbox" name="signature" id="signature" class="input-mini">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="default" id="default_sku_label">Save as Default For this SKU</label>
+                            <div class="controls">
+                                <input type="checkbox" name="default_sku" id="default_sku" class="input-mini">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="shipping_method" id="shipping_method_label">Shipping Method</label>
+                            <div class="controls">
+                                <select id="shipping_method">
+                                  <option value=""></option>
+                                  <option value="US-GA">Ground Advantage</option>
+                                  <option value="US-PM">Priority Mail</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-default pull-left" id="verifyBtn">Verify Address</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn">Next</button>
+                    <div id="requireSignature">
+                    </div>
+                    <div id="sugguessedAddress">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="frayun-printModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Print Label</h4>
+                </div>
+                <div class="modal-body" id="frayun-print-body">
+                    <div style="width:45%;float:left">
+                        <div class="control-group">
+                            <input type="hidden" name="order-id" id="frayun-order-id">
+                            <div class="controls" id="product-items">
+
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <input type="hidden" name="shipLevel" id="frayun-shipLevel">
+                            <label class="control-label" for="fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="fullname" id="frayun-fullname">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="address1">Address 1</label>
+                            <div class="controls">
+                                <input type="text" name="address1" id="frayun-address1">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="address2">Address 2</label>
+                            <div class="controls">
+                                <input type="text" name="address2" id="frayun-address2">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="city">City</label>
+                            <div class="controls">
+                                <input type="text" name="city" id="frayun-city">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="state">State</label>
+                            <div class="controls">
+                                <input type="text" name="state" id="frayun-state">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="zipcode">zipcode</label>
+                            <div class="controls">
+                                <input type="text" name="zipcode" id="frayun-zipcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="postalcode">postalcode</label>
+                            <div class="controls">
+                                <input type="text" name="postalcode" id="frayun-postalcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="country">Country</label>
+                            <div class="controls">
+                                <input type="text" name="country" id="frayun-country">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="phone">Phone</label>
+                            <div class="controls">
+                                <input type="text" name="phone" id="frayun-phone">
+                            </div>
+                        </div>
+                        <input type="hidden" name="frayun-total" id="frayun-total">
+                    </div>
+
+                    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+                        <div class="control-group">
+                            <label class="control-label" for="frayun-shipping-method">Service Type</label>
+                            <div class="controls">
+                                <select id="frayun-shipping-method">
+                                  <option value=""></option>
+                                  <option value="First Class">First Class Mail</option>
+                                  <option value="Priority Mail">Priority Mail</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="weight">Weight</label>
+                            <div class="controls">
+                                <input type="text" name="pound" id="frayun-pound" class="input-mini" style="width:30px"> lb
+                                <input type="text" name="ounce" id="frayun-ounce" class="input-mini" style="width:30px"> oz
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="dimensions">Dimensions</label>
+                            <div class="controls">
+                                <input type="text" name="height" id="frayun-height" class="input-mini" style="width:30px"> x
+                                <input type="text" name="width" id="frayun-width" class="input-mini" style="width:30px"> x
+                                <input type="text" name="length" id="frayun-length" class="input-mini" style="width:30px">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-default pull-left" id="frayun-verifyBtn">Verify Address</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="frayun-buy">Next</button>
+                    <div id="frayun-requireSignature">
+                    </div>
+                    <div id="frayun-sugguessedAddress">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="fedex-PrintModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Fedex Label</h4>
+                </div>
+                <div class="modal-body" id="fedex-print-body">
+                    <div style="width:45%;float:left">
+                        <div class="control-group">
+                            <input type="hidden" name="fedex-order-id" id="fedex-order-id">
+                            <div class="controls" id="fedex-product-items">
+
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <input type="hidden" name="fedex-shipLevel" id="fedex-shipLevel">
+                            <label class="control-label" for="fedex-fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-fullname" id="fedex-fullname">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-address1">Address 1</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-address1" id="fedex-address1">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-address2">Address 2</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-address2" id="fedex-address2">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-city">City</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-city" id="fedex-city">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-state">State</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-state" id="fedex-state">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-zipcode">zipcode</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-zipcode" id="fedex-zipcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-postalcode">postalcode</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-postalcode" id="fedex-postalcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-country">Country</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-country" id="fedex-country">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-phone">Phone</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-phone" id="fedex-phone">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-weight">Weight</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-pound" id="fedex-pound" class="input-mini" style="width:30px"> lb
+                                <input type="text" name="fedex-ounce" id="fedex-ounce" class="input-mini" style="width:30px"> oz
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-dimensions">Dimensions</label>
+                            <div class="controls">
+                                <input type="text" name="fedex-height" id="fedex-height" class="input-mini" style="width:30px"> x
+                                <input type="text" name="fedex-width" id="fedex-width" class="input-mini" style="width:30px"> x
+                                <input type="text" name="fedex-length" id="fedex-length" class="input-mini" style="width:30px">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fedex-package">Package Type</label>
+                            <div class="controls">
+                            <span id="fedex-lbl-2-day" style="font-size:13pt;font-weight:bold">2 Day Express</span><input type="checkbox" name="fedex-2-day" id="fedex-2-day" checked><br/>
+                                <span id="fedex-lbl-residential">Is Residential</span><input type="checkbox" name="fedex-residential" id="fedex-residential"><br/>
+                                <input type="radio" name="fedex-package" value="FEDEX_ENVELOPE">FEDEX ENVELOPE<br>
+                                <input type="radio" name="fedex-package" value="FEDEX_PAK">FEDEX_PAK <br>
+                                <input type="radio" name="fedex-package" value="FEDEX_SMALL_BOX"> FEDEX_SMALL_BOX  <br>
+                                <input type="radio" name="fedex-package" value="FEDEX_MEDIUM_BOX"> FEDEX_MEDIUM_BOX  <br>
+                                <!--
+                                <span id="fedex-one-rate"></span>
+                                <button id="getFedexOneRate" >Get One Rate</button>
+                                <hr/>
+                                -->
+                                <input type="radio" name="fedex-package" value="FEDEX_GROUND"> FEDEX GROUND <button id="getFedexGroundRate" >Get Rate</button><br>
+                                Signature <input type="checkbox" name="fedex-signature" id="fedex-signature" /><br/>
+                                <span id="fedex-ground-rate"></span><br/>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="default" id="fedex-default_sku_label">Save as Default For this SKU</label>
+                            <div class="controls">
+                                <input type="checkbox" name="fedex-default_sku" id="fedex-default_sku" class="input-mini">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="fedexNextBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="ups-PrintModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Fedex Label</h4>
+                </div>
+                <div class="modal-body" id="ups-print-body">
+                    <div style="width:45%;float:left">
+                        <div class="control-group">
+                            <input type="hidden" name="ups-order-id" id="ups-order-id">
+                            <div class="controls" id="ups-product-items">
+
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <input type="hidden" name="ups-shipLevel" id="ups-shipLevel">
+                            <label class="control-label" for="ups-fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="ups-fullname" id="ups-fullname">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-address1">Address 1</label>
+                            <div class="controls">
+                                <input type="text" name="ups-address1" id="ups-address1">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-address2">Address 2</label>
+                            <div class="controls">
+                                <input type="text" name="ups-address2" id="ups-address2">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-city">City</label>
+                            <div class="controls">
+                                <input type="text" name="ups-city" id="ups-city">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-state">State</label>
+                            <div class="controls">
+                                <input type="text" name="ups-state" id="ups-state">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-zipcode">zipcode</label>
+                            <div class="controls">
+                                <input type="text" name="ups-zipcode" id="ups-zipcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-postalcode">postalcode</label>
+                            <div class="controls">
+                                <input type="text" name="ups-postalcode" id="ups-postalcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-country">Country</label>
+                            <div class="controls">
+                                <input type="text" name="ups-country" id="ups-country">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-phone">Phone</label>
+                            <div class="controls">
+                                <input type="text" name="ups-phone" id="ups-phone">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+                        <div class="control-group">
+                            <label class="control-label" for="ups-weight">Weight</label>
+                            <div class="controls">
+                                <input type="text" name="ups-pound" id="ups-pound" class="input-mini" style="width:30px"> lb
+                                <input type="text" name="ups-ounce" id="ups-ounce" class="input-mini" style="width:30px"> oz
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="ups-dimensions">Dimensions</label>
+                            <div class="controls">
+                                <input type="text" name="ups-height" id="ups-height" class="input-mini" style="width:30px"> x
+                                <input type="text" name="ups-width" id="ups-width" class="input-mini" style="width:30px"> x
+                                <input type="text" name="ups-length" id="ups-length" class="input-mini" style="width:30px">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="ups-package">Package Type</label>
+                            <div class="controls">
+                                <input type="radio" name="ups-package" value="GROUND"> UPS GROUND <span id="ups-ground-rate"></span><button id="getUpsGroundRate" >Get Rate</button><br>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="default" id="ups-default_sku_label">Save as Default For this SKU</label>
+                            <div class="controls">
+                                <input type="checkbox" name="ups-default_sku" id="ups-default_sku" class="input-mini">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="upsNextBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="amzPrintModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Print Label</h4>
+                </div>
+                <div class="modal-body" id="print-body">
+                    <div style="width:45%;float:left">
+                        <div class="control-group">
+                            <input type="hidden" name="amz-order-id" id="amz-order-id">
+                            <div class="controls" id="product-items">
+
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="amz-fullname" id="amz-fullname" disabled="true">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <div id="amz-product-items"></div>
+                        </div>
+
+                    </div>
+                    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+                        <div class="control-group">
+                            <label class="control-label" for="weight">Weight</label>
+                            <div class="controls">
+                                <input type="text" name="amz-pound" id="amz-pound" class="input-mini" style="width:30px"> lb
+                                <input type="text" name="amz-ounce" id="amz-ounce" class="input-mini" style="width:30px"> oz
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="dimensions">Dimensions</label>
+                            <div class="controls">
+                                <input type="text" name="amz-height" id="amz-height" class="input-mini" style="width:30px"> x
+                                <input type="text" name="amz-width" id="amz-width" class="input-mini" style="width:30px"> x
+                                <input type="text" name="amz-length" id="amz-length" class="input-mini" style="width:30px">
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="default" id="amz-default_sku_label">Save as Default For this SKU</label>
+                            <div class="controls">
+                                <input type="checkbox" name="amz-default_sku" id="amz-default_sku" class="input-mini">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="amzNextBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="printModal-step2" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Print Label</h4>
+                </div>
+                <div class="modal-body" id="print-body2">
+                </div>
+                <div class="modal-footer">
+                    <input type="hidden" id="authenicator">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="nextBtn2">Buy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="amzPrintModal-step2" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title">Print Label</h4>
+                </div>
+                <div class="modal-body" id="amz-print-body2">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="amz-nextBtn2">Buy</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="printModal-step3" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id='finishedPrint'>Close</button>
+
+                    <button type="button" class="btn btn-primary" id="printBtn">Print</button>
+                    <button type="button" class="btn btn-primary pull-right" id="refreshPrintBtn">Refresh</button>
+                </div>
+                <div class="modal-body" id="print-body3">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="printModal-cleanse" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" >Cleanse Address</h4>
+                </div>
+                <div class="modal-body" id="print-body3">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id=''>Close</button>
+
+                    <button type="button" class="btn btn-primary" id="CleanseBtn">Next</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="packFrame"></div>
+<div id="picHolder" style="display:none"></div>
+<!--<button id="test">test</button>-->
+	<script>
+
+var madeUrl = '{{ route('madeOrder') }}';
+var progressUrl = '{{ route('progressOrder') }}';
+var priorityUrl = '{{ route('priorityOrder') }}';
+var noteUrl = '{{ route('saveOrderNotes') }}';
+var doneUrl ='{{ route('doneOrder') }}';
+var getOrderUrl = '{{ route('getOrder') }}';
+var actionLogUrl ='{{ route('actionLog') }}';
+    var cleanseAddress;
+	var target_row;
+    var oTable ;
+    var currentPos = 0;
+    var currentMemo='';
+    var currentSku='';
+    var currentQty=0;
+    var products=[];
+function recordAction(msg){
+    $.ajax({
+            type: 'post',
+            url: actionLogUrl, // in here you should put your query
+            data: {"action":msg}, // here you pass your id via ajax .
+            success: function(r) {
+            }
+        });
+}
+    function handleOrderUpdate(data){
+        if (typeof data.orderId !== 'undefined')
+        {
+            var orderId = data.orderId;
+            var status = data.status;
+            $('#orders > tbody  > tr').each(function(index, value ) {
+                if($(this).find("span.orderSpan").text()==orderId){
+                    if(status == "done"){
+                        $(this).css("display","none");
+                        var t = $(this).closest(".orderTr").get(0);
+                        oTable.row(t).remove().draw();
+                    }
+                }
+            });
+        }
+        else if (typeof data.itemId !== 'undefined')
+        {
+            var itemId = data.itemId;
+            var status = data.status;
+            var note = data.note;
+            $('#orders > tbody  > tr').each(function(index, value ) {
+
+                    if($(this).find(".madeBtn").val()==itemId){
+                        var target_row = $(this).closest(".orderTr").get(0);
+                        console.log(target_row);
+                        //var aPos = oTable.fnGetPosition(target_row);
+                        if (typeof status !== 'undefined')
+                        {
+                            if (status == "startprocess") {
+                                $(target_row).removeClass("inprogress");
+                                $(target_row).find(".progressBtn").text('Start Process');
+                            }
+                            else if (status  == "inprogress") {
+                                $(target_row).addClass("inprogress");
+                                $(target_row).find(".progressBtn").text('In Progress');
+                            }
+                            else if (status  == "made") {
+                                $(target_row).removeClass("inprogress");
+                                $(target_row).addClass("made");
+                                $(target_row).find(".progressBtn").hide();
+                                $(target_row).find(".madeBtn").text('Unmade');
+                            }
+                            else if (status  == "unmade") {
+                                $(target_row).removeClass("made");
+                                $(target_row).find(".progressBtn").show();
+                                $(target_row).find(".madeBtn").text('Made');
+                            }
+                            else if (status  == "UnPrioritize") {
+                                $(target_row).removeClass("priority");
+                                $(target_row).removeClass("urgent");
+                                $(target_row).find(".prioritizeBtn").text('Prioritize');
+                            }
+                            else if (status  == "Prioritize") {
+                                $(target_row).addClass("priority");
+                                $(target_row).find(".prioritizeBtn").text('Urgent');
+                            }
+                            else if (status  == "Urgent") {
+                                $(target_row).addClass("urgent");
+                                $(target_row).find(".prioritizeBtn").text('UnPrioritize');
+                            }
+                        }
+                        if (typeof note !== 'undefined')
+                        {
+                            var noteObj = $(target_row).find(".notes").val(note);
+                        }
+                    }
+            });
+            oTable.draw(false);
+        }
+    }
+
+    Echo.private('order')
+    .listenForWhisper('order-update', (data) => {
+        console.dir(data);
+        handleOrderUpdate(data);
+    });
+
+
+    function removeRowByOrderId(orderId){
+        $('#orders > tbody  > tr').each(function(index, value ) {
+            if($(this).find("span.orderSpan").text()==orderId){
+                $(this).css("display","none");
+                var t = $(this).closest("tr").get(0);
+                // $(this).remove().draw(false);
+
+                oTable.row(t).remove().draw();
+
+                Echo.private('order')
+                    .whisper('order-update', {
+                        orderId: orderId,
+                        status: "done"
+                    });
+            }
+        });
+        oTable.draw(false);
+    }
+
+	$(document).ready(function() {
+		$("#printModal").hide();
+		$(document).on('click', '#printBtn', function() {
+			frames["labelFrame"].focus();
+			frames["labelFrame"].print();
+		});
+
+		$(document).on('click', '#refreshPrintBtn', function() {
+            console.log('refresh label');
+            var htmlContent = $('#labelFrame').contents().find('body').html();
+            $('#labelFrame').contents().find('body').html('');
+            $('#labelFrame').contents().find('body').append(htmlContent);
+		});
+
+		$(document).on('click', '#finishedPrint', function() {
+			// var aPos = oTable.fnGetPosition(target_row);
+			// oTable.fnDeleteRow(aPos);
+		});
+
+
+    $(".clearSearch").html("<button id='clearSearchBtn' class='pull-right'>Clear Search</button>");
+
+        $(".boutonniereSearch").html("<button id='boutonniereSearchBtn' class='pull-left hidden-xs'>Boutonniere</button>");
+        $(".corsageSearch").html("<button id='corsageSearchBtn' class='pull-left hidden-xs'>Corsage</button>");
+        $(".bouquetSearch").html("<button id='bouquetSearchBtn' class='pull-left hidden-xs'>Bouquet</button>");
+        {{ quickSearchContent | safe }}
+    $(document).on('click','.searchBuyer',function(e){
+        e.preventDefault();
+
+        $("#priorityChk").prop('checked',false);
+        $("#processingChk").prop('checked',false);
+
+        $("#urgentChk").prop('checked',false);
+
+        $("#filterMade").val('');
+        $("#singleChk").prop('checked',false);
+        filterAction();
+        if(currentPos==0){
+            currentPos = $(this).closest("tr").find(".anchor").prop("id");
+            var searchText = $(this).text();
+            $('#orders_filter label input').val(searchText);
+            oTable.search(searchText).draw();
+         }
+         else{
+            var searchText = "";
+            location.hash = "#" + currentPos;
+            $('#orders_filter label input').val(searchText);
+            oTable.search(searchText).draw();
+            currentPos = 0;
+         }
+    });
+
+
+    $(document).on('click','#btnPickListByOrder',function(e){
+        e.preventDefault();
+        var ordersToPrint =[];
+        $.each($( "input.action:checked" ), function( index, value ) {
+            ordersToPrint.push($(this).val());
+        });
+        ordersToPrint = ordersToPrint.filter(function (x, i, a) {
+            return a.indexOf(x) == i;
+        });
+        $('<form/>', { action: '{{ route('pickList') }}', method: 'POST' ,target: '_blank'})
+            .append('<input type="hidden" name="id" value="'+ordersToPrint+'"/>')
+            .append('<input type="hidden" name="store" value="'+currentStore+'"/>')
+            .append('<input type="hidden" name="groupBy" value="order"/>')
+            .appendTo('body')
+            .submit();
+    });
+
+    $(document).on('click','#btnPickListByItem',function(e){
+        e.preventDefault();
+        var ordersToPrint =[];
+        $.each($( "input.action:checked" ), function( index, value ) {
+            ordersToPrint.push($(this).val());
+        });
+        ordersToPrint = ordersToPrint.filter(function (x, i, a) {
+            return a.indexOf(x) == i;
+        });
+        $('<form/>', { action: '{{ route('pickList') }}', method: 'POST' ,target: '_blank'})
+        .append('<input type="hidden" name="id" value="'+ordersToPrint+'"/>')
+        .append('<input type="hidden" name="store" value="'+currentStore+'"/>')
+            .append('<input type="hidden" name="groupBy" value="item"/>')
+            .appendTo('body')
+            .submit();
+    });
+    
+    $(document).on('click','#clearSearchBtn',function(e){
+        e.preventDefault();
+        var searchText ='';
+        $('#orders_filter label input').val(searchText);
+        oTable.search(searchText).draw();
+    });
+
+    $(document).on('click','#boutonniereSearchBtn',function(e){
+        e.preventDefault();
+        var searchText ='boutonniere';
+        $('#orders_filter label input').val(searchText);
+         oTable.search(
+            "(?=.*boutonniere)(^((?!10pc set|20pc set).)*$)",//AND
+            true,
+            false
+            ).draw();
+    });
+    $(document).on('click','#corsageSearchBtn',function(e){
+        e.preventDefault();
+        var searchText ='corsage';
+        $('#orders_filter label input').val(searchText);
+         oTable.search(
+            "(?=.*corsage)(^((?!10pc set|20pc set).)*$)",//AND
+            true,
+            false
+        ).draw();
+    });
+    $(document).on('click','#bouquetSearchBtn',function(e){
+        e.preventDefault();
+        var searchText ='bouquet|package';
+        $('#orders_filter label input').val(searchText);
+
+         oTable.search(
+            "(?=.*bouquet|package)(^((?!10pc set|20pc set).)*$)",//AND
+            true,
+            false
+        ).draw();
+
+    });
+
+$(".amzPrint").click(function() {
+            pendingToship="";
+            $("#amz-fullname").val('');
+            $("#amz-product-items").html('');
+            $("#amz-order-id").val('');
+            $("#amz-default_sku").prop( "checked", false );
+            $("#amz-default_sku_label").hide();
+            $("#amz-default_sku").hide();
+
+            cleanseAddress='';
+
+			target_row = $(this).closest("tr").get(0);
+
+      currentSku = $(target_row).find('.internalSku').first().text();
+
+			var orderId = $(this).val();
+			//alert($('#printModal'));
+			$.ajax({
+				type: 'post',
+				url: '{{ route('getOrder') }}', // in here you should put your query
+				data: 'orderId=' + orderId, // here you pass your id via ajax .
+				// in php you should use $_POST['post_id'] to get this value
+				success: function(order) {
+					$("#amz-product-items").html('');
+					$('#amzPrintModal').modal({
+						backdrop: 'static'
+					});
+					$("#amz-fullname").val(order['recipientName']);
+                    $.each(order.detail, function(idx, item) {
+                        $("#amz-product-items").html($("#amz-product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                    });
+
+                    currentMemo ='';
+                    $("#amz-order-id").val(order['orderId']);
+
+          if(order.detail.length==1 && currentSku!=''){//load ship weight
+            currentMemo =currentSku +" " +currentQty;
+            $("#amz-default_sku").show();
+            $("#amz-default_sku_label").show();
+            currentQty = order.detail[0]['qty'] ;
+           var data = {
+            sku: currentSku,
+            qty: currentQty
+           };
+            $.ajax({
+              type: 'get',
+              url: '{{ route('GetProductShipWeight') }}', // in here you should put your query
+              data: data,
+              // in php you should use $_POST['post_id'] to get this value
+              success: function(weight_data) {
+                console.dir(weight_data);
+                if(weight_data=='not found'){
+                  if(currentSku!='' && order['country']=='US'){
+                    $("#amz-default_sku").prop( "checked", true );
+                  }
+                }
+                else{
+                    $("#amz-pound").val(weight_data.weight_lb);
+                    $("#amz-ounce").val(weight_data.weight_oz);
+                    $("#amz-height").val(weight_data.height);
+                    $("#amz-width").val(weight_data.width);
+                    $("#amz-length").val(weight_data.length);
+                }
+              },
+              error: function(xhr, textStatus, errorThrown) {
+                alert('request failed');
+              }
+            });
+          }
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					alert('request failed');
+				}
+			});
+		});
+
+$("#getUpsGroundRate").click(function(){
+    var address = {
+    				FullName: $("#ups-fullname").val(),
+    				Address1: $("#ups-address1").val(),
+    				Address2: $("#ups-address2").val(),
+    				City: $("#ups-city").val(),
+    				State: $("#ups-state").val(),
+    				ZIPCode: ($("#ups-country").val()!='US'?$("#ups-postalcode").val():$("#ups-zipcode").val().substring(0, 5)),
+    				PostalCode: $("#ups-postalcode").val(),
+    				Country: $("#ups-country").val(),
+    				PhoneNumber: $("#ups-phone").val()
+    				//order: $("#order-id").val()
+    			};
+
+            if( $("#ups-pound").val()=='' &&  $("#ups-ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if( $("#ups-height").val()=='' ||  $("#ups-width").val()=='' ||  $("#ups-length").val()==''){
+                alert('dimensions are required');
+                return;
+            }
+            $("#ups-ground-rate").text('loading...');
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('ups.getrate') }}', // in here you should put your query
+                data: {
+                    "address": address,
+                    "lb": $("#ups-pound").val(),
+                    "oz": $("#ups-ounce").val(),
+                    "height": $("#ups-height").val(),
+                    "width": $("#ups-width").val(),
+                    "length": $("#ups-length").val()
+                },
+                success: function(r) {
+                    console.dir(r);
+                    for(var i=1;i<r.length;i++){
+                        if(r[i].serviceType=='UPS Ground'){
+                            $("#ups-ground-rate").text("$"+r[i].amount+ " arrived "+r[i].deliveryDate.substring(0, 8));
+
+                        }
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                }
+            });
+
+});
+$("#getFedexOneRate").click(function(){
+    var address = {
+    				FullName: $("#fedex-fullname").val(),
+    				Address1: $("#fedex-address1").val(),
+    				Address2: $("#fedex-address2").val(),
+    				City: $("#fedex-city").val(),
+    				State: $("#fedex-state").val(),
+    				ZIPCode: ($("#fedex-country").val()!='US'?$("#fedex-postalcode").val():$("#fedex-zipcode").val().substring(0, 5)),
+    				PostalCode: $("#fedex-postalcode").val(),
+    				Country: $("#fedex-country").val(),
+    				PhoneNumber: $("#fedex-phone").val()
+    				//order: $("#order-id").val()
+    			};
+
+            if( $("#fedex-pound").val()=='' &&  $("#fedex-ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if( $("#fedex-height").val()=='' ||  $("#fedex-width").val()=='' ||  $("#fedex-length").val()==''){
+                alert('dimensions are required');
+                return;
+            }
+            $("#fedex-one-rate").text('loading...');
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('fedex.getOneRate') }}', // in here you should put your query
+                data: {
+                    "address": address,
+                    "lb": $("#fedex-pound").val(),
+                    "oz": $("#fedex-ounce").val(),
+                    "height": $("#fedex-height").val(),
+                    "width": $("#fedex-width").val(),
+                    "length": $("#fedex-length").val(),
+                    "packaging": $("input[name='fedex-package']:checked").val(),
+                    "isResidential": $("#fedex-residential").prop('checked'),
+                    "serviceType": ($("#fedex-2-day").prop('checked')?'FEDEX_2_DAY':'FEDEX_EXPRESS_SAVER'),
+                    //"signature":$("#fedex-signature").prop('checked')
+
+                },
+                success: function(r) {
+                    console.dir(r);
+                    $("#fedex-one-rate").text("$"+r[0].amount+ " "+r[0].deliveryDate);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                }
+            });
+
+});
+$("#getFedexGroundRate").click(function(){
+    var address = {
+    				FullName: $("#fedex-fullname").val(),
+    				Address1: $("#fedex-address1").val(),
+    				Address2: $("#fedex-address2").val(),
+    				City: $("#fedex-city").val(),
+    				State: $("#fedex-state").val(),
+    				ZIPCode: ($("#fedex-country").val()!='US'?$("#fedex-postalcode").val():$("#fedex-zipcode").val().substring(0, 5)),
+    				PostalCode: $("#fedex-postalcode").val(),
+    				Country: $("#fedex-country").val(),
+    				PhoneNumber: $("#fedex-phone").val()
+    				//order: $("#order-id").val()
+    			};
+
+            if( $("#fedex-pound").val()=='' &&  $("#fedex-ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if( $("#fedex-height").val()=='' ||  $("#fedex-width").val()=='' ||  $("#fedex-length").val()==''){
+                alert('dimensions are required');
+                return;
+            }
+            $("#fedex-ground-rate").text('loading...');
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('fedex.getrate') }}', // in here you should put your query
+                data: {
+                    "address": address,
+                    "lb": $("#fedex-pound").val(),
+                    "oz": $("#fedex-ounce").val(),
+                    "height": $("#fedex-height").val(),
+                    "width": $("#fedex-width").val(),
+                    "length": $("#fedex-length").val(),
+                    "isResidential": $("#fedex-residential").prop('checked'),
+                    "signature":$("#fedex-signature").prop('checked')
+                },
+                success: function(r) {
+                    console.dir(r);
+                    $("#fedex-ground-rate").text("$"+r[0].amount+ " "+r[0].deliveryDate);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                }
+            });
+
+});
+$("#fedexNextBtn").click(function(){
+    $("fedexNextBtn").prop('disabled',true);
+    var address = {
+    				FullName: $("#fedex-fullname").val(),
+    				Address1: $("#fedex-address1").val(),
+    				Address2: $("#fedex-address2").val(),
+    				City: $("#fedex-city").val(),
+    				State: $("#fedex-state").val(),
+    				ZIPCode: ($("#fedex-country").val()!='US'?$("#fedex-postalcode").val():$("#fedex-zipcode").val().substring(0, 5)),
+    				PostalCode: $("#fedex-postalcode").val(),
+    				Country: $("#fedex-country").val(),
+    				PhoneNumber: $("#fedex-phone").val()
+    				//order: $("#order-id").val()
+    			};
+
+            var packageType = $("input[name='fedex-package']:checked").val();
+            if (typeof getStore !== 'undefined') {
+                if(getStore){
+                    currentStore = $(target_row).find(".store").first().text();
+                }
+            }
+            if( packageType==null || packageType==''){
+                alert('service type is required');
+                return;
+            }
+            if(currentStore=='D'){
+                if($("#fedex-shipLevel").val()=='67' || $("#fedex-shipLevel").val()=='68' || $("#fedex-shipLevel").val()=='20' ){
+                    if(packageType=='FEDEX_GROUND'){
+                        console.log('third party printing');
+                    }
+                    else{
+                        alert('must pick ground');
+                        return;
+                    }
+                }
+                else{
+                    alert('no printing can be done');
+                    return;
+                }
+            }
+            if( $("#fedex-pound").val()=='' &&  $("#fedex-ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if(packageType=='FEDEX_GROUND'){
+                if( $("#fedex-height").val()=='' ||  $("#fedex-width").val()=='' ||  $("#fedex-length").val()==''){
+                    alert('dimensions are required');
+                    return;
+                }
+            }
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('fedex.getLabel') }}', // in here you should put your query
+                data: {
+                    "orderId":$("#fedex-order-id").val(),
+                    "store":currentStore,
+                    "address": address,
+                    "lb": $("#fedex-pound").val(),
+                    "oz": $("#fedex-ounce").val(),
+                    "height": $("#fedex-height").val(),
+                    "width": $("#fedex-width").val(),
+                    "length": $("#fedex-length").val(),
+                    "isResidential": $("#fedex-residential").prop('checked'),
+                    "walmart":$("#fedex-shipLevel").val(),
+                    "fedex-package":packageType,
+                    "serviceType": ($("#fedex-2-day").prop('checked')?'FEDEX_2_DAY':'FEDEX_EXPRESS_SAVER'),
+                    //"signature":$("#fedex-signature").prop('checked')
+                },
+                success: function(r) {
+                    console.dir(r);
+                    if(r=="error"){
+                        alert('failed to get label');
+                        $('#fedex-PrintModal').modal('hide');
+                        $("fedexNextBtn").prop('disabled',false);
+                        $("#fedex-order-id").val('');
+                    }
+                    else{
+                        $("fedexNextBtn").prop('disabled',false);
+
+                        $('#fedex-PrintModal').modal('hide');
+                        $('#printModal-step3').modal({
+                            backdrop: 'static'
+                        });
+                        $("#print-body3").html('');
+                        $('<iframe />').remove();
+                        $('<iframe />'); // Create an iframe element
+                        $('<iframe />', {
+                            name: 'labelFrame',
+                            id: 'labelFrame',
+                            scrolling: 'no',
+                            frameborder: '0',
+                            style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+                        }).appendTo('#print-body3');
+                        $('#labelFrame').contents().find('body').html('');
+                        var oId = $("#fedex-order-id").val()
+
+                        if(oId.charAt(0)=='#'){
+                            oId = oId.slice(1);
+                        }
+                        $('#labelFrame').contents().find('body').append("<img src='/getOrderLabel?orderId="+oId + "' id='labelImage' style='width: 3.812in;height: 5.718in ;'>");
+
+                        removeRowByOrderId($("#fedex-order-id").val());
+                        $("#fedex-order-id").val('');
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    console.dir(xhr);
+                }
+            });
+
+});
+
+$("#upsNextBtn").click(function(){
+    $("upsNextBtn").prop('disabled',true);
+    var address = {
+    				FullName: $("#ups-fullname").val(),
+    				Address1: $("#ups-address1").val(),
+    				Address2: $("#ups-address2").val(),
+    				City: $("#ups-city").val(),
+    				State: $("#ups-state").val(),
+    				ZIPCode: ($("#ups-country").val()!='US'?$("#ups-postalcode").val():$("#ups-zipcode").val().substring(0, 5)),
+    				PostalCode: $("#ups-postalcode").val(),
+    				Country: $("#ups-country").val(),
+    				PhoneNumber: $("#ups-phone").val()
+    				//order: $("#order-id").val()
+    			};
+
+            var packageType = $("input[name='ups-package']:checked").val();
+            if (typeof getStore !== 'undefined') {
+                if(getStore){
+                    currentStore = $(target_row).find(".store").first().text();
+                }
+            }
+            if( packageType==null || packageType==''){
+                alert('service type is required');
+                return;
+            }
+            if(currentStore=='D'){
+                if($("#ups-shipLevel").val()=='501'){
+                    if(packageType=='GROUND'){
+                        console.log('third party printing');
+                    }
+                    else{
+                        alert('must pick ground');
+                        return;
+                    }
+                }
+                else{
+                    alert('no printing can be done');
+                    return;
+                }
+            }
+            if( $("#ups-pound").val()=='' &&  $("#ups-ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if(packageType=='GROUND'){
+                if( $("#ups-height").val()=='' ||  $("#ups-width").val()=='' ||  $("#ups-length").val()==''){
+                    alert('dimensions are required');
+                    return;
+                }
+            }
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('ups.getLabel') }}', // in here you should put your query
+                data: {
+                    "orderId":$("#ups-order-id").val(),
+                    "store":currentStore,
+                    "address": address,
+                    "lb": $("#ups-pound").val(),
+                    "oz": $("#ups-ounce").val(),
+                    "height": $("#ups-height").val(),
+                    "width": $("#ups-width").val(),
+                    "length": $("#ups-length").val(),
+                    "isResidential": $("#ups-residential").prop('checked'),
+                    "walmart":$("#ups-shipLevel").val(),
+                    "ups-package":packageType
+                },
+                success: function(r) {
+                    console.dir(r);
+                    if(r=="error"){
+                        alert('failed to get label');
+                        $('#ups-PrintModal').modal('hide');
+                        $("upsNextBtn").prop('disabled',false);
+                        $("#ups-order-id").val('');
+                    }
+                    else{
+                        $("upsNextBtn").prop('disabled',false);
+
+                        $('#ups-PrintModal').modal('hide');
+                        $('#printModal-step3').modal({
+                            backdrop: 'static'
+                        });
+                        $("#print-body3").html('');
+                        $('<iframe />').remove();
+                        $('<iframe />'); // Create an iframe element
+                        $('<iframe />', {
+                            name: 'labelFrame',
+                            id: 'labelFrame',
+                            scrolling: 'no',
+                            frameborder: '0',
+                            style: "width: 3.812in; height:5.718in; border: 1px dashed black;"
+                        }).appendTo('#print-body3');
+                        $('#labelFrame').contents().find('body').html('');
+                        var oId = $("#ups-order-id").val()
+
+                        if(oId.charAt(0)=='#'){
+                            oId = oId.slice(1);
+                        }
+                        $('#labelFrame').contents().find('body').append("<img src='/getOrderLabel?orderId="+oId + "' id='labelImage' style='width: 3.812in;height: 5.718in ;' >");
+                      //   $('#labelFrame').contents().find('body').find('img').each(function() {
+                      //     var deg = $(this).data('rotate') || 0;
+                      //     var rotate = 'rotate(' + deg + 'deg)';
+                      //     $(this).css({
+                      //         '-webkit-transform': rotate,
+                      //         '-moz-transform': rotate,
+                      //         '-o-transform': rotate,
+                      //         '-ms-transform': rotate,
+                      //         'transform': rotate
+                      //     });
+                      // });
+                        removeRowByOrderId($("#ups-order-id").val());
+                        $("#ups-order-id").val('');
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    console.dir(xhr);
+                }
+            });
+
+});
+$(".upsPrint").click(function() {
+            pendingToship="";
+            $("#ups-shipLevel").val('');
+            $("upsNextBtn").prop('disabled',true);
+            $("#ups-order-id").val('');
+            $("#ups-ground-rate").text('');
+            $("#ups-fullname").val('');
+            $("#ups-address1").val('');
+            $("#ups-address2").val('');
+            $("#ups-city").val('');
+            $("#ups-state").val('');
+            $("#ups-zipcode").val('');
+            $("#ups-postalcode").val('');
+            $("#ups-country").val('');
+            $("#ups-phone").val('');
+            $("#ups-product-items").html('');
+            $("#ups-order-id").val('');
+            $("#ups-default_sku").prop( "checked", false );
+            $("#ups-default_sku_label").hide();
+            $("#ups-default_sku").hide();
+            $("#ups-ground-rate").val('');
+			target_row = $(this).closest("tr").get(0);
+
+            currentSku = $(target_row).find('.internalSku').first().text();
+
+			var orderId = $(this).val();
+            $("#ups-order-id").val(orderId);
+			//alert($('#printModal'));
+			$.ajax({
+				type: 'post',
+				url: '{{ route('getOrder') }}', // in here you should put your query
+				data: 'orderId=' + orderId, // here you pass your id via ajax .
+				// in php you should use $_POST['post_id'] to get this value
+				success: function(order) {
+					$("#ups-product-items").html('');
+					$('#ups-PrintModal').modal({
+						backdrop: 'static'
+					});
+					$("#ups-fullname").val(order['recipientName']);
+					$("#ups-address1").val(order['address1']);
+					$("#ups-address2").val(order['address2'] );
+					$("#ups-city").val(order['city']);
+					$("#ups-state").val(String(order['state']).toUpperCase());
+					$("#ups-zipcode").val(order['zip']);
+                    $("#ups-postalcode").val(order['zip']);
+                    if(order['country']=="USA"){
+                        order['country']="US";
+                    }
+					$("#ups-country").val(order['country']);
+					$("#ups-phone").val(order['phone']);
+                    $.each(order.detail, function(idx, item) {
+                        $("#ups-shipLevel").val(item['shipLevel']);
+                        $("#ups-product-items").html($("#ups-product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                    });
+                    currentMemo ='';
+                    $("#ups-order-id").val(order['orderId']);
+
+                    if(order.detail.length==1 && currentSku!=''){//load ship weight
+                        currentMemo =currentSku +" " +currentQty;
+                        $("#ups-default_sku").show();
+                        $("#ups-default_sku_label").show();
+                        currentQty = order.detail[0]['qty'] ;
+                    var data = {
+                        sku: currentSku,
+                        qty: currentQty
+                    };
+                    console.log('calling GetProductShipWeight ');
+                    console.dir(data);
+                        $.ajax({
+                        type: 'get',
+                        url: '{{ route('GetProductShipWeight') }}', // in here you should put your query
+                        data: data,
+                        // in php you should use $_POST['post_id'] to get this value
+                        success: function(weight_data) {
+                            console.dir(weight_data);
+                            if(weight_data=='not found'){
+                            if(currentSku!='' && order['country']=='US'){
+                                $("#ups-default_sku").prop( "checked", true );
+                            }
+                            }
+                            else{
+                                $("#ups-pound").val(weight_data.weight_lb);
+                                $("#ups-ounce").val(weight_data.weight_oz);
+                                $("#ups-height").val(weight_data.height);
+                                $("#ups-width").val(weight_data.width);
+                                $("#ups-length").val(weight_data.length);
+                                //$("#ups-package").val(weight_data.package_type);
+
+                            }
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            alert('request failed');
+                        }
+                        });
+                    }
+
+                    var address = {
+                        Address1: $("#ups-address1").val(),
+                        Address2: $("#ups-address2").val(),
+                        City: $("#ups-city").val(),
+                        State: $("#ups-state").val(),
+                        ZIPCode: ($("#ups-country").val()!='US'?$("#ups-postalcode").val():$("#ups-zipcode").val().substring(0, 5)),
+                        PostalCode: $("#ups-postalcode").val(),
+                        Country: $("#ups-country").val()
+    			    };
+                    // $.ajax({
+                    //     type: 'post',
+                    //     dataType: 'json',
+                    //     url: '{{ route('ups.validate') }}', // in here you should put your query
+                    //     data: {
+                    //         "address": address
+                    //     },
+                    //     success: function(r) {
+                    //         console.dir(r);
+                    //         $("upsNextBtn").prop('disabled',false);
+                    //     },
+                    //     error: function(xhr, textStatus, errorThrown) {
+                    //     }
+                    // });
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert('request failed');
+                }
+			});
+});
+
+$(".fedexPrint").click(function() {
+    console.log(currentStore);
+            pendingToship="";
+            $("#fedex-shipLevel").val('');
+            $("fedexNextBtn").prop('disabled',true);
+            $("#fedex-order-id").val('');
+            $("#fedex-ground-rate").text('');
+            $("#fedex-fullname").val('');
+            $("#fedex-address1").val('');
+            $("#fedex-address2").val('');
+            $("#fedex-city").val('');
+            $("#fedex-state").val('');
+            $("#fedex-zipcode").val('');
+            $("#fedex-postalcode").val('');
+            $("#fedex-country").val('');
+            $("#fedex-phone").val('');
+            $("#fedex-product-items").html('');
+            $("#fedex-order-id").val('');
+            $("#fedex-default_sku").prop( "checked", false );
+            $("#fedex-default_sku_label").hide();
+            $("#fedex-default_sku").hide();
+            $("#fedex-residential").prop('checked',false);
+            $("#fedex-ground-rate").val('');
+            $("#fedex-2-day").prop('checked',true);
+			target_row = $(this).closest("tr").get(0);
+
+            currentSku = $(target_row).find('.internalSku').first().text();
+
+			var orderId = $(this).val();
+            $("#fedex-order-id").val(orderId);
+			//alert($('#printModal'));
+			$.ajax({
+				type: 'post',
+				url: '{{ route('getOrder') }}', // in here you should put your query
+				data: 'orderId=' + orderId, // here you pass your id via ajax .
+				// in php you should use $_POST['post_id'] to get this value
+				success: function(order) {
+					$("#fedex-product-items").html('');
+					$('#fedex-PrintModal').modal({
+						backdrop: 'static'
+					});
+					$("#fedex-fullname").val(order['recipientName']);
+					$("#fedex-address1").val(order['address1']);
+					$("#fedex-address2").val(order['address2'] );
+					$("#fedex-city").val(order['city']);
+					$("#fedex-state").val(String(order['state']).toUpperCase());
+					$("#fedex-zipcode").val(order['zip']);
+                    $("#fedex-postalcode").val(order['zip']);
+                    if(order['country']=="USA"){
+                        order['country']="US";
+                    }
+					$("#fedex-country").val(order['country']);
+					$("#fedex-phone").val(order['phone']);
+                    $.each(order.detail, function(idx, item) {
+                        $("#fedex-shipLevel").val(item['shipLevel']);
+                        $("#fedex-product-items").html($("#fedex-product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                    });
+                    currentMemo ='';
+                    $("#fedex-order-id").val(order['orderId']);
+
+                    if(order.detail.length==1 && currentSku!=''){//load ship weight
+                        currentMemo =currentSku +" " +currentQty;
+                        $("#fedex-default_sku").show();
+                        $("#fedex-default_sku_label").show();
+                        currentQty = order.detail[0]['qty'] ;
+                    var data = {
+                        sku: currentSku,
+                        qty: currentQty
+                    };
+                    console.log('calling GetProductShipWeight ');
+                    console.dir(data);
+                        $.ajax({
+                        type: 'get',
+                        url: '{{ route('GetProductShipWeight') }}', // in here you should put your query
+                        data: data,
+                        // in php you should use $_POST['post_id'] to get this value
+                        success: function(weight_data) {
+                            console.dir(weight_data);
+                            if(weight_data=='not found'){
+                            if(currentSku!='' && order['country']=='US'){
+                                $("#fedex-default_sku").prop( "checked", true );
+                            }
+                            }
+                            else{
+                                $("#fedex-pound").val(weight_data.weight_lb);
+                                $("#fedex-ounce").val(weight_data.weight_oz);
+                                $("#fedex-height").val(weight_data.height);
+                                $("#fedex-width").val(weight_data.width);
+                                $("#fedex-length").val(weight_data.length);
+                                //$("#fedex-package").val(weight_data.package_type);
+
+                            }
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            alert('request failed');
+                        }
+                        });
+                    }
+
+                    var address = {
+                        Address1: $("#fedex-address1").val(),
+                        Address2: $("#fedex-address2").val(),
+                        City: $("#fedex-city").val(),
+                        State: $("#fedex-state").val(),
+                        ZIPCode: ($("#fedex-country").val()!='US'?$("#fedex-postalcode").val():$("#fedex-zipcode").val().substring(0, 5)),
+                        PostalCode: $("#fedex-postalcode").val(),
+                        Country: $("#fedex-country").val()
+    			    };
+                    $("#fedex-lbl-residential").text("checking address");
+                    $.ajax({
+                        type: 'post',
+                        dataType: 'json',
+                        url: '{{ route('fedex.validate') }}', // in here you should put your query
+                        data: {
+                            "address": address
+                        },
+                        success: function(r) {
+                            console.dir(r);
+                            $("fedexNextBtn").prop('disabled',false);
+                            $("#fedex-lbl-residential").text("Residential");
+                            if(r.Classification=="RESIDENTIAL"){
+                                $("#fedex-residential").prop('checked',true);
+                            }
+                            else{
+                                $("#fedex-residential").prop('checked',false);
+                            }
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            $("#fedex-lbl-residential").text("Residential");
+                            $("#fedex-residential").prop('checked',false);
+                        }
+                    });
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert('request failed');
+                }
+			});
+});
+
+function verifyAddress(){
+//check cleanse address
+    var address = {
+        FullName: $("#fullname").val(),
+        Address1: $("#address1").val(),
+        Address2: $("#address2").val(),
+        City: $("#city").val(),
+        State: $("#state").val(),
+        ZIPCode: ($("#country").val()!='US'?$("#postalcode").val():$("#zipcode").val().substring(0, 5)),
+        PostalCode: $("#postalcode").val(),
+        Country: $("#country").val(),
+        PhoneNumber: $("#phone").val()
+        //order: $("#order-id").val()
+    };
+    $("#sugguessedAddress").html("Verifying address");
+    $.ajax({
+        type: 'post',
+        url: '{{ route('checkCleanseAddress') }}', // in here you should put your query
+        data: {
+            "address": address
+            },
+        success: function(resp) {
+            console.log('cleansed');
+            console.dir(resp);
+            if(resp.success!="true"){
+                if(resp.response!=null){
+                    var html="<span style='color:red' >"+resp.response.AddressCleansingResult+"<span><br/>";
+                    html += resp.response.Address.FullName+"<br/>";
+                    html += resp.response.Address.Address1+"<br/>";
+                    html += resp.response.Address.Address2+"<br/>";
+                    html += resp.response.Address.City+", ";
+                    html += resp.response.Address.State+" ";
+                    html += resp.response.Address.ZIPCode+"<br/>";
+                    $("#sugguessedAddress").html(html);
+                }
+                else{
+                    var html="<span style='color:red' >"+resp.message+"<span><br/>";
+                    $("#sugguessedAddress").html(html);
+                }
+            }
+            else{
+                $("#sugguessedAddress").html("<span style='color:green' >Address Verified<span>");
+            }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            alert('request failed');
+        }
+    });
+    //end check cleanse address
+}
+$("#verifyBtn").click(function() {
+    verifyAddress();
+});
+
+
+function frayunVerifyAddress(){
+//check cleanse address
+    var address = {
+        FullName: $("#frayun-fullname").val(),
+        Address1: $("#frayun-address1").val(),
+        Address2: $("#frayun-address2").val(),
+        City: $("#frayun-city").val(),
+        State: $("#frayun-state").val(),
+        ZIPCode: ($("#frayun-country").val()!='US'?$("#frayun-postalcode").val():$("#frayun-zipcode").val().substring(0, 5)),
+        PostalCode: $("#frayun-postalcode").val(),
+        Country: $("#frayun-country").val(),
+        PhoneNumber: $("#frayun-phone").val()
+        //order: $("#order-id").val()
+    };
+    $("#frayun-sugguessedAddress").html("Verifying address");
+    $.ajax({
+        type: 'post',
+        url: '{{ route('checkCleanseAddress') }}', // in here you should put your query
+        data: {
+            "address": address
+            },
+        success: function(resp) {
+            console.log('cleansed');
+            console.dir(resp);
+            if(resp.success!="true"){
+                if(resp.response!=null){
+                    var html="<span style='color:red' >"+resp.response.AddressCleansingResult+"<span><br/>";
+                    html += resp.response.Address.FullName+"<br/>";
+                    html += resp.response.Address.Address1+"<br/>";
+                    html += resp.response.Address.Address2+"<br/>";
+                    html += resp.response.Address.City+", ";
+                    html += resp.response.Address.State+" ";
+                    html += resp.response.Address.ZIPCode+"<br/>";
+                    $("#frayun-sugguessedAddress").html(html);
+                }
+                else{
+                    var html="<span style='color:red' >"+resp.message+"<span><br/>";
+                    $("#frayun-sugguessedAddress").html(html);
+                }
+            }
+            else{
+                $("#frayun-sugguessedAddress").html("<span style='color:green' >Address Verified<span>");
+            }
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            alert('request failed');
+        }
+    });
+    //end check cleanse address
+}
+
+$("#frayun-verifyBtn").click(function() {
+    frayunVerifyAddress();
+});
+
+    $(".frayunBtn").click(function() {
+          $("#frayun-buy").prop("disabled",false);
+        pendingToship="";
+        $("#frayun-shipLevel").val('');
+        $("#frayun-fullname").val('');
+        $("#frayun-address1").val('');
+        $("#frayun-address2").val('');
+        $("#frayun-city").val('');
+        $("#frayun-state").val('');
+        $("#frayun-zipcode").val('');
+        $("#frayun-postalcode").val('');
+        $("#frayun-country").val('');
+        $("#frayun-phone").val('');
+        $("#frayun-product-items").html('');
+        $("#frayun-order-id").val('');
+
+        cleanseAddress='';
+
+        target_row = $(this).closest("tr").get(0);
+
+        currentSku = $(target_row).find('.internalSku').first().text();
+
+        var orderId = $(this).val();
+        //alert($('#printModal'));
+        $.ajax({
+            type: 'post',
+            url: '{{ route('getOrder') }}', // in here you should put your query
+            data: 'orderId=' + orderId, // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value
+            success: function(order) {
+                console.dir(order);
+                $("#frayun-product-items").html('');
+                $('#frayun-printModal').modal({
+                    backdrop: 'static'
+                });
+                $("#frayun-fullname").val(order['recipientName']);
+                $("#frayun-address1").val(order['address1']);
+                $("#frayun-address2").val(order['address2'] );
+                $("#frayun-city").val(order['city']);
+                $("#frayun-state").val(String(order['state']).toUpperCase());
+                $("#frayun-zipcode").val(order['zip']);
+                $("#frayun-postalcode").val(order['zip']);
+                if(order['frayun-country']=="USA"){
+                    order['frayun-country']="US";
+                }
+                $("#frayun-country").val(order['country']);
+                $("#frayun-phone").val(order['phone']);
+                products=[];
+                $("#frayun-total").val(0);
+                var orderTotal = 0;
+                $.each(order.detail, function(idx, item) {
+                    lineprice=0;
+                    if(order.store!='A'){
+                        orderTotal +=  parseFloat(item['price']) * parseFloat(item['qty']);
+                        lineprice =   parseFloat(item['price']) * parseFloat(item['qty']);
+                    }
+                    else{
+                        orderTotal +=  parseFloat(item['price']);
+                        lineprice =   parseFloat(item['price']);
+                    }
+
+                    if(isNaN(lineprice)){
+                        lineprice=100;
+                    }
+                    if(item['shipLevel']=='Standard'){
+                        $("#shipLevel").val('Standard');
+                    }
+                    $("#frayun-product-items").html($("#frayun-product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                    
+                    if(('name' in item) && item['name']!=null && item['name'].length>0){
+                        let sku= '';
+                        if('sku' in item && item['sku']!=null && item['sku'].length>0){
+                            sku = item['sku'];
+                        }
+                        else if('asin' in item && item['asin']!=null && item['asin'].length>0){
+                            sku = item['asin'];
+                        }
+                        else if('itemId' in item && item['itemId']!=null && item['itemId'].length>0){
+                            sku = item['itemId'];
+                        }
+                        let qty=1;
+                         if('qty' in item && item['qty']!=null && item['qty'].length>0){
+                            qty = item['qty'];
+                        }
+                        if(qty<1){
+                            qty=1;
+                        }
+                        if(sku!=''){
+                            products.push({
+                                "ProduceNameCN":item['name'].substring(0,49),
+                                "ProduceNameEN":item['name'].substring(0,49),
+                                "USD":lineprice,
+                                "SalePrice":lineprice,
+                                "Packages":qty,
+                                "Sku":sku,
+                                "Weight":0.5
+                            });
+                        }
+                    }
+            
+
+                    });
+                    if(isNaN(orderTotal) || orderTotal==0){
+                        orderTotal =100;
+                    }
+                    $("#frayun-total").val(orderTotal);
+                currentMemo ='';
+                $("#frayun-order-id").val(order['orderId']);
+
+                frayunVerifyAddress();
+
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                alert('request failed');
+            }
+        });
+    });
+
+
+		$("#frayun-buy").click(function() {
+            
+          $("#frayun-buy").prop("disabled",true);
+          var names = $("#frayun-fullname").val().split(/[ ,]+/).filter(Boolean);
+    			var address = {
+    				Name: $("#frayun-fullname").val(),
+    				Address1: $("#frayun-address1").val(),
+    				Address2: $("#frayun-address2").val(),
+    				City: $("#frayun-city").val(),
+    				State: $("#frayun-state").val(),
+    				ZIPCode: ($("#frayun-country").val()!='US'?$("#frayun-postalcode").val():$("#frayun-zipcode").val().substring(0, 5)),
+    				PostalCode: $("#frayun-postalcode").val(),
+    				Country: $("#frayun-country").val(),
+    				PhoneNumber: $("#frayun-phone").val()
+    				//order: $("#order-id").val()
+    			};
+                if(names.length>1){
+                    var fname =names[0];
+                    for(var i=1;i<names.length-2;i++){
+                        fname = " "+names[i];
+                    }
+                    address = {
+                        Name: $("#frayun-fullname").val(),
+                        FirstName: fname,
+                        LastName: names[names.length-1],
+                        Address1: $("#frayun-address1").val(),
+                        Address2: $("#frayun-address2").val(),
+                        City: $("#frayun-city").val(),
+                        State: $("#frayun-state").val(),
+                        ZIPCode: ($("#frayun-country").val()!='US'?$("#frayun-postalcode").val():$("#frayun-zipcode").val().substring(0, 5)),
+                        PostalCode: $("#frayun-postalcode").val(),
+                        Country: $("#frayun-country").val(),
+                        PhoneNumber: $("#frayun-phone").val()
+                        //order: $("#order-id").val()
+                    };
+                }
+                let requestResultCodes ={
+"00000": "success",
+"00001": "client number must empty or less than 50 characters",
+"00002": "Receiver name must be empty or less than 50 characters",
+"00003": "Receiver company must be empty or less than 200 characters",
+"00004": "Receiver phone must be empty or less than 50 characters",
+"00005": "Receiver email must be empty or less than 50 characters",
+"00006": "Receiver address must be empty or less than 200 characters",
+"00007": "Receiver city must be empty or less than 50 characters",
+"00008": "Receiver state must be empty or less than 50 characters",
+"00009": "Receiver country invalid",
+"00010": "Receiver zipcode must be empty or less than 50 characters",
+"00011": "this client number already exist",
+"00012": "Sku must be less than 50 characters",
+"00013": "product chinese description must be empty or less than 50 characters",
+"00014": "product english description must be empty or less than 50 characters",
+"00015": "qty cannot be 0",
+"00016": "declare value",
+"00017": "weight cannot be empty",
+"00018": "package json invalid",
+"00019": "package information cannot be empty",
+"00020": "failed to create package",
+"00021": "invalid send type",
+"00022": "does it contain battery?",
+"00023": "Not enough fund to buy label",
+"00024": "Actual weight cannot be empty",
+"00025": "invalid order json",
+"99999": "failed to authenticate"
+                }
+                $("#frayun-sugguessedAddress").html('buying label');
+                // console.dir(address);
+    			$.ajax({
+    				type: 'post',
+    				dataType: 'json',
+    				url: '{{ route('frayunBuyLabel') }}', // in here you should put your query
+    				data: {
+                        "orderId": $("#frayun-order-id").val(),
+    					"address": address,
+    					"lb": $("#frayun-pound").val(),
+    					"oz": $("#frayun-ounce").val(),
+    					"height": $("#frayun-height").val(),
+    					"width": $("#frayun-width").val(),
+    					"length": $("#frayun-length").val(),
+                        "shippingMethod": $("#frayun-shipping-method").val(),
+					    "ref": currentMemo,
+                        "products":products
+    					//"total": $("#frayun-total").val()
+    				},
+    				success: function(r) {
+                        $("#frayun-buy").prop("disabled",false);
+    					console.dir(r);
+                        let result = JSON.parse(r)
+    					console.dir(result);
+                        if(!Array.isArray(result) || result.length==0){
+                            alert('fail to get label');
+                            return;
+                        }
+                        let labelResult = result[0];
+
+                        if(labelResult.ResultCode){
+                            if(labelResult.ResultCode!="00000"){
+                                alert(requestResultCodes[labelResult.ResultCode]);
+                            }
+                            else{
+                                //labelResult.DpdNo
+                                console.log('tracking ' + labelResult.TrunNo);
+                                $("#frayun-buy").prop("disabled",true);
+                                $("#frayun-sugguessedAddress").html('downloading label');
+                                $.ajax({
+                                    type: 'post',
+                                    dataType: 'json',
+                                    url: '{{ route('frayunDownloadLabel') }}', // in here you should put your query
+                                    data: {
+                                        "dpdNo": labelResult.DpdNo
+                                    },
+                                    success: function(r) {
+                                        console.dir(r);
+                                        let result = JSON.parse(r)
+                                        console.dir(result);
+                                        if(!Array.isArray(result) || result.length==0){
+                                            alert('fail to get label');
+                                            return;
+                                        }
+                                        let downloadResult = result[0];
+
+                                        if(downloadResult.ResultCode){
+                                            if(downloadResult.ResultCode!="00000"){
+                                                alert(requestResultCodes[downloadResult.ResultCode]);
+                                            }
+                                            else {
+                                                // downloadResult.TurnNo
+                                                // downloadResult.PdfUrl
+                                                    ///////upload tracking ////////
+						                            var orderId = $("#frayun-order-id").val();
+                                                    total = parseFloat(labelResult.Total);
+                                                    var zone = labelResult.Zone;
+                                                    var rate = labelResult.Rate;
+                                                    var discountedRate = labelResult.DiscountedRate;
+                                                    if(currentStore!='S' && currentStore!='A' && currentStore!='E' &&  currentStore!='R' &&  currentStore!='T' &&  currentStore!='T2' &&  currentStore!='W' ){
+                                                        total = (1.15 * total).toFixed(2);
+                                                    }
+                                                    $.ajax({
+                                                        type: 'post',
+                                                        dataType: 'json',
+                                                        url: '{{ route('updateOrder') }}',
+                                                        data: {
+                                                            "store":currentStore,
+                                                            "tracking": downloadResult.TurnNo,
+                                                            "orderId": orderId,
+                                                            "url": downloadResult.PdfUrl,
+                                                            "amount": total,
+                                                            "stampsTxId": downloadResult.DpdNo,
+                                                            "pendingToship":'',
+                                                            'zone':zone,
+                                                            'rate':rate,
+                                                            'discountedRate':discountedRate,
+                                                        },
+                                                        success: function(r) {
+                                                            if(r.status!="ok"){
+                                                                alert('failed to save tracking, please write down tracking #');
+                                                            }
+                                                            
+                                                            $('#frayun-printModal').modal('hide');
+                                                            removeRowByOrderId(orderId);
+                                                        },
+                                                        error: function(e) {
+                                                            // console.log('save order failed');
+                                                            alert('failed');
+                                                        }
+                                                    });
+
+                                                    ///////end upload tracking ////////
+
+                                                $('#printModal-step3').modal({
+                                                    backdrop: 'static'
+                                                });
+                                                $("#print-body3").html('');
+                                                $('<iframe />').remove();
+                                                $('<iframe />'); // Create an iframe element
+                                                $('<iframe />', {
+                                                    name: 'labelFrame',
+                                                    id: 'labelFrame',
+                                                    scrolling: 'no',
+                                                    frameborder: '0',
+                                                    style: "width: 3.812in; height: 5.718in; border: 1px dashed black;",
+                                                    src:downloadResult.PdfUrl.replace("http://","https://")
+                                                }).appendTo('#print-body3');
+                                                $('#labelFrame').contents().find('body').html('');
+                                                $("#frayun-order-id").val('');
+                                                $("#frayun-shipping-method").val('');
+                                            }
+                                        }
+                                        else{
+                                            alert('fail to get label');
+                                        }
+                                    },
+                                    error: function(xhr, textStatus, errorThrown) {
+                                        $("#frayun-buy").prop("disabled",false);
+                                        // console.dir(xhr);
+                                        // console.dir(textStatus);
+                                        // console.dir(errorThrown);
+                                        alert('request failed');
+                                    }
+                                });
+                            }
+                        }
+                        else{
+                            alert('fail to get label');
+                        }
+    				},
+    				error: function(xhr, textStatus, errorThrown) {
+                        $("#frayun-buy").prop("disabled",false);
+                        // console.dir(xhr);
+                        // console.dir(textStatus);
+                        // console.dir(errorThrown);
+    					alert('request failed');
+    				}
+    			});
+
+		});
+
+		$(".labelBtn").click(function() {
+            pendingToship="";
+            $("#shipLevel").val('');
+            $("#fullname").val('');
+            $("#address1").val('');
+            $("#address2").val('');
+            $("#city").val('');
+            $("#state").val('');
+            $("#zipcode").val('');
+            $("#postalcode").val('');
+            $("#country").val('');
+            $("#phone").val('');
+            $("#product-items").html('');
+            $("#order-id").val('');
+            $("#signature").prop( "checked", false );
+            $("#insurance").val('');
+            $("#default_sku").prop( "checked", false );
+            $("#default_sku_label").hide();
+            $("#default_sku").hide();
+            $("#shipping_method").val('');
+
+            $("#declareValue").val('');
+
+            cleanseAddress='';
+
+			target_row = $(this).closest("tr").get(0);
+
+            currentSku = $(target_row).find('.internalSku').first().text();
+
+			var orderId = $(this).val();
+			//alert($('#printModal'));
+			$.ajax({
+				type: 'post',
+				url: '{{ route('getOrder') }}', // in here you should put your query
+				data: 'orderId=' + orderId, // here you pass your id via ajax .
+				// in php you should use $_POST['post_id'] to get this value
+				success: function(order) {
+                    console.dir(order);
+					$("#product-items").html('');
+					$('#printModal').modal({
+						backdrop: 'static'
+					});
+					$("#fullname").val(order['recipientName']);
+					$("#address1").val(order['address1']);
+					$("#address2").val(order['address2'] );
+					$("#city").val(order['city']);
+					$("#state").val(String(order['state']).toUpperCase());
+					$("#zipcode").val(order['zip']);
+                    $("#postalcode").val(order['zip']);
+                    if(order['country']=="USA"){
+                        order['country']="US";
+                    }
+					$("#country").val(order['country']);
+					$("#phone").val(order['phone']);
+                    var orderTotal = 0;
+                    $.each(order.detail, function(idx, item) {
+                        if(order.store!='A'){
+                            orderTotal +=  parseFloat(item['price']) * parseFloat(item['qty']);
+                        }
+                        else{
+                            orderTotal +=  parseFloat(item['price']);
+                        }
+                        $("#shipLevel").val(item['shipLevel']);
+                        $("#product-items").html($("#product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                     });
+                    currentMemo ='';
+                    $("#order-id").val(order['orderId']);
+                    $("#requireSignature").html('');
+                    if(orderTotal>=200){
+                        $("#requireSignature").html('<span style="color:red">Please Add Signature</span>');
+
+                    }
+                    verifyAddress();
+
+                    console.log('order.detail.length '+order.detail.length);
+                    console.log('currentSku '+currentSku);
+                    if(order.detail.length==1 && currentSku!=''){//load ship weight
+                        currentMemo =currentSku +" " +currentQty;
+                        $("#default_sku").show();
+                        $("#default_sku_label").show();
+                        currentQty = order.detail[0]['qty'] ;
+                    var data = {
+                        sku: currentSku,
+                        qty: currentQty
+                    };
+                    console.log('calling GetProductShipWeight ');
+                    console.dir(data);
+                        $.ajax({
+                        type: 'get',
+                        url: '{{ route('GetProductShipWeight') }}', // in here you should put your query
+                        data: data,
+                        // in php you should use $_POST['post_id'] to get this value
+                        success: function(weight_data) {
+                            console.dir(weight_data);
+                            if(weight_data=='not found'){
+                            if(currentSku!='' && order['country']=='US'){
+                                $("#default_sku").prop( "checked", true );
+                            }
+                            }
+                            else{
+                                $("#pound").val(weight_data.weight_lb);
+                                $("#ounce").val(weight_data.weight_oz);
+                                $("#height").val(weight_data.height);
+                                $("#width").val(weight_data.width);
+                                $("#length").val(weight_data.length);
+                                $("#package-type").val(weight_data.package_type);
+                                $("#declareValue").val(weight_data.declare_value);
+                                $("#signature").prop('checked',(weight_data.need_signature=='true'));
+                                $("#insurance").val(weight_data.insured_value);
+                                if(weight_data.weight_lb=='' || weight_data.weight_lb=='0'){
+                                    $("#shipping_method").val('US-GA');
+                                }
+                                else{
+                                    $("#shipping_method").val('US-PM');
+                                }
+                            }
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            alert('request failed');
+                        }
+                        });
+                    }
+				},
+				error: function(xhr, textStatus, errorThrown) {
+					alert('request failed');
+				}
+			});
+		});
+
+        var labelRate='';
+		$("#nextBtn").click(function() {
+          var names = $("#fullname").val().split(/[ ,]+/).filter(Boolean);
+    			var address = {
+    				FullName: $("#fullname").val(),
+    				Address1: $("#address1").val(),
+    				Address2: $("#address2").val(),
+    				City: $("#city").val(),
+    				State: $("#state").val(),
+    				ZIPCode: ($("#country").val()!='US'?$("#postalcode").val():$("#zipcode").val().substring(0, 5)),
+    				PostalCode: $("#postalcode").val(),
+    				Country: $("#country").val(),
+    				PhoneNumber: $("#phone").val()
+    				//order: $("#order-id").val()
+    			};
+                if(names.length>1){
+                    var fname =names[0];
+                    for(var i=1;i<names.length-2;i++){
+                        fname = " "+names[i];
+                    }
+                    address = {
+                        FullName: $("#fullname").val(),
+                        FirstName: fname,
+                        LastName: names[names.length-1],
+                        Address1: $("#address1").val(),
+                        Address2: $("#address2").val(),
+                        City: $("#city").val(),
+                        State: $("#state").val(),
+                        ZIPCode: ($("#country").val()!='US'?$("#postalcode").val():$("#zipcode").val().substring(0, 5)),
+                        PostalCode: $("#postalcode").val(),
+                        Country: $("#country").val(),
+                        PhoneNumber: $("#phone").val()
+                        //order: $("#order-id").val()
+                    };
+                }
+                if($("#country").val()!='US' && $("#country").val()!='USA' ){
+                    if($("#declareValue").val()==''){
+                        alert('must set declare value for internation package');
+                        return;
+                    }
+                }
+
+          if($("#default_sku").prop("checked")){
+            $.ajax({
+    				type: 'post',
+    				dataType: 'json',
+    				url: '{{ route('SaveProductShipWeight') }}', // in here you should put your query
+    				data: {
+    					"sku": currentSku,
+    					"qty": currentQty,
+    					"weight_lb": $("#pound").val(),
+    					"weight_oz": $("#ounce").val(),
+    					"height": $("#height").val(),
+    					"width": $("#width").val(),
+    					"length": $("#length").val(),
+    					"package_type": $("#package-type").val(),
+                        "declare_value": $("#declareValue").val(),
+                        "need_signature":$("#signature").prop('checked'),
+                        "insured_value":$("#insurance").val()
+    				},
+    				success: function(r) {
+                    console.log(r);
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        $("#nextBtn").prop("disabled",false);
+                        // console.dir(xhr);
+                        // console.dir(textStatus);
+                        // console.dir(errorThrown);
+    					alert('request failed');
+    				}
+    			});
+          }
+                // console.dir(address);
+    			$.ajax({
+    				type: 'post',
+    				dataType: 'json',
+    				url: '{{ route('getCleanse') }}', // in here you should put your query
+    				data: {
+    					"address": address,
+    					"lb": $("#pound").val(),
+    					"oz": $("#ounce").val(),
+    					"height": $("#height").val(),
+    					"width": $("#width").val(),
+    					"length": $("#length").val(),
+    					"packageType": $("#package-type").val(),
+                        "declareValue": $("#declareValue").val(),
+                        "signature":$("#signature").prop('checked'),
+                        "insurance":$("#insurance").val()
+    				},
+    				success: function(r) {
+                        $("#nextBtn").prop("disabled",false);
+    					console.dir('success');
+    					console.dir(r);
+    					if (r['success'] == true) {
+                        cleanseAddress = r.Address;
+
+                        $('#printModal').modal('hide');
+                        $('#printModal-step2').modal({
+                            backdrop: 'static'
+                        });
+                        $("#authenicator").val(r.Authenticator);
+                        var result = "";
+                        result +=  "<tr><td colspan='3'>"
+                        +r.Address.FullName+" <br/> "
+                        +r.Address.Address1+" "
+                        +r.Address.Address2+"<br/> "
+                        +r.Address.City+", "
+                        +r.Address.State+" "
+                        +r.Address.PostalCode+" <br/>"
+                        +((r.Address.Country==undefined)?"":r.Address.Country)+" "
+                        var pickedCheapest = false;
+                        function rateTotal(rate) {
+                            var total = parseFloat(rate.Amount) || 0;
+                            if (rate.AddOns && rate.AddOns.AddOnV20) {
+                                $.each(rate.AddOns.AddOnV20, function(ix, ao) {
+                                    if (!ao || !ao.AddOnType) {
+                                        return;
+                                    }
+                                    if ((ao.AddOnType=='US-A-INS' || ao.AddOnType=='SC-A-INS' || ao.AddOnType=='CAR-A-INS') && $("#insurance").val()>0) {
+                                        total += parseFloat(ao.Amount) || 0;
+                                    }
+                                    if ((ao.AddOnType=='US-A-SC' || ao.AddOnType=='CAR-A-SR' || ao.AddOnType=='CAR-A-ASR' || ao.AddOnType=='CAR-A-DSR') && $("#signature").prop('checked')) {
+                                        total += parseFloat(ao.Amount) || 0;
+                                    }
+                                });
+                            }
+                            return total;
+                        }
+                        var domesticUps = {
+                            'UPS-NDAE': true,
+                            'UPS-NDA': true,
+                            'UPS-NDAS': true,
+                            'UPS-2DAA': true,
+                            'UPS-2DA': true,
+                            'UPS-3DS': true,
+                            'UPS-GD': true,
+                            'UPS-GDS': true
+                        };
+                        $.each(r.Rates.sort(function(a, b) { return rateTotal(a) - rateTotal(b); }), function(idx, rate) {
+                            var addService = true;
+                            if(rate.ServiceType=='US-FC' || rate.ServiceType=='US-PM' || rate.ServiceType=='US-GA'){
+                                // if($("#shipLevel").val()=='Standard'){
+                                //     addService = false;
+                                // }
+                            }
+                  if(addService==true){
+                    if(rate.ServiceType!='US-PM' 
+                    && rate.ServiceType!='US-GA' 
+                    //&& rate.ServiceType!='US-MM' 
+                    && rate.ServiceType!='US-XM' 
+                    && rate.ServiceType!='US-EMI' 
+                    && rate.ServiceType!='US-PMI' 
+                    && rate.ServiceType!='US-FCI'
+                    && !domesticUps[rate.ServiceType]){
+                        return;
+                    }
+                    //alert(JSON.stringify(rate));
+                    result += "<tr><td><input type='radio' id='rate' name='rate' value='" + rate.Code + "' ";
+                    if(!pickedCheapest){
+                        result += " checked ";
+                        labelRate = rate.Code;
+                        pickedCheapest = true;
+                    }
+
+									var totalAmount = parseFloat(rate.Amount);
+									result += "></td><td>" + rate.Amount;
+									if(rate.AddOns && rate.AddOns.AddOnV20){
+									$.each(rate.AddOns.AddOnV20, function(ix, ao){
+										if(!ao || !ao.AddOnType){
+											return;
+										}
+										if(ao.AddOnType=='US-A-INS' || ao.AddOnType=='SC-A-INS' || ao.AddOnType=='CAR-A-INS'){
+											if($("#insurance").val()>0){
+												result +=" | insurance: "+ao.Amount + " | ";
+												totalAmount+=parseFloat(ao.Amount) ;
+											}
+										}
+										if(ao.AddOnType=='US-A-SC' || ao.AddOnType=='CAR-A-SR' || ao.AddOnType=='CAR-A-ASR' || ao.AddOnType=='CAR-A-DSR'){
+											if($("#signature").prop('checked')){
+												result +=" | signature: "+ao.Amount + " | ";
+												totalAmount+=parseFloat(ao.Amount) ;
+											}
+										}
+									});
+									}
+									result+= "<strong> total:"+ totalAmount.toFixed(2) + "</strong>" ;
+									result += "</td><td>";
+									switch (rate.ServiceType) {
+										case 'US-FC':
+											result += 'USPS First-Class Mail';
+											break;
+										case 'US-MM':
+											result += 'USPS Media Mail';
+											break;
+										case 'US-PP':
+											result += 'USPS Parcel Post';
+											break;
+										case 'US-PM':
+											result += 'USPS Priority Mail';
+											break;
+										case 'US-GA':
+											result += 'USPS Ground Advantage';
+											break;
+										case 'US-XM':
+											result += 'USPS Priority Mail Express';
+											break;
+										case 'US-EMI':
+											result += 'USPS Priority Mail Express International';
+											break;
+										case 'US-PMI':
+											result += 'USPS Priority Mail International';
+											break;
+										case 'US-FCI':
+											result += 'USPS First Class Mail International';
+											break;
+										case 'US-CM':
+											result += 'USPS Critical Mail';
+											break;
+										case 'US-PS':
+											result += 'USPS Parcel Select';
+											break;
+										case 'US-LM':
+											result += 'USPS Library Mail';
+											break;
+                                        case 'US-RETURN':
+											result += 'USPS Return Mail';
+											break;
+                                        case 'UPS-NDAE':
+											result += 'UPS Next Day Air Early';
+											break;
+                                        case 'UPS-NDA':
+											result += 'UPS Next Day Air';
+											break;
+                                        case 'UPS-NDAS':
+											result += 'UPS Next Day Air Saver';
+											break;
+                                        case 'UPS-2DAA':
+											result += 'UPS 2nd Day Air A.M.';
+											break;
+                                        case 'UPS-2DA':
+											result += 'UPS 2nd Day Air';
+											break;
+                                        case 'UPS-3DS':
+											result += 'UPS 3 Day Select';
+											break;
+                                        case 'UPS-GD':
+											result += 'UPS Ground';
+											break;
+                                        case 'UPS-GDS':
+											result += 'UPS Ground Saver';
+											break;
+									}
+									result += '</td></tr>';
+								}
+    						});
+    						$("#print-body2").html("<table class='table table-bordered table-condensed'>" + result + "</table>");
+
+                  if(cleanseAddress.Country != undefined && cleanseAddress.Country != "US"){
+                      $("#nextBtn2").prop('disabled',true);
+                      var orderId = $("#order-id").val();
+                      $.ajax({
+                          type: 'post',
+                          url: '{{ route('getOrder') }}', // in here you should put your query
+                          data: 'orderId=' + orderId, // here you pass your id via ajax .
+                          // in php you should use $_POST['post_id'] to get this value
+                          success: function(r) {
+                              var custom =' total value '+ $("#declareValue").val();
+                              custom += '<table >';
+                              custom += '<tr><td>Description</td><td style="15px">Qty</td><td style="15px">Value</td><td style="15px">Lb</td><td style="15px">Oz</td></tr>';
+                              $.each(r.detail, function(i, item) {
+                                  custom += '<tr><td><input type="text" id="cusDesc'+i+'" value="'+ item['name'] +'"></td><td style="15px"><input type="text" id="qty'+i+'" value="'+ item['qty'] +'" size="6"></td><td style="15px"><input type="text" id="val'+i+'" value="" size="6"></td><td style="15px"><input type="text" id="lb'+i+'" size="6"></td><td style="15px"><input type="text" id="oz'+i+'"  size="6"></td></tr>';
+                              });
+                              i = r.detail.length ;
+                              custom += '<tr><td><input type="text" id="cusDesc'+i+'"></td><td style="15px"><input type="text" id="qty'+i+'" size="6"></td><td style="15px"><input type="text" id="val'+i+'" size="6"></td><td style="15px"><input type="text" id="lb'+i+'" size="6"></td><td style="15px"><input type="text" id="oz'+i+'"  size="6"></td></tr>';
+                              custom += '</table>';
+                              $("#print-body2").append(custom);
+                              $("#nextBtn2").prop('disabled',false);
+                          }
+                      });
+
+                  }
+
+                //   if($("#shipping_method").val()!='' && useShipMethod == true && $("#nextBtn2").prop('disabled')!=true){
+                //         $("#nextBtn2").trigger( "click" );
+                //     }
+    					} else {
+    						alert('oops\n' + r.message);
+                            console.dir(r);
+    						//console.dir(r);
+    					}
+    				},
+    				error: function(xhr, textStatus, errorThrown) {
+                        $("#nextBtn").prop("disabled",false);
+                        console.dir(xhr);
+                        console.dir(textStatus);
+                        console.dir(errorThrown);
+    					alert('request failed');
+    				}
+    			});
+
+		});
+        var amzShippingServiceId='';
+        $("#amzNextBtn").click(function(){
+            if($("#amz-height").val()=='' || $("#amz-width").val()=='' ||$("#amz-length").val()==''){
+                alert('please package enter dimension');
+                return;
+            }
+            if($("#amz-default_sku").prop("checked")){
+                $.ajax({
+                    type: 'post',
+                    dataType: 'json',
+                    url: '{{ route('SaveProductShipWeight') }}', // in here you should put your query
+                    data: {
+                        "sku": currentSku,
+                        "qty": currentQty,
+                        "weight_lb": $("#amz-pound").val(),
+                        "weight_oz": $("#amz-ounce").val(),
+                        "height": $("#amz-height").val(),
+                        "width": $("#amz-width").val(),
+                        "length": $("#amz-length").val()
+                    },
+                    success: function(r) {
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        $("#amzNextBtn").prop("disabled",false);
+                        alert('request failed');
+                    }
+                });
+            }
+
+            $('#amzPrintModal').modal('hide');
+            $('#amzPrintModal-step2').modal({
+                backdrop: 'static'
+            });
+            $("#amz-print-body2").html("loading...");
+
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('GetAmazonShippingService') }}', // in here you should put your query
+                data: {
+                    "orderId": $("#amz-order-id").val(),
+                    "lb": $("#amz-pound").val(),
+                    "oz": $("#amz-ounce").val(),
+                    "height": $("#amz-height").val(),
+                    "width": $("#amz-width").val(),
+                    "length": $("#amz-length").val()
+                },
+                success: function(r) {
+                    console.log('success');
+                    console.log(r);
+                    var lowest= 500;
+                    var result = "";
+                    for(var i=0;i<r.length;i++){
+                        console.dir(r[i]);
+                        result +=  "<tr><td><input type='radio' id='amzShippingServiceId' name='amzShippingServiceId' value='" + r[i].ShippingServiceId + "'";
+                        if(parseFloat(r[i].Rate.Amount)<lowest){
+                            lowest = parseFloat(r[i].Rate.Amount);
+                            console.log(lowest);
+                            amzShippingServiceId = r[i].ShippingServiceId;
+                            result += " checked ";
+                        }
+                        result += " /></td>" ;
+                        result +=  "<td>"+r[i].ShippingServiceName+"</td><td>"+r[i].Rate.Amount+"</td><td>";
+                        if(r[i].EarliestEstimatedDeliveryDate==r[i].LatestEstimatedDeliveryDate){
+                            result +=String(r[i].EarliestEstimatedDeliveryDate).substr(0, 10)+"</td>";
+                        }
+                        else{
+                            result +=String(r[i].EarliestEstimatedDeliveryDate).substr(0, 10)+" to "+String(r[i].LatestEstimatedDeliveryDate).substr(0, 10)+"</td>";
+                        }
+                        result += "</tr>";
+                    }
+                    $("#amz-print-body2").html("<table class='table table-bordered table-condensed'>" + result + "</table>");
+
+                },
+                error:function(e){
+                    console.log('error');
+                    console.dir(e);
+                }
+            });
+        });
+
+        $(document).on('click','input:radio[id=amzShippingServiceId]',function() {
+            amzShippingServiceId= $(this).val();
+        });
+        $("#amz-nextBtn2").click(function() {
+            //$("#nextBtn2").prop("disabled",true);
+            console.log(amzShippingServiceId);
+
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('GetAmazonShippingLabel') }}', // in here you should put your query
+                data: {
+                    "orderId": $("#amz-order-id").val(),
+                    "lb": $("#amz-pound").val(),
+                    "oz": $("#amz-ounce").val(),
+                    "height": $("#amz-height").val(),
+                    "width": $("#amz-width").val(),
+                    "length": $("#amz-length").val(),
+                    "shippingServiceId": amzShippingServiceId
+                },
+                success: function(r) {
+                    var imageurl='/getOrderLabel?orderId='+$("#amz-order-id").val();
+    var http = new XMLHttpRequest();
+    http.open('HEAD', '/getOrderLabel?orderId="+$("#amz-order-id").val() + "', false);
+    http.send();
+    var timeoutSpan=1500;
+    if(http.status!=404){
+        timeoutSpan=0;
+    }
+    setTimeout(function(){
+        $('#printModal-step2').modal('hide');
+        $('#printModal-step3').modal({
+            backdrop: 'static'
+        });
+        $("#print-body3").html('');
+        $('<iframe />').remove();
+        $('<iframe />'); // Create an iframe element
+        $('<iframe />', {
+            name: 'labelFrame',
+            id: 'labelFrame',
+            scrolling: 'no',
+            frameborder: '0',
+            style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+        }).appendTo('#print-body3');
+        $('#labelFrame').contents().find('body').html('');
+        $('#labelFrame').contents().find('body').append("<img src='/getOrderLabel?orderId="+$("#amz-order-id").val() + "' id='labelImage' style='width: 3.812in;height: 5.718in;'>");
+
+        removeRowByOrderId($("#amz-order-id").val());
+        $('#amzPrintModal-step2').modal('hide');
+        $("#amz-order-id").val('');
+
+    }, timeoutSpan);
+
+                },
+                error:function(e){
+                    console.log('error');
+                    console.dir(e);
+                }
+            });
+        });
+
+        $(document).on('click','input:radio[id=rate]',function() {
+            labelRate= $(this).val();
+        });
+		$("#nextBtn2").click(function() {
+            $("#nextBtn2").prop("disabled",true);
+			var authenicator = $("#authenicator").val();
+
+			var rate = $("#rate").val();
+            if(labelRate!=''){
+                rate = labelRate;
+            }
+
+             address =  cleanseAddress ;
+            var customInfo = Array();
+             if(cleanseAddress.Country != undefined && cleanseAddress.Country != "US"){
+                for(var i=0;i<10;i++){
+                    if($("#cusDesc"+i).length>0) {
+                        var ci = {
+                            cusDesc: $("#cusDesc"+i).val(),
+                            qty: $("#qty"+i).val(),
+                            val: $("#val"+i).val(),
+                            lb: $("#lb"+i).val(),
+                            oz: $("#oz"+i).val()
+                        };
+                        customInfo.push(ci);
+                    }
+                }
+             }
+			$.ajax({
+				type: 'post',
+				dataType: 'json',
+				url: '{{ route('buyLabel') }}', // in here you should put your query
+				data: {
+					"authenicator": authenicator,
+					"rate": rate,
+					"address": address,
+                    "signature": $("#signature").prop('checked'),
+					"memo": $("#order-id").val()+" "+currentMemo,
+                    "customInfo":customInfo
+				},
+				success: function(r) {
+                    $("#nextBtn2").prop("disabled",false);
+					if (r['success'] == 'true') {
+						//							  alert(r['response'].URL);
+						var tracking = r['response'].TrackingNumber;
+                        var amount = r['response'].Rate.Amount;
+                        var serviceType = (r['response'].Rate && r['response'].Rate.ServiceType) ? r['response'].Rate.ServiceType : '';
+                        if(tracking.length<10){
+                            alert('uh oh, bad tracking #');
+                        }
+						var orderId = $("#order-id").val();
+						var url = r['response'].URL;
+						if (typeof getStore !== 'undefined') {
+                            if(getStore){
+                                currentStore = $(target_row).find(".store").first().text();
+                            }
+                    // the variable is defined
+                        }
+						///////upload tracking ////////
+                        $.ajax({
+                            type: 'post',
+                            dataType: 'json',
+                            url: '{{ route('updateOrder') }}',
+                            data: {
+                                "store":currentStore,
+                                "tracking": tracking,
+                                "orderId": orderId,
+                                "url": url,
+                                "amount": amount,
+                                "stampsTxId": r['response'].StampsTxID,
+                                "pendingToship":pendingToship,
+                                "serviceType": serviceType
+                            },
+                            success: function(r) {
+                                if(r.status!="ok"){
+                                    alert('failed to save tracking, please write down tracking #');
+                                }
+                                pendingToship="";
+                                if(currentStore=='S'){
+                                    fulfillOrder(orderId,tracking,serviceType);
+                                }
+                                else{
+                                    removeRowByOrderId(orderId);
+                                }
+                            },
+                            error: function(e) {
+                                // console.log('save order failed');
+                                alert('failed');
+                            }
+                        });
+
+
+                        $('#printModal-step2').modal('hide');
+                        $('#printModal-step3').modal({
+                            backdrop: 'static'
+                        });
+                        $("#print-body3").html('');
+                        $('<iframe />').remove();
+                        $('<iframe />'); // Create an iframe element
+                        $('<iframe />', {
+                            name: 'labelFrame',
+                            id: 'labelFrame',
+                            scrolling: 'no',
+                            frameborder: '0',
+                            style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+                        }).appendTo('#print-body3');
+                        $('#labelFrame').contents().find('body').html('');
+                        if(cleanseAddress.Country != undefined && cleanseAddress.Country != "US"){
+                            $('#labelFrame').contents().find('body').append("<a href='" + r['response'].URL + "' target=_blank>Get Label here</a>");
+                         }
+                         else{
+                            $('#labelFrame').contents().find('body').append("<img src='" + r['response'].URL + "' id='labelImage' style='width: 3.812in;height: 5.718in;'>");
+                         }
+
+
+					} else {
+						alert(r['message']);
+					}
+				},
+                error: function(xhr, textStatus, errorThrown) {
+                    $("#nextBtn2").prop("disabled",false);
+                    alert('request failed');
+                }
+			});
+
+		});
+
+
+    var filterAction = function() {
+        var priorityChk = $("#priorityChk").prop('checked');
+        var urgentChk = $("#urgentChk").prop('checked');
+        var processingChk =$("#processingChk").prop('checked');
+        var madeStatus = $("#filterMade").val();
+        var singleChk = $("#singleChk").prop('checked');
+        // var assignedName = $("#filterAssign").val();
+
+        $('#orders > tbody  > tr').each(function() {
+            var toShow = true;
+            if (priorityChk && !$(this).hasClass("priority")) {
+                toShow = false;
+            }
+            if (urgentChk && !$(this).hasClass("urgent")) {
+                toShow = false;
+            }
+            if (processingChk && !$(this).hasClass("inprogress")) {
+                toShow = false;
+            }
+
+            if (madeStatus == 'Made' && !$(this).hasClass("made")) {
+                toShow = false;
+            }
+            if (madeStatus == 'Not Made' && ($(this).hasClass("made") || $(this).hasClass("halfmade"))) {
+                toShow = false;
+            }
+            if (singleChk && $(this).text().indexOf("Multi-orders") > 0) {
+                toShow = false;
+            }
+            // if(assignedName!='' && $(this).find(".assignSel").val().indexOf(assignedName)<0){
+            //     toShow = false;
+            // }
+
+            if (!toShow) {
+                $(this).hide();
+            } else {
+                $(this).show();
+            }
+        });
+    };
+
+    $(".madeBtn").click(function() {
+        var orderId = $(this).val();
+        target_row = $(this).closest(".orderTr").get(0); // this line did the trick
+
+        var btn = $(this);
+        $.ajax({
+            type: 'post',
+            url: madeUrl, // in here you should put your query
+            data: 'orderId=' + orderId, // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value
+            success: function(r) {
+                if (r == "1") {
+                  recordAction(orderId + " -> made");
+                    $(target_row).addClass("made");
+                    $(target_row).find(".progressBtn").hide();
+                    $(btn).text('Unmade');
+                    Echo.private('order')
+                    .whisper('order-update', {
+                        itemId: orderId,
+                        status: "made"
+                    });
+                } else {
+                  recordAction(orderId + " -> not made");
+                    $(target_row).removeClass("made");
+                    $(target_row).find(".progressBtn").removeClass("invisible");
+                    $(target_row).find(".progressBtn").show();
+                    $(btn).text('Made');
+                    Echo.private('order')
+                    .whisper('order-update', {
+                        itemId: orderId,
+                        status: "unmade"
+                    });
+                }
+
+                filterAction();
+            }
+        });
+    });
+
+    $(".progressBtn").click(function() {
+        var orderId = $(this).val();
+        target_row = $(this).closest(".orderTr").get(0); // this line did the trick
+
+        var btn = $(this);
+        $.ajax({
+            type: 'post',
+            url: progressUrl, // in here you should put your query
+            data: 'orderId=' + orderId, // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value
+            success: function(r) {
+              console.log(r);
+                if (r == "2") {
+                  recordAction(orderId + " -> inprogress");
+                    $(target_row).addClass("inprogress");
+                    $(btn).text('In Progress');
+                    Echo.private('order')
+                    .whisper('order-update', {
+                        itemId: orderId,
+                        status: "inprogress"
+                    });
+                } else {
+                  recordAction(orderId + " -> not in progress");
+                    $(target_row).removeClass("inprogress");
+                    $(btn).text('Start Process');
+                    Echo.private('order')
+                    .whisper('order-update', {
+                        itemId: orderId,
+                        status: "startprocess"
+                    });
+                }
+                filterAction();
+            }
+        });
+    });
+    $(".prioritizeBtn").click(function() {
+        var orderId = $(this).val();
+        var hp = 1;
+        var newText = 'UnPrioritize';
+        var btn = $(this);
+        if ($(this).text().trim() == 'Urgent') {
+            hp = 2;
+            newText = 'UnPrioritize';
+        }
+        if ($(this).text().trim() == 'Prioritize') {
+            hp = 1;
+            newText = 'Urgent';
+        }
+        if ($(this).text().trim() == 'UnPrioritize') {
+            hp = 0;
+            newText = 'Prioritize';
+        }
+        target_row = $(this).closest("tr").get(0);
+        $.ajax({
+            type: 'post',
+            url: priorityUrl, // in here you should put your query
+            data: 'orderId=' + orderId + "&hp=" + hp, // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value
+            success: function(r) {
+                if ($(btn).text().trim() == 'Prioritize') {
+                  recordAction(orderId + " -> Prioritize");
+                    $(target_row).addClass("priority");
+                }
+                else if ($(btn).text().trim() == 'Urgent') {
+                  recordAction(orderId + " -> Urgent");
+                    $(target_row).addClass("urgent");
+                } else {
+                  recordAction(orderId + " -> not Prioritize");
+                    $(target_row).removeClass("priority").removeClass("urgent");
+                }
+                $(btn).text(newText);
+
+
+                Echo.private('order')
+                    .whisper('order-update', {
+                        orderId: orderId,
+                        status: newText
+                    });
+
+                filterAction();
+            }
+        });
+    });
+
+    $(".saveNote").click(function() {
+        var orderId = $(this).val();
+        var noteObj = $(this).siblings("textarea.notes");
+        var note = $(noteObj).val();
+        $.ajax({
+            type: 'post',
+            url: noteUrl, // in here you should put your query
+            data: 'orderId=' + orderId + "&notes=" + encodeURIComponent(note), // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value
+            success: function(r) {
+                  recordAction(orderId + " save note");
+                $(noteObj).css('background-color', 'green')
+                $(noteObj).animate({
+                    backgroundColor: '#fff'
+                }, 3000);
+
+                Echo.private('order')
+                    .whisper('order-update', {
+                        itemId: orderId,
+                        note: note
+                    });
+            }
+        });
+    });
+
+    $(".doneBtn").click(function() {
+        var orderId = $(this).val();
+        target_row = $(this).closest(".orderTr").get(0); // this line did the trick
+        console.dir(target_row);
+        var getDone = confirm("Are you sure ?");
+
+        if (getDone) {
+
+            $.ajax({
+                type: 'post',
+                url: doneUrl, // in here you should put your query
+                data: 'orderId=' + orderId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value
+                success: function(r) {
+                  recordAction(orderId + " -> done");
+                  oTable.row(target_row).remove().draw();
+
+                    Echo.private('order')
+                        .whisper('order-update', {
+                            orderId: orderId,
+                            status: "done"
+                        });
+                }
+            });
+        }
+    });
+
+    $(".packBtn").click(function() {
+        var orderId = $(this).val();
+        //alert($('#printModal'));
+        $.ajax({
+            type: 'post',
+            url: getOrderUrl, // in here you should put your query
+            data: 'orderId=' + orderId, // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value
+            success: function(r) {
+                $('#packFrame').html($('<iframe />', {
+                    name: 'packingFrame',
+                    id: 'packingFrame',
+                    scrolling: 'no',
+                    frameborder: '0'
+                }));
+
+                var packContent = "<img src='/OneStore/images/Angel_Isabella_logo.jpg' style='width:100%' />";
+                packContent += "Ship To:<br/>";
+                packContent += "<div style='font-size:14pt;font-weight:bold'>" + r['recipientName'] + "<br>";
+                packContent += r['address1'] + "<br>";
+                packContent += r['address2'] + "<br>";
+                packContent += r['city'] + ", " + r['state'] + " " + r['zip'] + "<br>";
+                packContent += "</div>";
+                packContent += "<br/>";
+                packContent += "<hr/>";
+                packContent += "<br/>";
+                packContent += "<br/>";
+                packContent += "<div style='font-size:14pt;font-weight:bold'>"
+                packContent += "Order ID :" + r['orderId'];
+                packContent += "<br/>";
+                packContent += "<br/>";
+                packContent += "<table border='1'>";
+                packContent += "<thead border='1'><tr><th>Quantity</th><th>Product</th></tr></thead>";
+                packContent += "<tbody border='1'>";
+                $.each(r.detail, function(idx, item) {
+
+                    packContent += "<tr><td>" + item['qty'] + "</td><td>" + item['name'] + " <br> ASIN: " + item['asin'] + "</td>";
+                });
+                packContent += "</tbody>";
+                packContent += "</table>";
+                $('#packingFrame').contents().find('body').html(packContent);
+                setTimeout(function() {
+                    frames["packingFrame"].focus();
+                    frames["packingFrame"].print();
+                }, 250);
+                //                    var packWin = window.open();
+                //                    $(packWin.document.body).html(packContent);
+            }
+        });
+    });
+
+
+
+$(document).on('click','#singleChk',filterAction);
+
+$(document).on('click','#priorityChk',filterAction);
+$(document).on('click','#urgentChk',filterAction);
+$(document).on('click','#processingChk',filterAction);
+$(document).on('change','#filterMade',filterAction);
+
+$(document).on('change','#filterAssign',filterAction);
+
+
+$(".addTrackBtn").click(function() {
+    var orderId = $(this).val();
+    var tracking = prompt("Please enter USPS tracking", "");
+
+
+    if (tracking != null ) {
+        if(tracking.length<10){
+            alert('invalid tracking #');
+            return;
+        }
+        target_row = $(this).closest("tr").get(0);
+        if (typeof getStore !== 'undefined') {
+            if(getStore){
+                currentStore = $(target_row).find(".store").first().text();
+            }
+    // the variable is defined
+        }
+
+        if(currentStore=='S'){
+            fulfillOrder(orderId,tracking);
+        }
+        else{
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('updateOrder') }}',
+                data: {
+                    "tracking": tracking,
+                    "orderId": orderId,
+                    "store":currentStore,
+                },
+                success: function(r) {
+
+                  recordAction(orderId + " add tracking "+ tracking);
+                  oTable.row(target_row).remove().draw();
+                    Echo.private('order')
+                        .whisper('order-update', {
+                            orderId: orderId,
+                            status: "done"
+                        });
+
+                },
+                error: function(e) {
+                    console.dir(e);
+                    alert('failed\n'+e);
+
+                    //alert('failed');
+                }
+            });
+        }
+
+    }
+});
+
+    $(document).on('change','.assignSel',function() {
+        selObj = $(this);
+        var ids = $(this).val().split("|");
+        var orderId = ids[0];
+        var subOrderId = ids[1];
+        var name = ids[2];
+        $.ajax({
+            type : 'post',
+                    url : '{{ route('assignOrder') }}', // in here you should put your query
+                    data :  'orderId=' + orderId+'&subOrderId=' + subOrderId + "&name="+name, // here you pass your id via ajax .
+                    success : function(r)
+                    {
+                    // console.dir(r);
+                        $(selObj).css('background-color','green')
+                        $(selObj).animate({backgroundColor: '#fff'}, 1000);
+                        filterAction();
+                    },
+                    error: function(r){
+                    }
+            });
+    });
+
+    $(document).on('click','.sameProduct',function(e){
+        e.preventDefault();
+        var searchText = $(this).data('title');
+        $('#orders_filter label input').val(searchText);
+        oTable.search(searchText).draw();
+    });
+
+    $(".notes").each(function(i,element){
+
+      element.style.height = "5px";
+      element.style.height = (element.scrollHeight)+"px";
+    });
+    });
+
+	</script>
+
+    <script src="{{ asset('assets/js/unshipped.js') }}"></script>
+ {% include "massPrint.njk" %}
+      </div>
+    <!-- ./ container -->
+    <!-- ./ content -->
+    <!-- Footer -->
+    <footer class="clearfix">
+      {% block footer %}{% endblock %}
+    </footer>
+    <!-- ./ Footer -->
+
+
+    <div class="modal fade" id="waitModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Please wait</h4>
+                </div>
+                <div class="modal-body" id="print-body">
+                </div>
+              </div>
+            </div>
+      </div>
+
+
+    <div class="modal fade" id="selectMatchModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <span id="matchTitle"></span>
+                </div>
+                <div class="modal-body" >
+
+                    <table class="table table-bordered table-condensed" id="skuTable">
+                    <thead>
+                      <tr>
+                      <td></td><td>SKU</td><td class="hidden-xs">NAME</td><td class="hidden-xs">Image</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+      </div>
+
+
+      <div class="modal fade" id="skuModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <span id="skuTitle"></span>
+                </div>
+                <div class="modal-body" >
+                 SKU: <span id="skuText"></span><br/>
+                  <div id="skuLocation"></div>
+                  <div id="skuImages"></div>
+                </div>
+              </div>
+            </div>
+      </div>
+
+</body>
+<script>
+    var productDataLoaded = false;
+    var externalSku = '';
+    var externalAsin = '';
+    function findBootstrapEnvironment() {
+        var envs = ['xs', 'sm', 'md', 'lg'];
+
+        var $el = $('<div>');
+        $el.appendTo($('body'));
+
+        for (var i = envs.length - 1; i >= 0; i--) {
+            var env = envs[i];
+
+            $el.addClass('hidden-'+env);
+            if ($el.is(':hidden')) {
+                $el.remove();
+                return env;
+            }
+        }
+    }
+
+    $(document).ready(function(){
+        //$(".fedexPrint").hide();
+
+    function loadProducts(){
+        if(productDataLoaded==false){
+        $.ajax({
+            type:'get',
+            datatype: 'json',
+            url: '/api/products',
+            success: function(r) {
+                var rowHtml='';
+                for(var i=0;i<r.products.length;i++){
+
+                    rowHtml='<tr><td><button class="btn btn-sm btn-primary btnSelectMatch" value="'+r.products[i].sku+'">Select</button></td>';
+                    rowHtml+='<td>';
+                    rowHtml+='<p class="hidden-lg hidden-md hidden-sm">'+r.products[i].name+'</p>';
+
+                    rowHtml+='<img class="hidden-lg hidden-md hidden-sm" width="100px" src="'+((r.products[i].images!=null && r.products[i].images.length>0)?'/storage/product_images_icon/'+r.products[i].images[0].filename:'')+'">';
+
+                    rowHtml+=r.products[i].sku;
+                    for(var j=0;j<r.products[i].locations.length;j++){
+                        rowHtml+="<br>"+   r.products[i].locations[j].location + " x "+r.products[i].locations[j].qty;
+                    }
+                    rowHtml+='</td><td class="hidden-xs">'+r.products[i].name+'</td><td class="hidden-xs"><img src="'+((r.products[i].images!=null && r.products[i].images.length>0)?'/storage/product_images_icon/'+r.products[i].images[0].filename:'')+'"></td></tr>'
+                    $("#skuTable tbody").append(rowHtml);
+                }
+                $("#skuTable").DataTable();
+                productDataLoaded = true;
+            },
+            error: function(err){
+                console.dir(err);
+            }
+        });
+        }
+    }
+
+	$(".btnFindMatch").click(function(e){
+
+        loadProducts();
+        target_row = $(this).closest("tr").get(0);
+        currentStore = $(target_row).find(".store").first().text();
+        itemName = $(target_row).find(".itemName").first().text();
+        externalSku = $(target_row).find(".externalSku").first().text();
+        externalAsin = $(target_row).find(".externalAsin").first().text();
+        //store = $(target_row).find(".store").first().text();
+
+        // console.log(store);
+        // console.log(itemName);
+        // console.log(externalSku);
+        // console.log(externalAsin);
+        $("#matchTitle").text(itemName);
+        $("#selectMatchModal").modal('show');
+    });
+
+var findAndReplaceSku = function(externalSku, externalAsin, interalSku, locationText){
+    $('#orders > tbody  > tr').each(function() {
+        var externalSkuElementText = $(this).find('.externalSku').first().text();
+        var externalAsinElementText = $(this).find('.externalAsin').first().text();
+        var skuLocationElement = $(this).find('.skuLocation').first();
+        if(skuLocationElement!=null){
+            if((externalSku!='' && externalSku==externalSkuElementText )
+            ||
+            (externalAsin!='' && externalAsin==externalAsinElementText)){
+                skuLocationElement.html(locationText);
+            }
+        }
+    });
+};
+
+  $(document).on('click','.btnSelectMatch',function(e){
+    e.preventDefault();
+    target_row = $(this).closest("tr").get(0);
+    var sku = $(this).val();
+    var qty = prompt("Please enter matching qty", "");
+    var data ={
+      store: currentStore,
+      externalSku: externalSku,
+      externalAsin: externalAsin,
+      sku: sku,
+      qty: qty
+    };
+
+    var thisBtn = $(this);
+    $(thisBtn).text('saving...');
+    $(thisBtn).prop('disabled',true);
+    $.ajax({
+        type: 'post',
+        url: '{{ route('updateProductMap') }}', // in here you should put your query
+        data: data, // here you pass your id via ajax .
+        // in php you should use $_POST['post_id'] to get this value
+        success: function(result) {
+            console.dir(result);
+            if(result!="OK"){
+              alert(result);
+            }
+            $("#selectMatchModal").modal('hide');
+            $(target_row).find('.btnFindMatch').first().hide();
+
+            var internalSkuElement = $(target_row).find('.internalSku').first();
+            internalSkuElement.text(sku);
+            var skuLocationElement = $(target_row).find('.skuLocation').first();
+            if(skuLocationElement!=null){
+                skuLocationElement.text('');
+            }
+
+            $(thisBtn).text('Select');
+            $(thisBtn).prop('disabled',false);
+            $.ajax({
+                type: 'get',
+                url: '{{ route('product.sku') }}', // in here you should put your query
+                data: {'sku':sku}, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value
+                success: function(result) {
+                    console.dir(result);
+                    $("#skuTitle").text(result.name);
+                    $("#skuText").text(result.sku);
+
+                    var locationHtml='<br/>location: <br/>' ;
+                    for(var i=0;i<result.locations.length;i++){
+                        locationHtml += result.locations[i].location+" - "+result.locations[i].qty+"<br/>";
+                    }
+
+                    if(skuLocationElement!=null){
+                        skuLocationElement.html(locationHtml);
+                    }
+
+                    findAndReplaceSku(externalSku,externalAsin,sku,locationHtml);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert('request failed');
+                    $("#skuTitle").text('failed to load');
+                }
+            });
+
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            alert('request failed');
+        }
+    });
+  });
+    });
+    </script>
+</html>

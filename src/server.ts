@@ -4,11 +4,20 @@ import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 import { config } from './config.js';
 import { db, sql } from './db.js';
+import { registerViewPlugins, render } from './view.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
 
 await app.register(formbody);
 await app.register(multipart, { attachFieldsToBody: false });
+await registerViewPlugins(app);
+
+// T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
+if (process.env.NODE_ENV !== 'production') {
+  app.get('/__layout-test', async (req, reply) => {
+    await render(req, reply, 'layout-test', { flash: 'yes' });
+  });
+}
 await app.register(fastifyStatic, {
   root: config.PUBLIC_DIR,
   wildcard: true,

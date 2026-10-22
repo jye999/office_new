@@ -1,0 +1,7 @@
+<select class="assignSel">
+    <option value="{{ item.orderId }}|{{ item.subOrderId }}|"></option>
+    {% for s in staffs %}
+        <option value="{{ item.orderId }}|{{ item.subOrderId }}|{{ s.name }}"  {{ (item.assignedTo==s.name?'selected':'') }}>{{ s.name }}</option>
+    {% endfor %}
+    <option value="{{ item.orderId }}|{{ item.subOrderId }}|Other" {{ (item.assignedTo=='Other'?'selected':'') }}>Other</option>
+</select>
