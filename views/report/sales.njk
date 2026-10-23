@@ -1,0 +1,95 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+table {
+    font-size:14pt;
+}
+</style>
+<strong style="color:red">We don't have any Etsy $ data before 9/20/2017, <br/>
+and no walmart data beofre 9/13/2017<br/>
+Amazon.ca $ is in CAN not USD</strong>
+<form>
+From 
+<input id="start_date" name="start" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd" value='{{ start }}'>
+To
+<input id="end_date" name="end" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd" value='{{ end }}'>
+<button class="btn btn-primary" id="btnShowReport" type="submit">Go</button>
+</form>
+<table id="salesTable" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>Channel</td>
+            <td>Fulfillment</td>
+            <td>Orders</td>
+            <td>Qty</td>
+            <td>Total</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in sales %}
+            <tr>
+                <td>
+                {% if s.channel == 'E' %}Ebay{% elif s.channel == 'R' %}6 - R Store{% elif s.channel == 'S' %}Shopify{% elif s.channel == 'T' %}Etsy{% elif s.channel == 'T2' %}Etsy2{% elif s.channel == 'T3' %}Etsy3 - Rental{% elif s.channel == 'H' %}Houzz{% elif s.channel == 'W' %}Walmart{% else %}{{ s.channel }}{% endif %}
+                </td>
+                <td>{{ s.fulfillment }}</td>
+                <td>{{ s.orderNumber }}</td>
+                <td>{{ s.qty }}</td>
+                {# PHP's `+` coerces the DECIMAL strings to numbers (nunjucks would concatenate) #}
+                {# PHP's `+` coerces the DECIMAL strings to numbers and nulls to 0 #}
+                <td>{{ number_format(s.price | default(0, true) | float + s.tax | default(0, true) | float + s.shipping | default(0, true) | float, 2) }}</td>
+                </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+        <td colspan="2"><strong>Total</strong></td>
+            <td><strong><span id="totalOrder"></span></strong></td>
+            <td><strong><span id="totalQty"></span></strong></td>
+            <td><strong><span id="grandTotal"></span></strong></td>
+        </tr>
+    </tfoot>
+</table>
+<div id="msgDiv" style="font-size:22pt; color:red">
+</div>
+
+<script>
+  $(document).ready(function(){
+
+    $('#start_date').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    $('#end_date').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    oTable = $('#salesTable').dataTable({
+        "aoColumns": [{
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }],
+        "aaSorting": [
+            [0, "asc"]
+        ],
+        "bPaginate": false,
+        "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+            console.log('hi');
+            var totalOrder = 0;
+            var totalQty = 0;
+            var grandTotal = 0;
+            for ( var i=0 ; i<aaData.length ; i++ ) {
+                totalOrder += parseFloat(aaData[i][2]);
+                totalQty += parseFloat(aaData[i][3]);
+                grandTotal += parseFloat(aaData[i][4].replace(/\,/g,''));
+            }
+            
+            $("#totalOrder").text(totalOrder);
+            $("#totalQty").text(totalQty);
+            $("#grandTotal").text(grandTotal.toFixed(2));
+        }
+    });
+
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,105 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+table {
+    font-size:14pt;
+}
+</style>
+{{ today_start }}  to {{ today_end }}  
+<table id="salesTable" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>Channel</td>
+            <td>Fulfillment</td>
+            <td>Yesterday</td>
+            <td>Today</td>
+            <td>{{ lastyear_today }} </td>
+            <td>Last Week</td>
+            <td>This Month</td>
+            <td>Last Year month to date</td>
+            <td>Change</td>
+            <td>Last Year this month</td>
+            <td>This Month Prediction</td>
+            <td>YTD</td>
+            <td>Last YTD</td>
+            <td>Change</td>
+        </tr>
+    </thead>
+    <tbody>
+    
+        {% for s in data %}
+            <tr>
+                <td>
+                {% if s['Channel'] == 'E' %}Ebay{% elif s['Channel'] == 'R' %}R Store{% elif s['Channel'] == 'S' %}Shopify{% elif s['Channel'] == 'T' %}Etsy{% elif s['Channel'] == 'T2' %}Etsy2{% elif s['Channel'] == 'T3' %}Etsy3 - Rental{% elif s['Channel'] == 'H' %}Houzz{% elif s['Channel'] == 'W' %}Walmart{% elif s['Channel'] == 'EF' %}Enfloral{% else %}{{ s['Channel'] }}{% endif %}
+                </td>
+                <td>{{ s['Fulfillment'] }}</td>
+                <td>{% if isset(s['yesterday_price']) %}{{ number_format(s['yesterday_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['today_price']) %}{{ number_format(s['today_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['lastyear_today_price']) %}{{ number_format(s['lastyear_today_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['lastweek_price']) %}{{ number_format(s['lastweek_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['thismonth_price']) %}{{ number_format(s['thismonth_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['lastyear_todate_price']) %}{{ number_format(s['lastyear_todate_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>
+                {% if isset(s['lastyear_todate_price']) and isset(s['thismonth_price']) %}
+                  {% set last_month = s['lastyear_todate_price'] %}
+                  {% set this_month = s['thismonth_price'] %}
+                  {% if last_month > 0 %}
+                    {{ number_format((this_month - last_month) / last_month * 100, 2, '.', ',') }} %
+                  {% endif %}
+                {% endif %}
+                </td>
+                <td>{% if isset(s['lastyear_month_price']) %}{{ number_format(s['lastyear_month_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['thismonth_prediction_price']) %}{{ number_format(s['thismonth_prediction_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['ytd_price']) %}{{ number_format(s['ytd_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>{% if isset(s['lastytd_price']) %}{{ number_format(s['lastytd_price'],2,'.',',') }}{% else %}0{% endif %}</td>
+                <td>
+                {% if isset(s['ytd_price']) and isset(s['lastytd_price']) %}
+                  {% set last_month = s['lastytd_price'] %}
+                  {% set this_month = s['ytd_price'] %}
+                  {% if last_month > 0 %}
+                    {{ number_format((this_month - last_month) / last_month * 100, 2, '.', ',') }} %
+                  {% endif %}
+                {% endif %}
+                </td>
+                </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+        <td colspan="2"><strong>Total</strong></td>
+            <td><strong><span id="grandTotal1">{{ number_format(total['yesterday'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal0">{{ number_format(total['today'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal8">{{ number_format(total['lastyear_today'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal2">{{ number_format(total['lastweek'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal3">{{ number_format(total['thismonth'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal9">{{ number_format(total['lastyear_todate'],2,'.',',') }}</span></strong></td>
+            <td><strong>
+            {% if total['lastyear_todate'] > 0 %}
+                {{ number_format((total['thismonth'] - total['lastyear_todate']) / total['lastyear_todate'] * 100, 2, '.', ',') }} %
+            {% else %}
+                N/A
+            {% endif %}
+            </strong></td>
+            <td><strong><span id="grandTotal10">{{ number_format(total['lastyear_month'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal7">{{ number_format(total['thismonth_prediction'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal5">{{ number_format(total['ytd'],2,'.',',') }}</span></strong></td>
+            <td><strong><span id="grandTotal5">{{ number_format(total['lastytd'],2,'.',',') }}</span></strong></td>
+            <td><strong>
+            {% if total['lastytd'] > 0 %}
+                {{ number_format((total['ytd'] - total['lastytd']) / total['lastytd'] * 100, 2, '.', ',') }} %
+            {% else %}
+                N/A
+            {% endif %}
+            </strong></td>
+        </tr>
+    </tfoot>
+</table>
+<script>
+  $(document).ready(function(){
+
+    oTable = $('#salesTable').dataTable({
+    "iDisplayLength": 50
+  });
+  });
+</script>
+{% endblock %}

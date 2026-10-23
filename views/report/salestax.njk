@@ -1,0 +1,75 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+table {
+    font-size:14pt;
+}
+</style>
+<strong style="color:red">We don't have any Etsy $ data before 9/20/2017, <br/>
+and no walmart data beofre 9/13/2017<br/>
+Amazon.ca $ is in CAN not USD</strong>
+<form>
+From 
+<input id="start_date" name="start" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd" value='{{ start }}'>
+To
+<input id="end_date" name="end" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd" value='{{ end }}'>
+<button class="btn btn-primary" id="btnShowReport" type="submit">Go</button>
+</form>
+<table id="salesTable" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>County</td>
+            <td>Total</td>
+            <td>Tax</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in sales %}
+            <tr>
+                <td>{{ s.county }}</td>
+                <td>{{ s.total }}</td>
+                <td>{{ s.tax }}</td>
+                </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td><strong><span id="totalQty">Total</span></strong></td>
+            <td><strong><span id="grandTotal"></span></strong></td>
+            <td><strong><span></span></strong></td>
+        </tr>
+    </tfoot>
+</table>
+<div id="msgDiv" style="font-size:22pt; color:red">
+</div>
+
+<script>
+  $(document).ready(function(){
+
+    $('#start_date').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    $('#end_date').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    oTable = $('#salesTable').dataTable({
+        "aoColumns": [{
+            "sWidth": "50%"
+        }, {
+            "sWidth": "50%"
+        }, {
+            "sWidth": "50%"
+        }],
+        "aaSorting": [
+            [0, "asc"]
+        ],
+        "bPaginate": false,
+        "fnFooterCallback": function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+            var grandTotal = 0;
+            for ( var i=0 ; i<aaData.length ; i++ ) {
+                grandTotal += parseFloat(aaData[i][1].replace(/\,/g,''));
+            }
+            
+            $("#grandTotal").text(grandTotal.toFixed(2));
+        }
+    });
+
+  });
+</script>
+{% endblock %}

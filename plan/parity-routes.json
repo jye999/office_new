@@ -58,9 +58,7 @@
   "/BulkProduction.ajax"
  ],
  "T22a": [
-  "/SalesReport",
-  "/SalesTaxReport",
-  "/SalesSnapshotReport"
+  "/SalesTaxReport"
  ],
  "T22b": [
   "/ProductSalesReport",
