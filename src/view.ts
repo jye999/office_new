@@ -403,6 +403,15 @@ export function asset(path = ''): string {
   return url(path);
 }
 
+// laravelcollective/html 5.2 HTML::style/HTML::script — attribute order and
+// absolute URL verified against the old app's rendered product edit page.
+export function html_style(href: string): string {
+  return `<link media="all" type="text/css" rel="stylesheet" href="${url(href)}">`;
+}
+export function html_script(src: string): string {
+  return `<script src="${url(src)}"></script>`;
+}
+
 // Laravel Mix mix(): the PUBLIC_DIR mix-manifest.json value, returned as-is
 // (verified live: the old app emits the manifest path unmodified, e.g.
 // '/css/app.css'; missing manifest/entry -> the argument, like the unhashed
@@ -498,7 +507,12 @@ export class FormBuilder {
     const method = rawMethod !== 'GET' ? 'POST' : rawMethod;
 
     let action: string;
-    if ('url' in options) action = this.ctx.absoluteUrl(String(options['url']));
+    if ('url' in options) {
+      const raw = String(options['url']);
+      // Laravel 5.4 Form::open uses the url as-is; url() already returns
+      // absolute, so only relative paths get the base prefix.
+      action = /^https?:\/\//.test(raw) ? raw : this.ctx.absoluteUrl(raw);
+    }
     else if ('route' in options) action = routeUrl(String(options['route']));
     else action = this.ctx.currentUrl();
 
@@ -752,6 +766,8 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     url,
     asset,
     mix,
+    html_style,
+    html_script,
     route,
   };
 }

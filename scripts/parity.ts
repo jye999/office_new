@@ -113,6 +113,9 @@ function normalizeHtml(html: string): string {
   return html
     .replaceAll(OLD_BASE, 'BASE')
     .replaceAll(NEW_BASE, 'BASE')
+    // view url()/asset() are APP_URL-based (localhost), not the harness base
+    .replaceAll(config.APP_URL.replace(/\/+$/, ''), 'BASE')
+    .replaceAll(config.OLD_APP_URL.replace(/\/+$/, '').replace('127.0.0.1', 'localhost'), 'BASE')
     // strip the old app's debug-mode PhpDebugBar injection (link + scripts;
     // includes non-deterministic query/timeline data)
     .replace(/<link rel='stylesheet'[^>]*\/_debugbar[\s\S]*<\/script>\s*(?=<\/body>|$)/, '') // T14: also when the debugbar lands at document end (after </html>, no </body>)
@@ -124,6 +127,8 @@ function normalizeHtml(html: string): string {
     .replace(/(name\s*=\s*'_token'\s*value\s*=\s*')[^']*(')/g, '$1$2')
     // csrf tokens also appear in inline JS payloads (session-specific, per side)
     .replace(/(_token:\s*')[^']*(')/g, '$1$2')
+    // layouts' window.Laravel = {"csrfToken":"..."} (raw JSON, session-specific)
+    .replace(/("csrfToken":")[^"]*(")/g, '$1$2')
     // T14: /chat's inline JS sends the session token as 'X-CSRF-TOKEN': '...'
     .replace(/('X-CSRF-TOKEN':\s*')[^']*(')/g, '$1$2')
     .replace(/>\s+</g, '><') // inter-tag whitespace (old pretty-prints some views)

@@ -1,0 +1,42 @@
+{% extends "layout.njk" %}
+{% block content %}
+<form action="{{ url('products.uploadBulk')}}" method="POST"  enctype="multipart/form-data">
+<input type="file" id="bulkFile" name="bulkFile">
+  <input type="submit">
+</form>
+    <ul>
+
+    {% for img in images %}
+        <li>
+            <img src="{{ img }}" width="450px" />
+            <button class="btnDelete btn btn-danger" value="{{ img }}">Delete</button>
+            <hr/>
+        </li>
+    {% endfor %}
+</ul>
+</tbody>
+</table>
+<script>
+    $(document).ready(function(){
+        $(".btnDelete").click(function(){
+            let imgId = $(this).val();
+            $.ajax({
+            type : 'delete',
+                    url : '{{ url('products.deleteBulk')}}', // in here you should put your query c
+                    data :  'id=' + imgId, // here you pass your id via ajax .
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success : function(r)
+                    {
+                        location.reload();
+                    },
+                    error: function(r)
+                    {
+                        alert('error');
+                        console.dir(r);
+                    }
+            });
+
+        })
+    });
+    </script>
+{% endblock %}

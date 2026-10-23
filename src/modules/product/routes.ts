@@ -27,13 +27,16 @@
 //   (PHP 7: `$input['id'] != null` is false for every string).
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import { randomBytes } from 'node:crypto';
 import { db, nowDb, sql } from '../../db.js';
-import { allInput, input, redirectBack } from '../../http.js';
+import { datatables } from '../../datatables.js';
+import { allInput, input, lredirect, redirectBack } from '../../http.js';
 import { image } from '../../images.js';
+import { btDeleting } from '../../lib/ajaxis.js';
 import { mergeDuplicateLocations, ensureDefaultStillStocked } from '../../lib/warehouseLocation.js';
 import { disk } from '../../storage.js';
-import { any, notFoundPage, registerFallback, registerRoute, route } from '../../router.js';
-import { json_encode, render } from '../../view.js';
+import { any, notFoundPage, registerFallback, registerRoute, resource, route } from '../../router.js';
+import { json_encode, render, sendServer500, url } from '../../view.js';
 
 const ROLES = ['admin', 'user', 'remote'];
 type Row = Record<string, unknown>;
@@ -560,6 +563,308 @@ async function vue(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   await render(req, reply, 'product/vue', { title: 'vue' });
 }
 
+// ---------------------------------------------------------------- route actions (T28)
+
+
+// web.php:341 resource param is {product} (singular of the resource name);
+// web.php:359-361 use {id}. Laravel 5.4 splices it positionally into $id (T20),
+// so accept whichever the route carries.
+function reqId(req: FastifyRequest): number {
+  const p = req.params as Record<string, string>;
+  return Number(p['product'] ?? p['id']);
+}
+
+// Product@index (web.php:341 resource index + :342 /products): renders the
+// standalone Vue shell (lastRefresh is computed but the view uses none of it).
+async function productsIndex(_req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const reportTime = await db
+    .selectFrom('os_report_time')
+    .select(['updated_at'])
+    .where('reportName', '=', 'shopifyrefresh')
+    .executeTakeFirst();
+  const lastRefresh = reportTime ? String(reportTime.updated_at ?? '') : '';
+  await render(_req, reply, 'product/index', { title: 'Index - product', lastRefresh });
+}
+
+// Product@anyData (web.php:343): Datatables::of(Product::query())->make(true).
+// Eloquent rows serialise with the $appends (type, sku_num) after the columns.
+async function anyData(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const result = await datatables(db.selectFrom('os_products').selectAll()).make(allInput(req));
+  reply.send({
+    ...result,
+    data: result.data.map((row) => {
+      const chars = [...String(row['sku'] ?? '')];
+      return { ...row, type: chars[0] ?? '', sku_num: chars.slice(1).join('') };
+    }),
+  });
+}
+
+// Product@create (web.php:341 resource create).
+async function productCreate(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  await render(req, reply, 'product/create', { title: 'Create - product' });
+}
+
+// Product@show (web.php:341 resource show): the AJAX branch returns the URL
+// string; the HTML branch 500s in the old app (the view reads $item, the
+// controller passes $product -> Undefined variable on render, verified live).
+async function productShow(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const id = reqId(req);
+  if (req.headers['x-requested-with'] === 'XMLHttpRequest') {
+    return reply.type('text/html; charset=UTF-8').send(url(`product/${id}`));
+  }
+  // SAFETY: {id} projection.
+  const row = (await db.selectFrom('os_products').select('id').where('id', '=', id).executeTakeFirst()) as
+    | { id: number }
+    | undefined;
+  if (!row) return notFoundPage(reply); // findOrfail
+  return sendServer500(req, reply); // view() fatal, kept behaviour
+}
+
+// Product@edit (web.php:341 resource edit).
+async function productEdit(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const id = reqId(req);
+  // SAFETY: full os_products row -> Record (see productWithRelations).
+  const row = (await db.selectFrom('os_products').selectAll().where('id', '=', id).executeTakeFirst()) as unknown as
+    | Row
+    | undefined;
+  if (!row) return notFoundPage(reply); // findOrfail
+  await render(req, reply, 'product/edit', { title: 'Edit - product', product: row });
+}
+
+// Product@update (web.php:359): name required|max:300, upc required|max:20;
+// every listed field is assigned UNCONDITIONALLY (missing -> NULL, kept quirk).
+async function productUpdate(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const all = allInput(req);
+  const id = reqId(req);
+  const errors: Record<string, string[]> = {};
+  for (const [field, max] of [
+    ['name', 300],
+    ['upc', 20],
+  ] as const) {
+    const msgs: string[] = [];
+    const v = all[field];
+    if (requiredFails(v)) msgs.push(`The ${field} field is required.`);
+    else if ([...String(v)].length > max) msgs.push(`The ${field} may not be greater than ${max} characters.`);
+    if (msgs.length > 0) errors[field] = msgs;
+  }
+  if (Object.keys(errors).length > 0) {
+    const accept = req.headers['accept'];
+    if (typeof accept === 'string' && accept.includes('application/json')) {
+      const first = Object.values(errors)[0][0];
+      return reply.code(422).send({ message: first, errors });
+    }
+    return redirectBack(req, reply).withErrors(errors).withInput({ ...all, password: undefined });
+  }
+  // SAFETY: {id} projection of the os_products row.
+  const row = (await db.selectFrom('os_products').select('id').where('id', '=', id).executeTakeFirst()) as
+    | { id: number }
+    | undefined;
+  if (!row) return notFoundPage(reply); // findOrfail
+  const fields = ['upc', 'name', 'sku', 'asin', 'ebay', 'shopify', 'etsy', 'houzz', 'walmart', 'main_image',
+    'bullet_point_1', 'bullet_point_2', 'bullet_point_3', 'bullet_point_4', 'bullet_point_5',
+    'cost', 'price', 'wholesale_price', 'qty'] as const;
+  // SAFETY: os_products columns + timestamp; runtime values mirror Eloquent.
+  await db.updateTable('os_products')
+    .set({ ...Object.fromEntries(fields.map((f) => [f, all[f] ?? null])), updated_at: nowDb() } as never)
+    .where('id', '=', id)
+    .execute();
+  return lredirect(req, reply, 'product');
+}
+
+// Product@destroy (web.php:360): deletes the product row ONLY (locations are
+// orphaned — kept quirk); returns URL::to('product') as a plain text body.
+async function productDestroy(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const id = reqId(req);
+  // SAFETY: {id} projection.
+  const row = (await db.selectFrom('os_products').select('id').where('id', '=', id).executeTakeFirst()) as
+    | { id: number }
+    | undefined;
+  if (!row) return notFoundPage(reply); // findOrfail
+  await db.deleteFrom('os_products').where('id', '=', id).execute();
+  return reply.type('text/html; charset=UTF-8').send(url('product'));
+}
+
+// Product@DeleteMsg (web.php:361): Ajaxis modal for XHR, empty 200 otherwise.
+async function productDeleteMsg(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const id = String((req.params as Record<string, string>)['product'] ?? (req.params as Record<string, string>)['id']);
+  if (req.headers['x-requested-with'] !== 'XMLHttpRequest') {
+    return reply.type('text/html; charset=UTF-8').send('');
+  }
+  const msg = btDeleting('Warning!!', 'Would you like to remove This?', `/product/${id}/delete`);
+  reply.type('text/html; charset=UTF-8').send(msg);
+}
+
+// PHP 7 loose `== null` for the types form input can produce.
+function php7LooseNull(v: unknown): boolean {
+  return v === null || v === undefined || v === '' || v === false || v === 0 || v === '0';
+}
+
+// where(col, '=', v) with Laravel's null -> whereNull semantics, applied to a
+// Kysely builder (builder types are per-table, so it is called per table).
+function eqWhere<T extends { where(col: string, op: '=', v: string): T; where(col: string, op: 'is', v: null): T }>(q: T, col: string, v: unknown): T {
+  return v === null || v === undefined ? q.where(col, 'is', null) : q.where(col, '=', String(v));
+}
+
+// Product@UpdateProductMap (web.php:152): upsert os_product_map on
+// (store, externalId); externalSku falls back to externalAsin when loose-null.
+async function updateProductMap(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  let externalId = input(req, 'externalSku');
+  if (php7LooseNull(externalId)) externalId = input(req, 'externalAsin');
+  const store = input(req, 'store');
+  const sku = input(req, 'sku');
+  const qty = input(req, 'qty');
+  // SAFETY: {id} projection of os_product_map.
+  const pMap = (await eqWhere(
+    eqWhere(db.selectFrom('os_product_map').select('id'), 'store', store),
+    'externalId',
+    externalId,
+  )
+    .executeTakeFirst()) as { id: number } | undefined;
+  const ts = nowDb();
+  if (!pMap) {
+    // SAFETY: os_product_map column set + timestamps (Eloquent stamps both).
+    await db.insertInto('os_product_map')
+      .values({ sku, store, externalId, qty, created_at: ts, updated_at: ts } as never)
+      .execute();
+  } else {
+    // SAFETY: os_product_map columns + timestamp.
+    await db.updateTable('os_product_map')
+      .set({ sku, qty, updated_at: ts } as never)
+      .where('id', '=', pMap.id)
+      .execute();
+  }
+  jsonStr(reply, 'OK');
+}
+
+// Product@GetProductShipWeight (web.php:153): the full row JSON, no appends.
+async function getProductShipWeight(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const sku = input(req, 'sku');
+  const qty = input(req, 'qty');
+  // SAFETY: full os_product_ship_weight row -> Record (see productWithRelations).
+  const row = (await eqWhere(
+    eqWhere(db.selectFrom('os_product_ship_weight').selectAll(), 'sku', sku),
+    'qty',
+    qty,
+  )
+    .executeTakeFirst()) as unknown as Row | undefined;
+  if (!row) return jsonStr(reply, 'not found');
+  reply.send(row);
+}
+
+// Product@SaveProductShipWeight (web.php:154): insert when (sku, qty) is new,
+// then assign the eight dimension/value fields unconditionally.
+async function saveProductShipWeight(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const all = allInput(req);
+  const sku = all['sku'] ?? null;
+  const qty = all['qty'] ?? null;
+  const fields = ['width', 'height', 'length', 'weight_lb', 'weight_oz', 'package_type', 'declare_value', 'insured_value', 'need_signature'] as const;
+  const values: Row = Object.fromEntries(fields.map((f) => [f, all[f] ?? null]));
+  // SAFETY: {id} projection of os_product_ship_weight.
+  const existing = (await eqWhere(
+    eqWhere(db.selectFrom('os_product_ship_weight').select('id'), 'sku', sku),
+    'qty',
+    qty,
+  )
+    .executeTakeFirst()) as { id: number } | undefined;
+  const ts = nowDb();
+  if (!existing) {
+    // qty may be null -> the row stores it (Eloquent assigns before save).
+    // SAFETY: full os_product_ship_weight column set + timestamps.
+    await db.insertInto('os_product_ship_weight')
+      .values({ sku, qty, ...values, created_at: ts, updated_at: ts } as never)
+      .execute();
+  } else {
+    // SAFETY: os_product_ship_weight columns + timestamp.
+    await db.updateTable('os_product_ship_weight')
+      .set({ ...values, updated_at: ts } as never)
+      .where('id', '=', existing.id)
+      .execute();
+  }
+  jsonStr(reply, 'OK');
+}
+
+// PHP asort() default (SORT_REGULAR) over strings: numeric strings compare
+// numerically, everything else bytewise.
+function asortStrings(arr: string[]): string[] {
+  return arr.sort((x, y) => {
+    const xn = x.trim() !== '' && !Number.isNaN(Number(x));
+    const yn = y.trim() !== '' && !Number.isNaN(Number(y));
+    if (xn && yn) return Number(x) - Number(y);
+    return x < y ? -1 : x > y ? 1 : 0;
+  });
+}
+
+// Product@bulkProduction (web.php:351): S3 list of the bucket; 500s while the
+// bucket is missing (the live behaviour, verified on :6999).
+async function bulkProduction(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  try {
+    const files = await disk('s3-bulk-production').allFiles?.() ?? [];
+    await render(req, reply, 'product/bulk', { images: asortStrings([...files]) });
+  } catch {
+    return sendServer500(req, reply);
+  }
+}
+
+// Product@viewBulkProduction (web.php:352): same list, each key a signed URL
+// valid one minute (Carbon now + '+1 minutes').
+async function viewBulkProduction(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const d = disk('s3-bulk-production');
+  try {
+    const files = await d.allFiles?.() ?? [];
+    const images: string[] = [];
+    for (const f of asortStrings([...files])) images.push(await d.temporaryUrl!(f, Math.floor(Date.now() / 1000) + 60));
+    await render(req, reply, 'product/viewbulk', { images });
+  } catch {
+    return sendServer500(req, reply);
+  }
+}
+
+// Product@deleteBulkProduction (web.php:353): the literal s3 'path/file.jpg'
+// delete (no-op) runs before the real one; result is a bool JSON.
+async function deleteBulkProduction(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const imgId = String(input(req, 'id') ?? '');
+  await disk('s3').delete('path/file.jpg');
+  const result = await disk('s3-bulk-production').delete(imgId);
+  reply.send(result);
+}
+
+// ProductController::sanitize (byte-exact port of the PHP, incl. the mojibake
+// entries; strip_tags ported as <…> removal — shortcut: only filenames reach it).
+function sanitize(s: string): string {
+  const strip = ['~', '`', '!', '@', '#', '$', '%', '^', '&', '*', '(', ')', '_', '=', '+', '[', '{', ']',
+    '}', '\\', '|', ';', ':', '"', "'", '&#8216;', '&#8217;', '&#8220;', '&#8221;', '&#8211;', '&#8212;',
+    'â€”', 'â€“', ',', '<', '.', '>', '/', '?'];
+  let clean = s.replace(/<[^>]*>/g, '');
+  for (const c of strip) clean = clean.split(c).join('');
+  clean = clean.trim().replace(/\s+/g, '-');
+  return clean.toLowerCase();
+}
+
+// Product@uploadBulkProduction (web.php:354): Flysystem putFile() quirk — the
+// sanitized name is the DIRECTORY, the stored key is <dir>/<original><rand32>.<ext>.
+async function uploadBulkProduction(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  let photo: { filename: string; buffer: Buffer } | null = null;
+  if (req.isMultipart()) {
+    for await (const part of req.parts()) {
+      // SAFETY: multipart part shape (file part -> stream, field part -> value).
+      const p = part as { fieldname: string; filename?: string; file?: unknown; value?: string; toBuffer: () => Promise<Buffer> };
+      if (!p.file) {
+        void p.value; // drain field parts
+        continue;
+      }
+      if (p.fieldname !== 'bulkFile') continue;
+      photo = { filename: p.filename ?? '', buffer: await p.toBuffer() };
+    }
+  }
+  const originalName = photo?.filename ?? '';
+  const extension = originalName.toLowerCase().split('.').pop() ?? ''; // getClientOriginalExtension
+  const originalNameWithoutExt = originalName.slice(0, Math.max(0, originalName.length - extension.length - 1));
+  const filename = sanitize(originalNameWithoutExt);
+  const randomName = randomBytes(16).toString('hex');
+  await disk('s3-bulk-production').put(`${filename}.${extension}/${originalName}${randomName}.${extension}`, photo?.buffer ?? Buffer.alloc(0));
+  return lredirect(req, reply, 'products.bulk');
+}
+
 // ---------------------------------------------------------------- route actions
 
 // Product@getAjax (web.php:440): findOrFail + with(locations, images).
@@ -707,6 +1012,35 @@ export function registerProductRoutes(app: FastifyInstance): void {
   // web.php:414 — any verbs; the resource's /product/{id} (lowercase, T27) is a
   // different path, so this owns /Product/{id} for all verbs, like the old app.
   any(app, { path: '/Product/{id}', roles: ROLES, handler: vue });
+  // web.php:152-154 — product map + ship weight (any verbs).
+  route(app, { verb: 'any', path: '/updateProductMap', name: 'updateProductMap', roles: ROLES, handler: updateProductMap });
+  route(app, { verb: 'any', path: '/GetProductShipWeight', name: 'GetProductShipWeight', roles: ROLES, handler: getProductShipWeight });
+  route(app, { verb: 'any', path: '/SaveProductShipWeight', name: 'SaveProductShipWeight', roles: ROLES, handler: saveProductShipWeight });
+  // web.php:341 — the /product resource (lowercase; the api.php copy of
+  // product.store is later in the old app, so its name wins again).
+  resource(app, '/product', {
+    index: productsIndex,
+    create: productCreate,
+    store,
+    show: productShow,
+    edit: productEdit,
+    update: productUpdate,
+    destroy: productDestroy,
+  }, { roles: ROLES });
+  registerRoute('product.store', '/api/product');
+  // web.php:342-343 (no name: api.php's later `products` registration wins,
+  // already recorded by T26 as /api/products).
+  route(app, { verb: 'any', path: '/products', roles: ROLES, handler: productsIndex });
+  route(app, { verb: 'any', path: '/products.data', name: 'products.data', roles: ROLES, handler: anyData });
+  // web.php:351-354 — bulk production images (S3 bucket 'bulk-production').
+  route(app, { verb: 'get', path: '/products.bulk', name: 'products.bulk', roles: ROLES, handler: bulkProduction });
+  route(app, { verb: 'get', path: '/products.viewbulk', name: 'products.viewbulk', roles: ROLES, handler: viewBulkProduction });
+  route(app, { verb: 'delete', path: '/products.deleteBulk', name: 'products.deleteBulk', roles: ROLES, handler: deleteBulkProduction });
+  route(app, { verb: 'post', path: '/products.uploadBulk', name: 'products.uploadBulk', roles: ROLES, handler: uploadBulkProduction });
+  // web.php:359-361 — resource-adjacent named actions.
+  route(app, { verb: 'post', path: '/product/{id}/update', roles: ROLES, handler: productUpdate });
+  route(app, { verb: 'get', path: '/product/{id}/delete', roles: ROLES, handler: productDestroy });
+  route(app, { verb: 'get', path: '/product/{id}/deleteMsg', roles: ROLES, handler: productDeleteMsg });
   // web.php:438-440
   route(app, { verb: 'get', path: '/api/product.sku', name: '/api/product.sku', roles: ROLES, handler: getAjaxBySku });
   route(app, { verb: 'get', path: '/product.sku', name: 'product.sku', roles: ROLES, handler: getAjaxBySku });

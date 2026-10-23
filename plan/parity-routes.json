@@ -173,5 +173,13 @@
     "/etsyListing",
     "/Houzz.ajax"
   ],
-  "T27": []
+  "T27": [],
+  "T28": [
+    "/products",
+    "/products.data",
+    "/product",
+    "/product/create",
+    "/product/2706/edit",
+    "/product/2706/deleteMsg"
+  ]
 }

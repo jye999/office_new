@@ -1,0 +1,167 @@
+{% extends "layout.njk" %}
+{% block content %}
+
+    {{ html_style('/packages/dropzone/dropzone.css') | safe }}
+    {{ html_script('/packages/dropzone/dropzone.js') | safe }}
+<section class="content">
+    <h1>
+        Edit product
+    </h1>
+    <form method = 'get' action = '{{ url("product") | safe }}'>
+        <button class = 'btn btn-info'>products</button>
+    </form>
+    <br>
+    <div class="row">
+
+{% if errors.count() > 0 %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for error in errors.all() %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
+<div class="alert alert-warning">
+  <strong>Warning!</strong> You must save the product before adding any image.
+</div>
+
+
+    <div class="col-md-12">
+    {{ form.open({'url':'product','method':'POST','files':false,'id':'addProductForm'}) | safe }}
+            <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}'>
+
+            <div class="form-group col-md-12">
+                <label for="Name">Name</label>
+                <input id="name" name = "name" type="text" class="form-control"
+                value="{{ old('name') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="UPC">UPC</label>
+                <input id="upc" name = "upc" type="text" class="form-control" value="{{ old('upc') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="SKU">SKU</label>
+                <input id="sku" name = "sku" type="text" class="form-control" value="{{ old('sku') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="ASIN">ASIN</label>
+                <input id="asin" name = "asin" type="text" class="form-control" value="{{ old('asin') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="eBay">eBay</label>
+                <input id="ebay" name = "ebay" type="text" class="form-control" value="{{ old('ebay') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Shopify">Shopify</label>
+                <input id="shopify" name = "shopify" type="text" class="form-control" value="{{ old('shopify') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Etsy">Etsy</label>
+                <input id="etsy" name = "etsy" type="text" class="form-control" value="{{ old('etsy') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Houzz">Houzz</label>
+                <input id="houzz" name = "houzz" type="text" class="form-control" value="{{ old('houzz') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Walmart">Walmart</label>
+                <input id="walmart" name = "walmart" type="text" class="form-control" value="{{ old('walmart') | safe }}">
+            </div>
+            <div class="form-group col-md-8">
+                <label for="Category">Category (separated by , )</label>
+                <input id="category" name = "category" type="text" class="form-control" value="{{ old('category') | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Description">Description</label>
+                <textarea id="description" name = "description" class="form-control" >{{ old('description') | safe }}</textarea>
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 1">Bullet Point 1</label>
+                <input id="bullet_point_1" name = "bullet_point_1" type="text" class="form-control"
+                value="{{ old('bullet_point_1') | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 2">Bullet Point 2</label>
+                <input id="bullet_point_2" name = "bullet_point_2" type="text" class="form-control"
+                value="{{ old('bullet_point_2') | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 3">Bullet Point 3</label>
+                <input id="bullet_point_3" name = "bullet_point_3" type="text" class="form-control"
+                value="{{ old('bullet_point_3') | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 4">Bullet Point 4</label>
+                <input id="bullet_point_4" name = "bullet_point_4" type="text" class="form-control"
+                value="{{ old('bullet_point_4') | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 5">Bullet Point 5</label>
+                <input id="bullet_point_5" name = "bullet_point_5" type="text" class="form-control"
+                value="{{ old('bullet_point_5') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="premade">premade</label>
+                <select id="premade" name = "premade" class="form-control" >
+                    <option value="0" >No</option>
+                    <option value="1" >Yes</option>
+                </select>
+            </div>
+            <div class="form-group col-md-8">
+                <label for="color">color</label>
+                <input id="color" name = "color" type="text" class="form-control" value="{{ old('color') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="width">width</label>
+                <input id="width" name = "width" type="text" class="form-control" value="{{ old('width') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="height">height</label>
+                <input id="height" name = "height" type="text" class="form-control" value="{{ old('height') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="length">length</label>
+                <input id="length" name = "length" type="text" class="form-control" value="{{ old('length') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="weight">weight</label>
+                <input id="weight" name = "weight" type="text" class="form-control" value="{{ old('weight') | safe }}">
+            </div>
+            <div class="form-group col-md-4 ">
+                <label for="weight_unit">Weight Unit</label>
+
+                <select id="weight_unit" name = "weight_unit" class="form-control">
+                    <option value="OZ" >OZ</option>
+                    <option value="LB" >LB</option>
+                </select>
+            </div>
+  <div class="clearfix hidden-sm-up"></div>
+            <div class="form-group col-md-4 align-self-start">
+                <label for="Cost">Cost</label>
+                <input id="cost" name = "cost" type="text" class="form-control" value="{{ old('cost') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Price">Price</label>
+                <input id="price" name = "price" type="text" class="form-control" value="{{ old('price') | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Qty">Qty</label>
+                <input id="qty" name = "qty" type="text" class="form-control" value="{{ old('qty') | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+
+            <button class = 'btn btn-primary' type ='submit'>Save</button>
+            </div>
+{{ form.close() | safe }}
+        </div><!-- col -->
+
+    </div>
+</section>
+<div id="picHolder" style="display:none"></div>
+<script>
+var deleteServerImage = '{{ url('productImageUploadDelete') }}';
+
+</script>
+{% endblock %}

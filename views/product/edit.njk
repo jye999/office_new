@@ -1,0 +1,294 @@
+{% extends "layout.njk" %}
+{% block content %}
+
+    {{ html_style('/packages/dropzone/dropzone.css') | safe }}
+    {{ html_script('/packages/dropzone/dropzone.js') | safe }}
+    <style>
+    .bootbox-dialog .modal-body {
+    max-height: 420px;
+    overflow-y: auto;
+}
+.chooseMain {
+    opacity: .5;
+    width:120px;
+    padding:15px;
+}
+ .chooseMain:hover {
+    opacity: 1;
+    /*border: solid 1px black;*/
+    width:120px;
+    padding:15px;
+}
+ .chooseMain:hover img{
+    border: solid 2px black;
+}
+.chooseMain img {
+    width:100px;
+}
+</style>
+<section class="content">
+    <h1>
+        Edit product
+    </h1>
+    <form method = 'get' action = '{{ url("product") | safe }}'>
+        <button class = 'btn btn-info'>products</button>
+    </form>
+    <br>
+    <div class="row">
+
+{% if errors.count() > 0 %}
+    <div class="alert alert-danger">
+        <ul>
+            {% for error in errors.all() %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+    <div class="col-md-12">
+        <div class="col-md-12">
+            <div class="jumbotron how-to-create" >
+                <p>Images <span id="photoCounter"></span></p>
+                <br />
+                {{ form.open({'url': url('productImageUpload'), 'class': 'dropzone', 'files':true, 'id':'real-dropzone'}) | safe }}
+
+                <input id="product_id" name = "product_id" type="hidden" class="form-control"
+                value="{{ product.id | safe }}">
+                <div class="dz-message">
+
+                </div>
+
+                <div class="fallback">
+                    <input name="file" type="file" multiple />
+                </div>
+
+                <div class="dropzone-previews" id="dropzonePreview"></div>
+
+                <h4 style="text-align: center;color:#428bca;">Drop images in this area  <span class="glyphicon glyphicon-hand-down"></span></h4>
+
+                {{ form.close() | safe }}
+
+            </div>
+        </div>
+
+    <!-- Dropzone Preview Template -->
+    <div id="preview-template" style="display: none;">
+
+        <div class="dz-preview dz-file-preview">
+            <div class="dz-image"><img data-dz-thumbnail=""></div>
+
+            <div class="dz-details">
+                <div class="dz-size"><span data-dz-size=""></span></div>
+                <div class="dz-filename"><span data-dz-name=""></span></div>
+            </div>
+            <div class="dz-progress"><span class="dz-upload" data-dz-uploadprogress=""></span></div>
+            <div class="dz-error-message"><span data-dz-errormessage=""></span></div>
+
+            <div class="dz-success-mark">
+                <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                    <!-- Generator: Sketch 3.2.1 (9971) - http://www.bohemiancoding.com/sketch -->
+
+                </svg>
+            </div>
+
+            <div class="dz-error-mark">
+                <svg width="54px" height="54px" viewBox="0 0 54 54" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+                    <!-- Generator: Sketch 3.2.1 (9971) - http://www.bohemiancoding.com/sketch -->
+
+                </svg>
+            </div>
+
+        </div>
+    </div>
+    <!-- End Dropzone Preview Template -->
+
+
+    <div class="col-md-12">
+        <form method = 'POST' action = '{{ url("product") }}/{{ product.id }}/update'>
+            <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}'>
+
+            <div class="form-group col-md-12">
+                <label for="Name">Name</label>
+                <input id="name" name = "name" type="text" class="form-control"
+                value="{{ product.name }}">
+            </div>
+            <div class="form-group col-md-2">
+                <label for="main_image">Main Image</label>
+                <button class="form-control btn btn-info" id="btnMainImage">Select Main Image</button>
+                <input id="main_image" name = "main_image" type="hidden" class="form-control" value="{{ product.main_image | safe }}">
+            </div>
+            <div class="form-group col-md-2">
+                <img id="main_image_show" src="{{ url('/storage/product_images_icon/') }}{{ product.main_image }}" />
+            </div>
+            <div class="form-group col-md-4">
+                <label for="UPC">UPC</label>
+                <input id="upc" name = "upc" type="text" class="form-control" value="{{ product.upc | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="SKU">SKU</label>
+                <input id="sku" name = "sku" type="text" class="form-control" value="{{ product.sku | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="ASIN">ASIN</label>
+                <input id="asin" name = "asin" type="text" class="form-control" value="{{ product.asin | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="eBay">eBay</label>
+                <input id="ebay" name = "ebay" type="text" class="form-control" value="{{ product.ebay | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Shopify">Shopify</label>
+                <input id="shopify" name = "shopify" type="text" class="form-control" value="{{ product.shopify | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Etsy">Etsy</label>
+                <input id="etsy" name = "etsy" type="text" class="form-control" value="{{ product.etsy | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Houzz">Houzz</label>
+                <input id="houzz" name = "houzz" type="text" class="form-control" value="{{ product.houzz | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Walmart">Walmart</label>
+                <input id="walmart" name = "walmart" type="text" class="form-control" value="{{ product.walmart | safe }}">
+            </div>
+            <div class="form-group col-md-8">
+                <label for="Category">Category (separated by , )</label>
+                <input id="category" name = "category" type="text" class="form-control" value="{{ product.category | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Description">Description</label>
+                <textarea id="description" name = "description" class="form-control"  style="height:200px"
+                >{{ product.description }}</textarea>
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 1">Bullet Point 1</label>
+                <input id="bullet_point_1" name = "bullet_point_1" type="text" class="form-control"
+                value="{{ product.bullet_point_1 }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 2">Bullet Point 2</label>
+                <input id="bullet_point_2" name = "bullet_point_2" type="text" class="form-control"
+                value="{{ product.bullet_point_2 }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 3">Bullet Point 3</label>
+                <input id="bullet_point_3" name = "bullet_point_3" type="text" class="form-control"
+                value="{{ product.bullet_point_3 }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 4">Bullet Point 4</label>
+                <input id="bullet_point_4" name = "bullet_point_4" type="text" class="form-control"
+                value="{{ product.bullet_point_4 }}">
+            </div>
+            <div class="form-group col-md-12">
+                <label for="Bullet Point 5">Bullet Point 5</label>
+                <input id="bullet_point_5" name = "bullet_point_5" type="text" class="form-control"
+                value="{{ product.bullet_point_5 }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="premade">premade</label>
+                <select id="premade" name = "premade" class="form-control" >
+                    <option value="0" {{ 'selected' if product.premade == 0 else '' }}>No</option>
+                    <option value="1" {{ 'selected' if product.premade == 1 else '' }}>Yes</option>
+                </select>
+            </div>
+            <div class="form-group col-md-8">
+                <label for="color">color</label>
+                <input id="color" name = "color" type="text" class="form-control" value="{{ product.color | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="width">width</label>
+                <input id="width" name = "width" type="text" class="form-control" value="{{ product.width | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="height">height</label>
+                <input id="height" name = "height" type="text" class="form-control" value="{{ product.height | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="length">length</label>
+                <input id="length" name = "length" type="text" class="form-control" value="{{ product.length | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="weight">weight</label>
+                <input id="weight" name = "weight" type="text" class="form-control" value="{{ product.weight | safe }}">
+            </div>
+            <div class="form-group col-md-4 ">
+                <label for="weight_unit">Weight Unit</label>
+
+                <select id="weight_unit" name = "weight_unit" class="form-control">
+                    <option value="OZ" {{ 'selected' if product.weight_unit == 'OZ' else '' }}>OZ</option>
+                    <option value="LB" {{ 'selected' if product.weight_unit == 'LB' else '' }}>LB</option>
+                </select>
+            </div>
+  <div class="clearfix hidden-sm-up"></div>
+            <div class="form-group col-md-4 align-self-start">
+                <label for="Cost">Cost</label>
+                <input id="cost" name = "cost" type="text" class="form-control" value="{{ product.cost | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Price">Price</label>
+                <input id="price" name = "price" type="text" class="form-control" value="{{ product.price | safe }}">
+            </div>
+            <div class="form-group col-md-4">
+                <label for="Qty">Qty</label>
+                <input id="qty" name = "qty" type="text" class="form-control" value="{{ product.qty | safe }}">
+            </div>
+            <div class="form-group col-md-12">
+
+            <button class = 'btn btn-primary' type ='submit'>Update</button>
+            </div>
+        </form>
+        </div><!-- col -->
+
+    </div>
+</section>
+<div id="picHolder" style="display:none"></div>
+<script>
+var product_id = '{{ product.id }}';
+var serverImageUrl = '{{ url('productImageOnServer') }}';
+var deleteServerImage = '{{ url('productImageUploadDelete') }}';
+
+$(document).ready(function(){
+    $(document).on('click','.dz-details',function(e){
+        var imgSrc =$(this).parent().find('.dz-image').find("img").prop("src").replace('product_images_icon','product_images_full');
+        $("#picHolder").html('');
+        $("#picHolder").append('<a class="group1" href="'+imgSrc+'" >link</a>');
+        $(".group1").colorbox({rel:'group1',open:true});
+    });
+
+    $("#btnMainImage").click(function(e){
+        e.preventDefault();
+
+        $.get(serverImageUrl + "?product_id=" + product_id, function(data) {
+            var htmlToRender = "";
+            $.each(data.images, function(key, value) {
+                htmlToRender += "<span class='chooseMain'> <img src='"+value.server+"' /></span>";
+            });
+
+            bootbox.dialog({
+                title: "Choose a picture",
+                message: '<div>'+htmlToRender+'</div>' ,
+                buttons: {
+                    cancel: {
+                        label: 'Cancel',
+                        className: 'btn-default'
+                    }
+                }
+            })
+
+        });
+
+    });
+    $(document).on('click','.chooseMain',function(e){
+        var image_url = $(this).find('img').prop('src');
+        var main_image_url = image_url.substring(image_url.lastIndexOf('/')+1);
+        $("#main_image_show").prop('src',image_url);
+        $("#main_image").val(main_image_url);
+        bootbox.hideAll();
+
+    });
+});
+</script>
+    {{ html_script('/assets/js/dropzone-config.js') | safe }}
+{% endblock %}

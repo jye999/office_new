@@ -10,6 +10,8 @@ import {
   nl2br,
   number_format,
   phpEmpty,
+  html_style,
+  html_script,
   round,
   substr,
   strtoupper,
@@ -154,5 +156,13 @@ describe('MessageBag', () => {
     expect(bag.any()).toBe(true);
     expect(bag.count()).toBe(3);
     expect(makeMessageBag().any()).toBe(false);
+  });
+});
+
+describe('HTML builder', () => {
+  it('HTML::style / HTML::script markup', () => {
+    const base = appConfig.APP_URL.replace(/\/+$/, '');
+    expect(html_style('/packages/dropzone/dropzone.css')).toBe(`<link media="all" type="text/css" rel="stylesheet" href="${base}/packages/dropzone/dropzone.css">`);
+    expect(html_script('/packages/dropzone/dropzone.js')).toBe(`<script src="${base}/packages/dropzone/dropzone.js"></script>`);
   });
 });

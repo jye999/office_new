@@ -260,3 +260,9 @@ Product store/update API, images, locations, mass update/delete, thumbnails (rou
 - Not verified: live-body parity of any T27 route (all are mutating; inject-tested against the shared DB with temp rows, cleaned up); the multipart single-request multi-file ordering under busboy backpressure (2 small files exercised in order; loop is index-counted like PHP); form/HTML (non-JSON) validation-failure path of store (redirect-back branch ported from the ValidationException handler, not exercised — the Vue bundle sends JSON).
 - Open questions: none.
 - Manual checklist: log in (admin/user/remote) -> Vue product editor: Create Product (name/sku/price/locations) -> row saved, locations created, qty = sum of non-PO locations; Edit Product -> save (existing location edited in place, new location added); uncheck In Stock -> all location qtys zeroed; Add Images -> thumbnails appear (full + icon disks); Delete Image -> full removed; per-row location edit/delete; Set Default Location (trimmed/uppercased, 422/404 toasts); mass update/delete via the bulk tools (failed id list returned); GET /api/createAllThumbnail regenerates all product-image icons (run sparingly — it rewrites shared-disk files).
+
+## T28 — done (supervisor-verified)
+Product resource pages, datatables, ship weight, product map, bulk production. Worker timed out at 2h while writing its STATUS entry.
+- Files: src/modules/product/routes.ts (+handlers), views/product/{index,create,edit,show,bulk,viewbulk}.njk, test/t28.test.ts; small shared changes in src/http.ts, src/storage.ts, src/view.ts, views/layouts/app*.njk, scripts/parity.ts.
+- Verified: typecheck OK; 230 pass / 1 skip; `pnpm parity --task T28` 6/6 (/products, /products.data, /product, /product/create, /product/2706/edit, /product/2706/deleteMsg). Regression parity T10, T16, T22b, T26 pass.
+- Not verified: write routes (update/destroy/uploadBulk/deleteBulk/ship weight save) beyond inject tests; no browser check.

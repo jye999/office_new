@@ -5,10 +5,13 @@
 
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
+import { createHmac } from 'node:crypto';
+import { readdir } from 'node:fs/promises';
 import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -42,9 +45,13 @@ export interface Disk {
   put(path: string, contents: Buffer | string): Promise<void>;
   get(path: string): Promise<Buffer>;
   exists(path: string): Promise<boolean>;
-  delete(path: string): Promise<void>;
+  // Flysystem delete() returns a bool; S3Disk.delete() reports the same.
+  delete(path: string): Promise<boolean>;
   // Flysystem adapter pathPrefix() — the disk's absolute root.
   pathPrefix(): string;
+  // T28 (S3 disks only; Laravel Storage::allFiles / temporaryUrl).
+  allFiles?(): Promise<string[]>;
+  temporaryUrl?(path: string, expiresAtSec: number): Promise<string>;
 }
 
 class LocalDisk implements Disk {
@@ -68,11 +75,31 @@ class LocalDisk implements Disk {
       return false;
     }
   }
-  async delete(path: string): Promise<void> {
+  async delete(path: string): Promise<boolean> {
     await rm(join(this.root, path), { force: true });
+    return true;
   }
   pathPrefix(): string {
     return this.root;
+  }
+  // Recursive like Flysystem's Local adapter (used only on S3 disks today).
+  async allFiles(): Promise<string[]> {
+    const out: string[] = [];
+    const walk = async (dir: string, rel: string): Promise<void> => {
+      let entries;
+      try {
+        entries = await readdir(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
+      for (const e of entries) {
+        const p = rel ? `${rel}/${e.name}` : e.name;
+        if (e.isDirectory()) await walk(join(dir, e.name), p);
+        else out.push(p);
+      }
+    };
+    await walk(this.root, '');
+    return out;
   }
 }
 
@@ -103,11 +130,36 @@ class S3Disk implements Disk {
       return e?.name === 'NotFound' || e?.$metadata?.httpStatusCode === 404;
     }
   }
-  async delete(path: string): Promise<void> {
+  async delete(path: string): Promise<boolean> {
     await this.s3().send(new DeleteObjectCommand({ Bucket: this.bucket, Key: path }));
+    return true;
   }
   pathPrefix(): string {
     return `s3://${this.bucket}`;
+  }
+  // Flysystem AwsS3::listContents — all keys, recursive.
+  async allFiles(): Promise<string[]> {
+    const keys: string[] = [];
+    let continuationToken: string | undefined;
+    do {
+      const res = await this.s3().send(
+        new ListObjectsV2Command({ Bucket: this.bucket, ContinuationToken: continuationToken }),
+      );
+      for (const o of res.Contents ?? []) keys.push(o.Key as string);
+      continuationToken = res.IsTruncated ? res.NextContinuationToken : undefined;
+    } while (continuationToken);
+    return keys;
+  }
+  // Laravel 5.4 temporaryUrl: the SDK signs a GetObject with the legacy
+  // "framed" query sig (V2: AWSAccessKeyId/Expires/Signature, HMAC-SHA1).
+  async temporaryUrl(path: string, expiresAtSec: number): Promise<string> {
+    const key = (process.env.AWS_KEY ?? '').trim();
+    const secret = (process.env.AWS_SECRET_KEY ?? '').trim();
+    const signature = createHmac('sha1', secret)
+      .update(`GET\n\n\n${expiresAtSec}\n/${this.bucket}/${path}`)
+      .digest('base64');
+    const enc = (s: string) => encodeURIComponent(s).replace(/'/g, '%27').replace(/!/g, '%21').replace(/\*/g, '%2A').replace(/\(/g, '%28').replace(/\)/g, '%29');
+    return `https://${this.bucket}.s3.amazonaws.com/${path.split('/').map(enc).join('/')}?AWSAccessKeyId=${enc(key)}&Expires=${expiresAtSec}&Signature=${enc(signature)}`;
   }
 }
 
@@ -149,8 +201,9 @@ class SftpDisk implements Disk {
       }
     });
   }
-  async delete(path: string): Promise<void> {
+  async delete(path: string): Promise<boolean> {
     await this.withClient((c) => c.delete('/' + path));
+    return true;
   }
   pathPrefix(): string {
     return `sftp://${process.env.WAYFAIR_SFTP}`;

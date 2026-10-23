@@ -38,51 +38,7 @@ import { registerProductRoutes } from './modules/product/routes.js';
 import { registerPdaRoutes } from './modules/pda/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
-// Laravel (Symfony Request) parses bracket notation in query strings into
-// nested arrays/objects: `filter[name]=x&columns[0][data]=id` ->
-// { filter: { name: 'x' }, columns: [{ data: 'id' }] }. Fastify's default
-// parser keeps them as flat literal keys, which breaks every DataTables
-// GET (T25b: inventory.transferdata). This mirrors the Laravel shape;
-// flat keys are parsed exactly as before.
-interface QueryObj {
-  [key: string]: QueryValue;
-}
-type QueryValue = QueryObj | QueryValue[] | string;
-
-function parseLaravelQuery(qs: string): QueryObj {
-  const out: Record<string, unknown> = {};
-  for (const pair of qs.split('&')) {
-    if (!pair) continue;
-    const eq = pair.indexOf('=');
-    const key = decodeURIComponent((eq === -1 ? pair : pair.slice(0, eq)).replace(/\+/g, ' '));
-    const val = eq === -1 ? '' : decodeURIComponent(pair.slice(eq + 1).replace(/\+/g, ' '));
-    const m = /^([^\[\]]*)((\[[^\[\]]*\])*)$/.exec(key);
-    if (!m || !m[2]) {
-      out[key] = val;
-      continue;
-    }
-    const segs = [m[1], ...[...m[2].matchAll(/\[([^\[\]]*)\]/g)].map((x) => x[1])];
-    let node: Record<string, unknown> = out;
-    for (let i = 0; i < segs.length - 1; i++) {
-      const s = segs[i];
-      if (typeof node[s] !== 'object' || node[s] === null) node[s] = {};
-      node = node[s] as Record<string, unknown>;
-    }
-    node[segs[segs.length - 1]] = val;
-  }
-  // Consecutive integer keys become arrays (PHP lists).
-  const toPhp = (v: unknown): QueryValue => {
-    if (Array.isArray(v)) return v.map(toPhp);
-    if (v && typeof v === 'object') {
-      const o = v as Record<string, unknown>;
-      const keys = Object.keys(o);
-      if (keys.length > 0 && keys.every((k, i) => k === String(i))) return keys.map((k) => toPhp(o[k]));
-      for (const k of keys) o[k] = toPhp(o[k]);
-    }
-    return v as string;
-  };
-  return toPhp(out) as QueryObj;
-}
+import { parseLaravelQuery } from './http.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true }, querystringParser: parseLaravelQuery });
 
