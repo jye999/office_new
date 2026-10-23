@@ -32,6 +32,7 @@ import { registerBulkProductionRoutes } from './modules/bulkproduction/routes.js
 import { registerProductionRoutes } from './modules/production/routes.js';
 import { registerReportRoutes } from './modules/report/routes.js';
 import { registerPurchaseRoutes } from './modules/purchase/routes.js';
+import { registerOrderRoutes } from './modules/order/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
@@ -77,6 +78,7 @@ registerBulkProductionRoutes(app);
 registerProductionRoutes(app);
 registerReportRoutes(app);
 registerPurchaseRoutes(app);
+registerOrderRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

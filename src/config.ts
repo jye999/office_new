@@ -27,6 +27,8 @@ const EnvSchema = z.object({
   PARITY_EMAIL: z.string(),
   PARITY_PASSWORD: z.string(),
   SCHEDULER_ENABLED: z.enum(['0', '1']).default('0'),
+  // T23: /api/orders image fallback (old config/app.php use_local_image).
+  USE_LOCAL_IMAGE: z.string().default(''),
 });
 
 export const config = EnvSchema.parse(process.env);

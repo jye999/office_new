@@ -1,0 +1,62 @@
+<html>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+
+<body>
+    {% if groupBy == 'order' %}
+        <table class="table table-bordered table-condensed   table-striped">
+            <thead><tr><th>Order ID</th><th>Order Item QTY</th><th>Items</th><th>Address</th></tr></thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>{{ order.orderId }}</td>
+                        <td>
+                            <table  class="table table-bordered table-condensed table-sm"  >
+                                <thead><tr><th>Items</th><th>Image</th><th>Name</th><th>QTY</th><th>Location</th></tr></thead>
+                                <tbody>
+                                {% for item in order.detail %}
+                                    <tr>
+                                        <td width="100px">{{ item.asin }}
+                                        {% if item._pm %}
+                                            <br/>
+                                            {{ item._pm.sku }} {{ '' if item._pm.qty == null else (' x ' ~ item._pm.qty) }}
+                                        {% endif %}
+                                        </td>
+                                        <td width="150px"><img src="{{ item.image }}" widht="150px"></td>
+                                        <td width="200px">{{ item.name }}</td>
+                                        <td width="50px">{{ item.qty }}</td>
+                                        <td width="100px">{{ item._locations | safe }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+
+                        <td>
+                            {{ order.recipientName }}<br/>
+                            {{ (order.address1 | default('')) ~ ' ' ~ (order.address2 | default('')) }}<br/>
+                            {{ (order.city | default('')) ~ ', ' ~ (order.state | default('')) ~ ' ' ~ (order.zip | default('')) }}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tr>
+        </tbody>
+    {% endif %}
+
+    
+    {% if groupBy == 'item' %}
+        <table class="table table-bordered table-condensed   table-striped">
+            <thead><tr><th>Name</th><th>ASIN / SKU </th><th>QTY</th><th>Location</th></tr></thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td width="200px">{{ item.name }}</td>
+                    <td width="200px">{{ item.asin }} <br/>{{ item.sku }} <br/>
+                                        <br/>                 
+                                        {{ item._hwcHtml | safe }}</td>
+                    
+                    <td width="50px">{{ item.qty }}</td>
+                    <td width="100px">{{ item.location | safe }}</td>
+                </tr>
+                {% endfor %}
+        </tbody>
+    {% endif %}
+</table>

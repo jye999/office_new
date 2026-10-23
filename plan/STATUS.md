@@ -189,3 +189,9 @@ Reports: ProductSales, LowInventory (+ CSV export), Receiving, CodeGenerator (ro
 - Not verified: byte-parity of receiving.njk for statuses outside the whitelist (old app shows the same empty table — whitelist is a ported guard); codegenerator.njk JS behavior in-browser (verbatim port, render-verified only).
 - Open questions: none.
 - Manual checklist: none.
+
+## T23 — done (supervisor-finished)
+Order controller (packing, pickList, printing, multi orders, /order resource, /api/orders). Worker timed out at 2h before final verification.
+- Files: src/modules/order/routes.ts, views/order/*, test/t23.test.ts, USE_LOCAL_IMAGE env. Supervisor fixed duplicate `description`/`author` blocks left in views/includes/header.njk (T01 only fixed layout.njk), removed a debug log.
+- Verified: typecheck OK; 179 pass/1 skip; parity T23: /packing, /printing OK; /pickList excluded (see NOTES).
+- Not verified: pickList groupBy=item (hwc `products` table absent, 500 in both), printing PDF path (no wkhtmltopdf).

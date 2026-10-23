@@ -1,0 +1,71 @@
+{% extends "layout.njk" %}
+{% block title %}Create{% endblock %}
+{% block content %}
+ <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<div class = 'container'>
+    <h1>
+        Create Order
+    </h1>
+    <form method = 'get' action = '{{ url("order") | safe }}'>
+        <button class = 'btn btn-danger'>orders</button>
+    </form>
+    <br>
+    <form method = 'POST' action = '{{ url("order") | safe }}'>
+        <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}}'>
+        <div class="form-group">
+            <label for="orderId">ID</label>
+            <input id="orderId" name = "orderId" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="name">name</label>
+            <input id="recipientName" name = "recipientName" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="val">Address 1</label>
+            <input id="address1" name = "address1" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="val">Address 2</label>
+            <input id="address2" name = "address2" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="val">City</label>
+            <input id="city" name = "city" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="val">State</label>
+            <input id="state" name = "state" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="val">Zip Code</label>
+            <input id="zip" name = "zip" type="text" class="form-control">
+        </div>
+        <div id="items">
+            <div class="oneItem">
+                <div class="form-group col-md-6">
+                    <label for="val">Item</label>
+                    <input  name = "itemId[]" type="text" class="form-control">
+                </div>
+                <div class="form-group col-md-5">
+                    <label for="val">Qty</label>
+                    <input  name = "qty[]" type="text" class="form-control">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <button id="addItem" class="btn btn-info">Add More Item</button>
+        </div>
+        <button class = 'btn btn-primary' type ='submit'>Create</button>
+    </form>
+</div>
+<script>
+$(document).ready(function(){
+    $("#addItem").click(function(e){
+        e.preventDefault();
+        $( ".oneItem" ).first().clone().appendTo( "#items" );
+    })
+});
+</script>
+{% endblock %}

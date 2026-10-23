@@ -1,0 +1,133 @@
+<html>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<style>
+
+    [class*="col-xs-"] {
+    /*float: left;*/
+  }
+ @page { 
+    size:10.50in 8.27in ; 
+    /*margin:.25in .25in .25in .25in; */
+    }
+    body { 
+    /*width:1122px;*/
+    vertical-align:top;
+    }
+    div.break {page-break-after: always;}
+    table.order {
+        width:85%;
+        border-collapse: collapse;
+    }
+
+    table.order{
+        border: 1px solid black;
+    }
+    table.order th {
+        border: 1px solid black;
+        padding: 5px;
+    }
+    table.order tr {
+        border: 1px solid black;
+    }
+    table.order td{
+        border: 1px solid black;
+        padding:5px;
+    }
+    .center{
+        text-align:center
+    }
+    .page-break {
+        page-break-after: always;
+    }
+    .left{
+        width:702px; 
+        vertical-align: text-top;
+    }
+    .right{
+        width:255px;
+        border-left:1px solid black;
+        vertical-align: text-top;
+        
+    }
+    html, body { float: none; }
+div.oneorder{
+    width:1000px;
+    display: block; /* unhide all tabs */
+    break-before: always;
+    page-break-before: always;
+    }
+</style>
+<body>
+{% set counter = orders | length %}
+{% for order in orders %}
+{% set counter = counter - 1 %}
+<div class="oneorder">
+    <div class="row col-xs-12">
+        <div class="col-xs-8 left">
+            <img src="images/Angel_Isabella_logo.jpg" /><br/>
+        http://www.angelisabella.com<br/><br/>
+            Ship To:<br/>
+            <h3>{{ order.recipientName }}<br/>
+            {{ (order.address1 | default('')) ~ ' ' ~ (order.address2 | default('')) }}<br/>
+            {{ (order.city | default('')) ~ ', ' ~ (order.state | default('')) ~ ' ' ~ (order.zip | default('')) }}<br/>
+
+            </h3>
+            <hr>
+            <h4>Order ID: {{ order.orderId }}</h4><br/>
+            Thank you for buying from Angel Isabella on {{ 'Amazon' if order.store == 'A' else ('eBay' if order.store == 'E' else ('Etsy' if order.store == 'T' else ('Walmart' if order.store == 'W' else ('AngelIsabella.com' if order.store == 'S' else '')))) }}<br/>
+            <table class="order" >
+                    <thead>
+                        <tr>
+                            <th class="center" >Quantity</th>
+                            <th>Product</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in order.detail %}
+                        <tr>
+                            <td class="center">{{ item.qty }}</td>
+                            <td>{{ item.name }} </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                
+                    </tfoot>
+                </table><br/>
+                <table style="width:90%;">
+                    <tr>
+                        <td style="width:60%; font-size:10pt;vertical-align:top">
+                        RETURN POLICY<br/>
+                        We Accept returns within 30 days of purchase.Please ensure items are in their original condition, with packaging.<br/>
+                        Items sold in packs or cases must be returned in their full quantity.<br/>
+                        Original shipping charges are not refundable. <br/>
+                        Angel Isabella, LLC is not responsible for return shiping charges.<br/>
+                        Please include a copy of the packing slip
+                        </td>
+                        <td style="width:40%; font-size:10pt;padding-left:20px;vertical-align:top">
+                        RETURN ADDRESS<br/>
+                        <address>Angel Isabella, LLC - Returns<br/>
+                        5905 Steeplchase Blvd.<br/>
+                        Suite 400<br/>
+                        Cumming, GA 30041
+                        </address>
+                        -No exchanges. Simply return unwanted items and place a new order.<br/>
+                        -If you have any issue with your order, please contact us at contact@angelisabella.com
+                    </tr>
+                </table>
+        </div>
+        <div class="col-xs-4 right">
+        <img src="images/right.jpg" style="width:250px" />
+        </div>
+    </div>
+</div>
+
+{% if counter > 0 %}
+<div style="clear:both;"></div>
+{% endif %}
+{% endfor %}
+<script>
+ setTimeout(function () { window.print(); }, 500);
+        window.onfocus = function () { setTimeout(function () { window.close(); }, 500); }
+        </script>
+</body>

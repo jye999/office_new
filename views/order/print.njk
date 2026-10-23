@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <style>
+            @page {
+                size: 3.812in 5.718in;
+                margin: 0px;
+            }
+            body { margin: 0px; padding: 0px; }
+        </style>
+    </head>
+    <body>
+    {% for o in orders %}
+        <img src='./storage/labels/labels/{{ o }}.png' id='labelImage' style='width: 3.812in;height: 5.718in;'>
+    {% endfor %}
+    </body>
+</html>

@@ -1,0 +1,56 @@
+{% extends "layout.njk" %}
+{% block title %}Index{% endblock %}
+{% block content %}
+
+<div class = 'container'>
+    <h1>
+        Orders
+    </h1>
+    <form class = 'col s3' method = 'get' action = '{{ url("order") | safe }}/create'>
+        <button class = 'btn btn-primary' type = 'submit'>Create New order</button>
+    </form>
+    <br>
+    <br>
+    <table class = "table table-striped table-bordered">
+        <thead>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address 1</th>
+            <th>Address 2</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zipcode</th>
+            <th>Status</th>
+            <th>Item</th>
+            <th></th>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.orderId | safe }}</td>
+                <td>{{ order.recipientName | safe }}</td>
+                <td>{{ order.address1 | safe }}</td>
+                <td>{{ order.address2 | safe }}</td>
+                <td>{{ order.city | safe }}</td>
+                <td>{{ order.state | safe }}</td>
+                <td>{{ order.zipcode | safe }}</td>
+                <td>{{ order.status | safe }}</td>
+                <td>
+
+            {% for od in order.detail %}
+                {{ od.itemId | safe }}<br/>
+            {% endfor %}
+                </td>
+                <td>
+                    <a data-toggle="modal" data-target="#myModal" class = 'delete btn btn-danger btn-xs' data-link = "/order/{{ order.id | safe }}/deleteMsg" ><i class = 'material-icons'>delete</i></a>
+                    <a href = '#' class = 'viewEdit btn btn-primary btn-xs' data-link = '/order/{{ order.id | safe }}/edit'><i class = 'material-icons'>edit</i></a>
+                    <a href = '#' class = 'viewShow btn btn-warning btn-xs' data-link = '/order/{{ order.id | safe }}'><i class = 'material-icons'>info</i></a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {{ ordersRender | safe }}
+
+</div>
+{% endblock %}

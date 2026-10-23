@@ -1,0 +1,26 @@
+{% extends "layout.njk" %}
+{% block title %}Edit{% endblock %}
+{% block content %}
+
+<div class = 'container'>
+    <h1>
+        Edit Order
+    </h1>
+    <form method = 'get' action = '{{ url("order") | safe }}'>
+        <button class = 'btn btn-danger'>order Index</button>
+    </form>
+    <br>
+    <form method = 'POST' action = '{{ url("order") | safe }}/{{ order.id | safe }}/update'>
+        <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}'>
+        <div class="form-group">
+            <label for="name">name</label>
+            <input id="name" name = "name" type="text" class="form-control" value="{{ order.name | safe }}">
+        </div>
+        <div class="form-group">
+            <label for="val">val</label>
+            <input id="val" name = "val" type="text" class="form-control" value="{{ order.val | safe }}">
+        </div>
+        <button class = 'btn btn-primary' type ='submit'>Update</button>
+    </form>
+</div>
+{% endblock %}
