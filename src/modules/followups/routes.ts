@@ -44,6 +44,10 @@ async function findFollowup(id: unknown): Promise<Row> {
 // $id==0 -> $request->get('id') (see module header for why the route param is
 // never used).
 function reqId(req: FastifyRequest): string | number | null {
+  // Laravel 5.4 positional splice (found in T20): the resource path param lands in $id.
+  const params = Object.values((req.params as Record<string, unknown> | undefined) ?? {});
+  const p = params.find((x) => x !== undefined && x !== '');
+  if (p !== undefined) return String(p);
   const v = input(req, 'id');
   return v === undefined ? null : (v as string | number);
 }
