@@ -100,7 +100,9 @@ function toFastifyPath(laravelPath: string): string[] {
   if (!m) return [p.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g, ':$1')];
   const optional = m[2] === '?';
   const converted = p.replace(/\{([A-Za-z_][A-Za-z0-9_]*)(\??)\}/g, (_s, key: string) => `:${key}`);
-  const without = p.replace(m[0], '');
+  // The optional param's leading slash goes too (fastify has no trailing-slash
+  // matching): /api/product/{id?} -> ["/api/product/:id", "/api/product"].
+  const without = p.replace(m[0], '').replace(/\/$/, '');
   return optional ? [converted, without] : [converted];
 }
 
