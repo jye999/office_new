@@ -142,17 +142,35 @@ describe('not-found fallback (T03)', () => {
   });
 });
 
+describe('paginate() live Kysely query', () => {
+  it('counts and pages a real table', async () => {
+    const { db } = await import('../src/db.js');
+    const app = await makeApp();
+    app.get('/live', async (req, reply) =>
+      reply.send(await paginate(db.selectFrom('os_users').select(['id', 'email']).orderBy('id') as never, 5, req)),
+    );
+    const res = await app.inject({ method: 'GET', url: '/live?page=2' });
+    const json = res.json();
+    expect(json.total).toBeGreaterThan(5);
+    expect(json.data.length).toBeLessThanOrEqual(5);
+    expect(json.current_page).toBe(2);
+    expect(Object.keys(json.data[0])).toEqual(['id', 'email']);
+  });
+});
+
 describe('paginate() — Laravel 5.4 LengthAwarePaginator JSON', () => {
   function fakeQuery(total: number, rows: unknown[]) {
     const countQb = {
-      clone: () => countQb,
+      clearSelect: () => countQb,
+      clearOrderBy: () => countQb,
       select: () => countQb,
       offset: () => countQb,
       limit: () => countQb,
       execute: async () => [{ total }],
     };
     const base = {
-      clone: () => base,
+      clearSelect: () => base,
+      clearOrderBy: () => base,
       select: () => countQb,
       offset: () => base,
       limit: () => base,

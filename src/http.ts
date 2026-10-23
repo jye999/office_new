@@ -22,9 +22,11 @@ export function allInput(req: FastifyRequest): Record<string, unknown> {
 // ---------------------------------------------------------------- paginate
 
 // Structural Kysely select query (avoids fighting the generic typing).
+// Kysely queries are immutable: every call returns a new builder, so no clone().
 interface Paginatable {
-  clone(): Paginatable;
-  select(selectors: unknown[]): Paginatable;
+  clearSelect(): Paginatable;
+  clearOrderBy(): Paginatable;
+  select(selector: unknown): Paginatable;
   offset(n: number): Paginatable;
   limit(n: number): Paginatable;
   execute(): Promise<unknown[]>;
@@ -36,10 +38,11 @@ export async function paginate(query: Paginatable, perPage: number, req: Fastify
   const rawPage = Number(input(req, 'page'));
   const page = Number.isInteger(rawPage) && rawPage >= 1 ? rawPage : 1;
   const [{ total }] = (await query
-    .clone()
-    .select([sql`count(*) as total`])
+    .clearSelect()
+    .clearOrderBy()
+    .select(sql`count(*)`.as('total'))
     .execute()) as { total: number }[];
-  const data = (await query.clone().offset((page - 1) * perPage).limit(perPage).execute()) as unknown[];
+  const data = (await query.offset((page - 1) * perPage).limit(perPage).execute()) as unknown[];
   const path = `${req.protocol}://${req.host}${new URL(req.url, 'http://localhost').pathname}`;
   const url = (p: number) => `${path}?page=${p}`;
   const lastPage = Math.ceil(total / perPage);
