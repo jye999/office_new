@@ -1,0 +1,786 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.code-generator-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.generator-controls {
+    background: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.generator-controls textarea {
+    width: 100%;
+}
+
+.generator-controls textarea#raw_values {
+    min-height: 180px;
+    resize: vertical;
+}
+
+.generator-controls textarea#notes {
+    min-height: 0;
+    resize: none;
+    overflow-y: auto;
+}
+
+.status-line {
+    margin: 10px 0;
+}
+
+.status-line .text-danger,
+.status-line .text-warning,
+.status-line .text-success {
+    font-weight: 600;
+}
+
+.generated-grid {
+    display: grid;
+    gap: 4px;
+    margin: 0 auto;
+}
+
+.generated-item {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 0;
+    background: #fff;
+    text-align: center;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    page-break-inside: avoid;
+}
+
+.generated-item .code-content {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.generated-item .code-image-wrap {
+    flex: 0 0 auto;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    padding: var(--barcode-gap, 0.03in);
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.generated-item img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border: 0;
+}
+
+.generated-item .code-text-footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+    padding: 0 2px 2px;
+    box-sizing: border-box;
+}
+
+.generated-item .code-text {
+    flex-shrink: 0;
+    word-break: break-word;
+    line-height: 1.1;
+}
+
+.generated-item .code-notes {
+    flex-shrink: 0;
+    width: 100%;
+    word-break: break-word;
+    color: #444;
+    white-space: pre-wrap;
+    overflow: hidden;
+    line-height: 1.1;
+    box-sizing: border-box;
+}
+
+@media print {
+    .generator-controls,
+    .status-line,
+    .page-header,
+    .navbar,
+    footer,
+    .notifications {
+        display: none !important;
+    }
+
+    .code-generator-wrap {
+        max-width: none;
+        width: auto;
+        margin: 0;
+        padding: 0;
+    }
+
+    .generated-item {
+        border: 1px solid #ddd;
+        border-radius: 0;
+    }
+}
+</style>
+<style id="layout-dynamic-style"></style>
+
+<div class="container code-generator-wrap">
+    <h2 class="page-header">Barcode / QR Code Generator</h2>
+
+    <div class="generator-controls">
+        <div class="form-group">
+            <label for="raw_values">Values (comma or newline separated)</label>
+            <textarea id="raw_values" class="form-control" placeholder="ABC123, DEF456&#10;https://example.com/item/1"></textarea>
+        </div>
+
+        <div class="form-group" style="margin-top: 10px;">
+            <label for="notes">Notes (optional, max 2 lines)</label>
+            <textarea id="notes" class="form-control" rows="2" placeholder="Shown below each barcode"></textarea>
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+            <div class="col-sm-3">
+                <div class="form-group">
+                    <label for="code_type">Code Type</label>
+                    <select id="code_type" class="form-control">
+                        <option value="barcode">Barcode (Code128)</option>
+                        <option value="qrcode">QR Code</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="num_labels">Labels to Print</label>
+                    <input type="number" id="num_labels" class="form-control" min="1" step="1" value="1">
+                </div>
+            </div>
+            <div class="col-sm-7" style="padding-top: 25px;">
+                <button type="button" id="generate_btn" class="btn btn-primary">Generate</button>
+                <button type="button" id="print_btn" class="btn btn-success" disabled>Print</button>
+                <button type="button" id="clear_btn" class="btn btn-default">Clear</button>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 10px;">
+            <div class="col-sm-12"><strong>Label &amp; Paper Layout (inches)</strong></div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="label_width">Label Width</label>
+                    <input type="number" id="label_width" class="form-control" min="0.1" step="0.05" value="1.9">
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="label_height">Label Height</label>
+                    <input type="number" id="label_height" class="form-control" min="0.1" step="0.05" value="0.9">
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="labels_per_row">Labels / Row</label>
+                    <input type="number" id="labels_per_row" class="form-control" min="1" step="1" value="1">
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="paper_width">Paper Width</label>
+                    <input type="number" id="paper_width" class="form-control" min="0.1" step="0.05" value="2">
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="paper_height">Paper Height</label>
+                    <input type="number" id="paper_height" class="form-control" min="0.1" step="0.05" value="1">
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <div class="form-group">
+                    <label for="labels_per_page">Labels / Page</label>
+                    <input type="number" id="labels_per_page" class="form-control" min="1" step="1" value="1">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="status_msg" class="status-line"></div>
+    <div id="generated_list" class="generated-grid"></div>
+</div>
+
+<script type="text/javascript" src="/js/bwip-js-min.js"></script>
+<script type="text/javascript" src="/js/inconsolata.js"></script>
+<script type="text/javascript" src="/js/jspdf.min.js"></script>
+<script>
+(function() {
+    var SOFT_WARN_LIMIT = 300;
+    var HARD_LIMIT = 1000;
+    var CHUNK_SIZE = 50;
+    var BARCODE_GAP_IN = 0.03;
+    var BARCODE_MIN_HEIGHT_RATIO = 0.6;
+
+    var rawInput = document.getElementById('raw_values');
+    var notesInput = document.getElementById('notes');
+    var typeSelect = document.getElementById('code_type');
+    var labelWidthInput = document.getElementById('label_width');
+    var labelHeightInput = document.getElementById('label_height');
+    var labelsPerRowInput = document.getElementById('labels_per_row');
+    var paperWidthInput = document.getElementById('paper_width');
+    var paperHeightInput = document.getElementById('paper_height');
+    var labelsPerPageInput = document.getElementById('labels_per_page');
+    var layoutStyleEl = document.getElementById('layout-dynamic-style');
+    var numLabelsInput = document.getElementById('num_labels');
+    var generateBtn = document.getElementById('generate_btn');
+    var printBtn = document.getElementById('print_btn');
+    var clearBtn = document.getElementById('clear_btn');
+    var statusEl = document.getElementById('status_msg');
+    var listEl = document.getElementById('generated_list');
+
+    var fontLoaded = false;
+    var layoutInputs = [
+        labelWidthInput,
+        labelHeightInput,
+        labelsPerRowInput,
+        paperWidthInput,
+        paperHeightInput
+    ];
+
+    function setStatus(kind, message) {
+        statusEl.innerHTML = '';
+        if (!message) {
+            return;
+        }
+        var cssClass = 'text-info';
+        if (kind === 'danger') {
+            cssClass = 'text-danger';
+        } else if (kind === 'warning') {
+            cssClass = 'text-warning';
+        } else if (kind === 'success') {
+            cssClass = 'text-success';
+        }
+        statusEl.innerHTML = '<span class="' + cssClass + '">' + message + '</span>';
+    }
+
+    function parseRawValues(raw) {
+        var seen = {};
+        var values = [];
+        var parts = raw.split(/[\n\r,]+/);
+        for (var i = 0; i < parts.length; i++) {
+            var token = (parts[i] || '').trim();
+            if (!token || seen[token]) {
+                continue;
+            }
+            seen[token] = true;
+            values.push(token);
+        }
+        return values;
+    }
+
+    function parsePositiveNumber(input, fallback) {
+        var value = parseFloat(input.value);
+        return value > 0 && isFinite(value) ? value : fallback;
+    }
+
+    function getLayoutSettings() {
+        return {
+            labelWidth: parsePositiveNumber(labelWidthInput, 2.1),
+            labelHeight: parsePositiveNumber(labelHeightInput, 1),
+            labelsPerRow: Math.max(1, Math.floor(parsePositiveNumber(labelsPerRowInput, 2))),
+            paperWidth: parsePositiveNumber(paperWidthInput, 4.25),
+            paperHeight: parsePositiveNumber(paperHeightInput, 11)
+        };
+    }
+
+    function getLabelTextSizePx(layout) {
+        return Math.max(10, Math.round(layout.labelHeight * 96 * 0.18));
+    }
+
+    function getBarcodeTextReservedPx(layout) {
+        return Math.ceil(getLabelTextSizePx(layout) * 1.15) + 2;
+    }
+
+    function getNotesReservedPx(layout, notes) {
+        if (!notes) {
+            return 0;
+        }
+        var labelTextSizePx = getLabelTextSizePx(layout);
+        var lines = Math.min(2, notes.split(/\r?\n/).length);
+        return Math.ceil(lines * labelTextSizePx * 1.15) + 2;
+    }
+
+    function getBarcodeGapPx() {
+        return Math.max(2, Math.round(BARCODE_GAP_IN * 96));
+    }
+
+    function getCodeAreaPx(layout, notes, codeType) {
+        var gapPx = getBarcodeGapPx();
+        var labelHeightPx = Math.round(layout.labelHeight * 96);
+        var wrapWidth = Math.max(20, Math.round(layout.labelWidth * 96));
+        var wrapHeight;
+
+        if (codeType === 'barcode') {
+            var minBarcodePx = Math.round(labelHeightPx * BARCODE_MIN_HEIGHT_RATIO);
+            var textReserved = getBarcodeTextReservedPx(layout);
+            var notesReserved = getNotesReservedPx(layout, notes);
+            var maxTextAreaPx = Math.max(0, labelHeightPx - minBarcodePx);
+            var usedReserved = Math.min(textReserved + notesReserved, maxTextAreaPx);
+            wrapHeight = Math.max(minBarcodePx, labelHeightPx - usedReserved);
+        } else {
+            var reserved = getNotesReservedPx(layout, notes);
+            var qrTextSizePx = Math.max(10, Math.round(layout.labelHeight * 96 * 0.22));
+            reserved += Math.ceil(qrTextSizePx * 1.2) + 2;
+            wrapHeight = Math.max(20, labelHeightPx - reserved);
+        }
+
+        return {
+            wrapWidth: wrapWidth,
+            wrapHeight: wrapHeight,
+            width: Math.max(10, wrapWidth - gapPx * 2),
+            height: Math.max(10, wrapHeight - gapPx * 2)
+        };
+    }
+
+    function fitCanvasToSize(srcCanvas, widthPx, heightPx, stretch) {
+        var destCanvas = document.createElement('canvas');
+        destCanvas.width = widthPx;
+        destCanvas.height = heightPx;
+        var ctx = destCanvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, widthPx, heightPx);
+        ctx.imageSmoothingEnabled = false;
+
+        if (stretch) {
+            ctx.drawImage(srcCanvas, 0, 0, widthPx, heightPx);
+        } else {
+            var scale = Math.min(widthPx / srcCanvas.width, heightPx / srcCanvas.height);
+            var drawW = Math.round(srcCanvas.width * scale);
+            var drawH = Math.round(srcCanvas.height * scale);
+            var offsetX = Math.round((widthPx - drawW) / 2);
+            var offsetY = Math.round((heightPx - drawH) / 2);
+            ctx.drawImage(srcCanvas, offsetX, offsetY, drawW, drawH);
+        }
+
+        return destCanvas.toDataURL('image/png');
+    }
+
+    function applyLayout() {
+        var layout = getLayoutSettings();
+        var lw = layout.labelWidth;
+        var lh = layout.labelHeight;
+        var cols = layout.labelsPerRow;
+        var pw = layout.paperWidth;
+        var ph = layout.paperHeight;
+
+        var qrTextSizePx = Math.max(10, Math.round(lh * 96 * 0.22));
+
+        layoutStyleEl.textContent =
+            '.generated-grid {' +
+                'grid-template-columns: repeat(' + cols + ', ' + lw + 'in);' +
+                'width: ' + pw + 'in;' +
+                'max-width: 100%;' +
+                'justify-content: center;' +
+            '}' +
+            '.generated-item {' +
+                'width: ' + lw + 'in;' +
+                'height: ' + lh + 'in;' +
+                '--barcode-gap: ' + BARCODE_GAP_IN + 'in;' +
+            '}' +
+            '.generated-item.generated-item--qrcode .code-text { font-size: ' + qrTextSizePx + 'px; }' +
+            '@media print {' +
+                '@page { size: ' + pw + 'in ' + ph + 'in; margin: 0; }' +
+                'body { margin: 0; }' +
+                '.generated-grid { width: ' + pw + 'in; }' +
+            '}';
+    }
+
+    function getLabelPrintCount() {
+        return Math.max(1, Math.floor(parsePositiveNumber(numLabelsInput, 1)));
+    }
+
+    function getLabelsPerPage() {
+        return Math.max(1, Math.floor(parsePositiveNumber(labelsPerPageInput, 1)));
+    }
+
+    function getLabelPositionOnPage(col, row, perRow, perPage, pw, ph, lw, lh) {
+        var colsOnPage = Math.min(perRow, perPage);
+        var rowsOnPage = Math.ceil(perPage / perRow);
+        var gridWidth = colsOnPage * lw;
+        var gridHeight = rowsOnPage * lh;
+        var pageOffsetX = Math.max(0, (pw - gridWidth) / 2);
+        var pageOffsetY = Math.max(0, (ph - gridHeight) / 2);
+
+        return {
+            x: pageOffsetX + col * lw,
+            y: pageOffsetY + row * lh
+        };
+    }
+
+    function drawTextFromElement(ctx, el, itemRect, scaleX, scaleY) {
+        if (!el || !el.textContent) {
+            return;
+        }
+
+        var style = window.getComputedStyle(el);
+        if (style.display === 'none') {
+            return;
+        }
+
+        var rect = el.getBoundingClientRect();
+        var fontSize = (parseFloat(style.fontSize) || 12) * scaleY;
+        var lines = el.textContent.split(/\r?\n/).slice(0, 2);
+        var lineHeight = fontSize * 1.1;
+        var x = (rect.left - itemRect.left + rect.width / 2) * scaleX;
+        var y = (rect.top - itemRect.top) * scaleY;
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillStyle = style.color || '#000000';
+        ctx.font = fontSize + 'px Arial, Helvetica, sans-serif';
+
+        for (var i = 0; i < lines.length; i++) {
+            ctx.fillText(lines[i], x, y + i * lineHeight);
+        }
+    }
+
+    function itemElementToDataUrl(item) {
+        var layout = getLayoutSettings();
+        var labelWidthPx = Math.round(layout.labelWidth * 96);
+        var labelHeightPx = Math.round(layout.labelHeight * 96);
+        var itemRect = item.getBoundingClientRect();
+
+        var canvas = document.createElement('canvas');
+        canvas.width = labelWidthPx;
+        canvas.height = labelHeightPx;
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, labelWidthPx, labelHeightPx);
+
+        if (!itemRect.width || !itemRect.height) {
+            return canvas.toDataURL('image/png');
+        }
+
+        var scaleX = labelWidthPx / itemRect.width;
+        var scaleY = labelHeightPx / itemRect.height;
+        var img = item.querySelector('img');
+        var textEl = item.querySelector('.code-text');
+        var notesEl = item.querySelector('.code-notes');
+
+        if (img) {
+            var imgRect = img.getBoundingClientRect();
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(
+                img,
+                (imgRect.left - itemRect.left) * scaleX,
+                (imgRect.top - itemRect.top) * scaleY,
+                imgRect.width * scaleX,
+                imgRect.height * scaleY
+            );
+        }
+
+        drawTextFromElement(ctx, textEl, itemRect, scaleX, scaleY);
+        drawTextFromElement(ctx, notesEl, itemRect, scaleX, scaleY);
+
+        return canvas.toDataURL('image/png');
+    }
+
+    function collectFullLabelImages() {
+        var items = listEl.querySelectorAll('.generated-item');
+        var dataUrls = [];
+        for (var i = 0; i < items.length; i++) {
+            dataUrls.push(itemElementToDataUrl(items[i]));
+        }
+        return dataUrls;
+    }
+
+    function getJsPDFConstructor() {
+        if (window.jspdf && window.jspdf.jsPDF) {
+            return window.jspdf.jsPDF;
+        }
+        if (window.jsPDF) {
+            return window.jsPDF;
+        }
+        return null;
+    }
+
+    function onPrint() {
+        if (!listEl.children.length) {
+            setStatus('danger', 'Generate labels before printing.');
+            return;
+        }
+
+        var JsPDF = getJsPDFConstructor();
+        if (!JsPDF) {
+            setStatus('danger', 'PDF library failed to load.');
+            return;
+        }
+
+        var layout = getLayoutSettings();
+        var pw = layout.paperWidth;
+        var ph = layout.paperHeight;
+        var lw = layout.labelWidth;
+        var lh = layout.labelHeight;
+        var perRow = layout.labelsPerRow;
+        var perPage = getLabelsPerPage();
+        var copies = getLabelPrintCount();
+        var originals = collectFullLabelImages();
+
+        if (!originals.length) {
+            setStatus('danger', 'No label images to print.');
+            return;
+        }
+
+        var images = [];
+        for (var c = 0; c < copies; c++) {
+            for (var i = 0; i < originals.length; i++) {
+                images.push(originals[i]);
+            }
+        }
+
+        var orientation = pw >= ph ? 'l' : 'p';
+        var doc = new JsPDF({
+            unit: 'in',
+            format: [pw, ph],
+            orientation: orientation
+        });
+
+        var pageCount = 1;
+        for (var idx = 0; idx < images.length; idx++) {
+            var posOnPage = idx % perPage;
+            if (idx > 0 && posOnPage === 0) {
+                doc.addPage([pw, ph], orientation);
+                pageCount++;
+            }
+
+            var col = posOnPage % perRow;
+            var row = Math.floor(posOnPage / perRow);
+            var pos = getLabelPositionOnPage(col, row, perRow, perPage, pw, ph, lw, lh);
+            doc.addImage(images[idx], 'PNG', pos.x, pos.y, lw, lh, undefined, 'FAST');
+        }
+
+        doc.save('barcode-labels.pdf');
+        setStatus('success', 'PDF downloaded: ' + images.length + ' label(s) on ' + pageCount + ' page(s) (' + pw + ' x ' + ph + ' in).');
+    }
+
+    function getRemainingTextLayout(layout, notes, codeType, wrapHeightPx) {
+        var labelHeightPx = Math.round(layout.labelHeight * 96);
+        var remainingPx = Math.max(0, labelHeightPx - wrapHeightPx);
+        var paddingPx = 4;
+        var usablePx = Math.max(0, remainingPx - paddingPx);
+        var lineHeight = 1.1;
+        var maxFontPx = getLabelTextSizePx(layout);
+        var noteLines = notes ? Math.min(2, notes.split(/\r?\n/).length) : 0;
+        var valueLines = 1;
+        var totalLines = valueLines + noteLines;
+        var fontSizePx = Math.floor(usablePx / (totalLines * lineHeight));
+
+        fontSizePx = Math.max(8, Math.min(maxFontPx, fontSizePx));
+
+        return {
+            fontSizePx: fontSizePx,
+            valueHeightPx: Math.ceil(fontSizePx * lineHeight) + 1,
+            notesHeightPx: noteLines ? Math.ceil(noteLines * fontSizePx * lineHeight) + 1 : 0
+        };
+    }
+
+    function applyTextFooterLayout(textFooter, textEl, notesEl, layout, notes, codeType, wrapHeightPx) {
+        var textLayout = getRemainingTextLayout(layout, notes, codeType, wrapHeightPx);
+        var fontSize = textLayout.fontSizePx + 'px';
+
+        textFooter.style.maxHeight = (layout.labelHeight * 96 - wrapHeightPx) + 'px';
+        textEl.style.fontSize = fontSize;
+        textEl.style.lineHeight = '1.1';
+        textEl.style.maxHeight = textLayout.valueHeightPx + 'px';
+
+        if (notesEl) {
+            notesEl.style.fontSize = fontSize;
+            notesEl.style.lineHeight = '1.1';
+            notesEl.style.maxHeight = textLayout.notesHeightPx + 'px';
+        }
+    }
+
+    function getNotesText() {
+        return (notesInput.value || '').trim();
+    }
+
+    function limitNotesToTwoLines() {
+        var lines = notesInput.value.split(/\r?\n/);
+        if (lines.length > 2) {
+            notesInput.value = lines.slice(0, 2).join('\n');
+        }
+    }
+
+    function createItemElement(imageDataUrl, value, codeType, notes) {
+        var layout = getLayoutSettings();
+        var area = getCodeAreaPx(layout, notes, codeType);
+        var item = document.createElement('div');
+        item.className = 'generated-item generated-item--' + codeType;
+
+        var content = document.createElement('div');
+        content.className = 'code-content';
+
+        var imageWrap = document.createElement('div');
+        imageWrap.className = 'code-image-wrap';
+        imageWrap.style.height = (area.wrapHeight / 96) + 'in';
+
+        var image = document.createElement('img');
+        image.src = imageDataUrl;
+        image.alt = value;
+        image.width = area.width;
+        image.height = area.height;
+
+        var textFooter = document.createElement('div');
+        textFooter.className = 'code-text-footer';
+
+        var text = document.createElement('div');
+        text.className = 'code-text';
+        text.textContent = value;
+
+        var notesEl = null;
+        if (notes) {
+            notesEl = document.createElement('div');
+            notesEl.className = 'code-notes';
+            notesEl.textContent = notes;
+        }
+
+        imageWrap.appendChild(image);
+        textFooter.appendChild(text);
+        if (notesEl) {
+            textFooter.appendChild(notesEl);
+        }
+        content.appendChild(imageWrap);
+        content.appendChild(textFooter);
+        item.appendChild(content);
+
+        if (codeType === 'barcode') {
+            applyTextFooterLayout(textFooter, text, notesEl, layout, notes, codeType, area.wrapHeight);
+        } else if (notesEl) {
+            var qrNotesLayout = getRemainingTextLayout(layout, notes, codeType, area.wrapHeight);
+            notesEl.style.fontSize = qrNotesLayout.fontSizePx + 'px';
+            notesEl.style.lineHeight = '1.1';
+            notesEl.style.maxHeight = qrNotesLayout.notesHeightPx + 'px';
+        }
+
+        return item;
+    }
+
+    function renderOne(type, value, notes) {
+        var layout = getLayoutSettings();
+        var area = getCodeAreaPx(layout, notes, type);
+        var srcCanvas = document.createElement('canvas');
+        var options = {
+            bcid: type === 'qrcode' ? 'qrcode' : 'code128',
+            text: value,
+            textxalign: 'center'
+        };
+
+        if (type === 'qrcode') {
+            var qrTarget = Math.min(area.width, area.height);
+            options.scale = Math.max(2, Math.min(14, Math.round(qrTarget / 28)));
+        } else {
+            options.height = Math.max(12, Math.round(area.height * 0.9));
+            options.scale = 3;
+            options.includetext = false;
+        }
+
+        bwipjs.toCanvas(srcCanvas, options);
+        return fitCanvasToSize(srcCanvas, area.width, area.height, type !== 'qrcode');
+    }
+
+    function ensureFontLoaded() {
+        if (fontLoaded) {
+            return;
+        }
+        bwipjs.loadFont('Inconsolata', 95, 105, Inconsolata);
+        fontLoaded = true;
+    }
+
+    function renderBatch(type, values, index, rendered, failed, warningText, notes) {
+        var end = Math.min(index + CHUNK_SIZE, values.length);
+
+        for (var i = index; i < end; i++) {
+            try {
+                var imgData = renderOne(type, values[i], notes);
+                listEl.appendChild(createItemElement(imgData, values[i], type, notes));
+                rendered++;
+            } catch (error) {
+                failed++;
+            }
+        }
+
+        setStatus('success', warningText + 'Generated ' + rendered + ' of ' + values.length + (failed ? ' (failed: ' + failed + ')' : '') + '.');
+
+        if (end < values.length) {
+            setTimeout(function() {
+                renderBatch(type, values, end, rendered, failed, warningText, notes);
+            }, 0);
+        } else {
+            updatePrintButtonState();
+        }
+    }
+
+    function updatePrintButtonState() {
+        printBtn.disabled = listEl.children.length === 0;
+    }
+
+    function onGenerate() {
+        ensureFontLoaded();
+        applyLayout();
+        listEl.innerHTML = '';
+        setStatus('', '');
+        updatePrintButtonState();
+
+        var values = parseRawValues(rawInput.value || '');
+        if (!values.length) {
+            setStatus('danger', 'Please enter at least one valid value.');
+            return;
+        }
+
+        var warningText = '';
+        if (values.length > HARD_LIMIT) {
+            values = values.slice(0, HARD_LIMIT);
+            warningText = 'Input exceeded ' + HARD_LIMIT + ' items. Only the first ' + HARD_LIMIT + ' were used. ';
+        } else if (values.length > SOFT_WARN_LIMIT) {
+            warningText = 'Large list detected (' + values.length + ' items). Rendering may take a moment. ';
+        }
+
+        renderBatch(typeSelect.value, values, 0, 0, 0, warningText, getNotesText());
+    }
+
+    function onClear() {
+        rawInput.value = '';
+        notesInput.value = '';
+        listEl.innerHTML = '';
+        setStatus('', '');
+        updatePrintButtonState();
+    }
+
+    notesInput.addEventListener('input', limitNotesToTwoLines);
+
+    for (var i = 0; i < layoutInputs.length; i++) {
+        layoutInputs[i].addEventListener('input', applyLayout);
+        layoutInputs[i].addEventListener('change', applyLayout);
+    }
+
+    applyLayout();
+    updatePrintButtonState();
+
+    generateBtn.addEventListener('click', onGenerate);
+    printBtn.addEventListener('click', onPrint);
+    clearBtn.addEventListener('click', onClear);
+})();
+</script>
+{% endblock %}

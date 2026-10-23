@@ -44,7 +44,7 @@ describe('render() integration', () => {
 
   it('date/number_format/json_encode globals render', () => {
     expect(html).toContain('num: 1,234.50');
-    expect(html).toMatch(/json: \{&quot;a&quot;:1,&quot;b&quot;:&quot;x&#92;\/y&quot;\}/);
+    expect(html).toMatch(/json: \{&quot;a&quot;:1,&quot;b&quot;:&quot;x\\\/y&quot;\}/);
     expect(html).toMatch(/date: \d{4}-\d{2}-\d{2}/);
   });
 });

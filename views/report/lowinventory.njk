@@ -1,0 +1,42 @@
+{% extends "layout.njk" %}
+{% block content %}
+    <style>
+        table {
+            font-size: 14pt;
+        }
+    </style>
+    <div class="container">
+        <h2>Low Inventory</h2>
+        <p>
+            <a href="{{ route('LowInventoryReportExport') }}" class="btn btn-success">Export to Excel</a>
+        </p>
+        <p class="text-muted">
+            Total quantity is the sum of all warehouse rows for the SKU.
+            Shown when below threshold: SKUs starting with <strong>R</strong>, <strong>C</strong>, <strong>H</strong>, or <strong>G</strong>
+            (any case) if total qty is under <strong>100</strong>; all other SKUs if under <strong>10</strong>.
+        </p>
+    </div>
+    <br />
+    <div class="container">
+        <table id="lowInventoryTable" class="table table-bordered table-condensed">
+            <thead>
+                <tr>
+                    <th>SKU</th>
+                    <th>Total QTY</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                    <tr>
+                        <td>{{ row.sku }}</td>
+                        <td>{{ int(row.total_qty) }}</td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="2">No products match the low-inventory rules.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+table {
+    font-size: 14pt;
+}
+</style>
+
+<div class="container">
+    <h2>Receiving Report</h2>
+
+    <form method="GET" class="form-inline" style="margin-bottom: 15px;">
+        <label for="start_date">From</label>
+        <input id="start_date" name="start" type="text" class="datepicker" data-date-format="yyyy-mm-dd" value="{{ start }}">
+
+        <label for="end_date">To</label>
+        <input id="end_date" name="end" type="text" class="datepicker" data-date-format="yyyy-mm-dd" value="{{ end }}">
+
+        <label for="status">Status</label>
+        <select id="status" name="status" class="form-control">
+            <option value="all" {{ 'selected' if status === 'all' else '' }}>all</option>
+            <option value="received" {{ 'selected' if status === 'received' else '' }}>received</option>
+            <option value="putaway" {{ 'selected' if status === 'putaway' else '' }}>putaway</option>
+            <option value="void" {{ 'selected' if status === 'void' else '' }}>void</option>
+        </select>
+
+        <button class="btn btn-primary" type="submit">Go</button>
+    </form>
+
+    <p>
+        <strong>Total Lines:</strong> {{ total_lines }}
+        &nbsp;&nbsp;
+        <strong>Total Qty:</strong> {{ total_qty }}
+    </p>
+
+    <table class="table table-bordered table-condensed">
+        <thead>
+            <tr>
+                <th>Received Date</th>
+                <th>SKU</th>
+                <th>Carton</th>
+                <th>Per Carton</th>
+                <th>Qty</th>
+                <th>Status</th>
+                <th>Put Away Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+            <tr>
+                <td>{{ substr(row.received_date, 0, 10) if row.received_date else '-' }}</td>
+                <td>{{ row.sku }}</td>
+                <td>{{ row.carton or '-' }}</td>
+                <td>{{ '-' if row.per_carton == null else int(row.per_carton) }}</td>
+                <td>{{ int(row.qty) }}</td>
+                <td>{{ row.status }}</td>
+                <td>{{ substr(row.put_away_date, 0, 10) if row.put_away_date else '-' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">No receiving lines found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+$(document).ready(function() {
+    $('#start_date').datepicker("option", "dateFormat", 'yy-mm-dd');
+    $('#end_date').datepicker("option", "dateFormat", 'yy-mm-dd');
+});
+</script>
+{% endblock %}

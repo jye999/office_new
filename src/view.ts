@@ -18,21 +18,24 @@ import { currentUser, hasRole as roleCheck, type Auth } from './auth.js';
 
 export const viewsDir = path.join(process.cwd(), 'views');
 
-// Laravel's e() encodes a single quote as &#039;; nunjucks' escape uses
-// &#39;. Patch the shared escape once so every {{ }} matches e() byte-for-byte
-// (nunjucks ignores a custom autoescape function and hardcodes lib.escape).
+// Blade's {{ }} is e() (htmlspecialchars ENT_QUOTES, double_encode=false,
+// single quote -> &#039;). nunjucks hardcodes its lib.escape for autoescaping
+// and ignores a custom autoescape function, so patch the shared escape once
+// to e() — every {{ }} then matches Blade byte-for-byte.
 // SAFETY: createRequire loads nunjucks' CJS lib.js (no bundled types); the
 // exports object is mutable and `escape` is a plain data property.
 const njkLib = createRequire(import.meta.url)('nunjucks/src/lib.js') as {
   escape: (v: string) => string;
 };
 if (typeof njkLib.escape === 'function') {
-  const origEscape = njkLib.escape;
-  njkLib.escape = (v: string) => origEscape(v).replaceAll('&#39;', '&#039;');
+  njkLib.escape = (v: string) => e(v);
 }
 
 // Autoescape on (same as Blade's {{ }}), undefined vars render empty
 // (same as PHP with warnings suppressed — the old app runs with E_ALL|E_STRICT off).
+// Blade's {{ }} uses e(); the env autoescape must match it exactly (see e()).
+// The autoescape option is normalized to a boolean by nunjucks, so override
+// env.escape — the function render() actually applies per value.
 export function createViewEnv(viewsRoot: string = viewsDir): nunjucks.Environment {
   return new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsRoot), {
     autoescape: true,
@@ -49,14 +52,30 @@ export type TemplateValue = string | number | boolean | null | undefined | Templ
 
 // ---------------------------------------------------------------- PHP helpers (template globals)
 
-// htmlspecialchars($value, ENT_QUOTES, 'UTF-8')
+// htmlspecialchars($value, ENT_QUOTES, 'UTF-8', false) — Laravel 5.4's e():
+// double_encode is FALSE, so entities already present in the data (e.g. a
+// stored "&quot;") are decoded before re-encoding and come out unchanged.
+// PHP 7.4 double_encode=false only decodes named entities before re-encoding;
+// numeric refs (&#39;) pass through untouched — verified against the old app.
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&'); // last: never double-decode
+}
+
 export function e(value: unknown): string {
-  return String(value ?? '')
-    .replace(/&/g, '&amp;')
+  return decodeEntities(String(value ?? ''))
+    // Leave numeric refs (&#39;) untouched, as PHP double_encode=false does.
+    // shortcut: PHP leniently decodes "&amp" without the semicolon; data with
+    // malformed entities would diverge — no such rows observed.
+    .replace(/&(?!#(\d+|x[0-9a-f]+);)/gi, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replace(/'/g, '&#039;'); // PHP 7.4 ENT_QUOTES emits &#039;
 }
 
 // isset(): false only for null/undefined (never for '' or 0).
@@ -126,6 +145,13 @@ export function number_format(value: number, dec = 0, decPoint = '.', thousandsS
   int = int.replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSep);
   if (dec > 0 && frac === undefined) frac = '0'.repeat(dec);
   return (neg ? '-' : '') + int + (frac !== undefined ? decPoint + frac : '');
+}
+
+// PHP (int) cast: truncates toward zero; ''/null -> 0, non-numeric -> 0.
+export function int(value: unknown): number {
+  if (value === null || value === undefined || value === '') return 0;
+  const n = Number(value);
+  return Number.isFinite(n) ? Math.trunc(n) : 0;
 }
 
 // PHP substr() with negative-start support.
@@ -199,7 +225,7 @@ export function strtotime(s: string | Date | null | undefined): number {
     second: '2-digit',
     hourCycle: 'h23',
   }).formatToParts(dt);
-  const wall = Date.UTC(
+  const rendered = Date.UTC(
     Number(parts.find((p) => p.type === 'year')?.value),
     Number(parts.find((p) => p.type === 'month')?.value) - 1,
     Number(parts.find((p) => p.type === 'day')?.value),
@@ -207,7 +233,10 @@ export function strtotime(s: string | Date | null | undefined): number {
     Number(parts.find((p) => p.type === 'minute')?.value),
     Number(parts.find((p) => p.type === 'second')?.value),
   );
-  return Math.round((u + (wall - u)) / 1000);
+  // One-step fixed point: epoch where the tz wall clock equals u. The offset is
+  // constant within the day, so a single iteration is exact (shortcut: no
+  // second iteration, fine for civil tz offsets <= 14h).
+  return Math.round((u + (u - rendered)) / 1000);
 }
 
 // PHP date() format chars, in the app timezone.
@@ -690,6 +719,7 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     strtoupper,
     ucfirst,
     round,
+    int,
     number_format,
     substr,
     json_encode,

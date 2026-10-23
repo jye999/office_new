@@ -1,0 +1,79 @@
+{% extends "layout.njk" %}
+{% block content %}
+    <style>
+        table {
+            font-size: 14pt;
+        }
+
+    </style>
+    <div class="container">
+
+        <form>
+            <div class="form-group ">
+            Keyword
+                <input id="keyword" name="keyword" type="text" placeholder="" value='{{ keyword }}'>
+            </div>
+            <div class="form-group ">
+                From
+                <input id="start_date" name="start" type="text" placeholder="" class="datepicker"
+                    data-date-format="yyyy-mm-dd" value='{{ start }}'>
+                To
+                <input id="end_date" name="end" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd"
+                    value='{{ end }}'>
+            </div>
+            <button class="btn btn-primary" id="btnShowReport" type="submit">Search</button>
+        </form>
+
+    </div>
+    <br />
+    <div class="container">
+
+<table id="salesTable" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>Store</td>
+            <td>Name</td>
+            <td>Qty</td>
+            <td>Total</td>
+            <td>Average Price</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for s in sales %}
+            <tr>
+                <td>
+                {{ s.store_label }}</td>
+                <td>{{ s.name }}</td>
+                <td>{{ s.qty }}</td>
+                <td>{{ number_format(s.total, 2) }}</td>
+                <td>{{ number_format(s.total / s.qty, 2) }}</td>
+                </tr>
+        {% endfor %}
+    </tbody>
+</table>
+    </div>
+    <script>
+        $(document).ready(function() {
+
+    $('#start_date').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    $('#end_date').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    oTable = $('#salesTable').dataTable({
+        "aoColumns": [{
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }, {
+            "sWidth": "75px"
+        }],
+        "aaSorting": [
+            [2, "desc"]
+        ],
+        "bPaginate": false
+    });
+        });
+    </script>
+{% endblock %}
