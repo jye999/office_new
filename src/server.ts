@@ -9,13 +9,19 @@ import { registerViewPlugins, render } from './view.js';
 import { lredirect, registerHttpHelpers } from './http.js';
 import { registerAuthRoutes } from './modules/auth/routes.js';
 import { registerApiAuthRoutes } from './modules/api/routes.js';
-import { installRouter } from './router.js';
+import { registerHomeRoutes } from './modules/home/routes.js';
+import { registerActionLogRoutes } from './modules/actionlog/routes.js';
+import { registerSettingsRoutes } from './modules/settings/routes.js';
+import { installRouter, preloadRouteTable } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
 
 // T03: not-found handler (regex catch-alls + Laravel 404) must be installed
 // before any root-level route registration.
 installRouter(app);
+// T10: named routes for modules not ported yet (e.g. nav's route('summary'))
+// come from the static inventory so views emit the old app's URLs.
+preloadRouteTable();
 
 // fp() = global scope: form bodies must be parsed for routes registered on
 // the root app (T02's auth module registered them after this plugin; without
@@ -28,6 +34,9 @@ await app.register(registerHttpHelpers);
 await registerViewPlugins(app);
 registerAuthRoutes(app);
 registerApiAuthRoutes(app);
+registerHomeRoutes(app);
+registerActionLogRoutes(app);
+registerSettingsRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

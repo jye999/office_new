@@ -24,10 +24,6 @@
 
   <!-- Dublin Core Metadata : http://dublincore.org/ -->
   <meta name="DC.title" content="Project Name">
-  <!-- Laravel's header used @yield('description')/'author' twice; nunjucks forbids
-       duplicate block names and self.<block>() is broken in nunjucks 3.2.4, so the
-       DC.* duplicates get their own (empty by default) blocks. A page that sets
-       'description' should also set 'dc_subject' if the duplication matters. -->
   <meta name="DC.subject" content="{% block dc_subject %}{% endblock %}">
   <meta name="DC.creator" content="{% block dc_creator %}{% endblock %}">
 

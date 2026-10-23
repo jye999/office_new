@@ -120,6 +120,8 @@ function normalizeHtml(html: string): string {
     .replace(/\?id=[a-f0-9]+/g, '')
     .replace(/(name="_token"[^>]*value=")[^"]*(")/g, '$1$2')
     .replace(/(name="csrf-token"[^>]*content=")[^"]*(")/g, '$1$2')
+    // csrf tokens also appear in inline JS payloads (session-specific, per side)
+    .replace(/(_token:\s*')[^']*(')/g, '$1$2')
     .replace(/>\s+</g, '><') // inter-tag whitespace (old pretty-prints some views)
     .replace(/\s+(<\/[a-z][a-z0-9]*>)/g, '$1') // text space right before a closing tag
     .replace(/(<\/?[a-z][a-z0-9]*[^>]*>)\s+/g, '$1') // text space right after a tag

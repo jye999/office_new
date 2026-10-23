@@ -1,0 +1,48 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+#quickSearch{
+	color:#000;
+}
+</style>
+
+<div style="margin-left:20px">
+
+<!-- Textarea -->
+<div class="control-group">
+  <label class="control-label" for="">Quick Search ( separate by | )</label>
+  <div class="controls">    
+
+    <textarea id="quickSearch" name="quickSearch">{{ settings.value if settings else "" }} </textarea>
+  </div>
+</div>
+
+
+<!-- Button -->
+<div class="control-group">
+  <label class="control-label" for="saveBtn"></label>
+  <div class="controls">
+    <button id="saveBtn" name="saveBtn" class="btn btn-success">Save</button>
+  </div>
+</div>
+
+</div>
+<script>
+$(document).ready(function(){
+	$("#settings").addClass("active");
+	
+	$("#saveBtn").click(function(e){
+         $.ajax({
+        	type : 'post',
+                url : '{{ route('Settings.saveQuickSearch') }}',
+				        datatype: 'json',
+                data :  {'quickSearch':$("#quickSearch").val() } ,
+                success : function(r)
+                {
+                    console.dir(r);
+                }
+        });
+	});
+});
+</script>
+{% endblock %}

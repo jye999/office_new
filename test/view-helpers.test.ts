@@ -109,8 +109,9 @@ describe('PHP-mimicking globals (known PHP output)', () => {
     expect(url('login', { a: 'b c' })).toBe(`${base}/login?a=b+c`); // http_build_query encodes spaces as +
     expect(asset('css/app.css')).toBe(`${base}/css/app.css`);
     registerRoute('t01.test', '/t01/:id');
-    expect(route('t01.test', { id: 7 })).toBe('/t01/7');
-    expect(route('t01.test', { id: 7, extra: 'x' })).toBe('/t01/7?extra=x');
+    // Laravel route() returns an ABSOLUTE URL (request root + path), not a relative one.
+    expect(route('t01.test', { id: 7 })).toBe(`${base}/t01/7`);
+    expect(route('t01.test', { id: 7, extra: 'x' })).toBe(`${base}/t01/7?extra=x`);
     expect(configGlobal('app.name')).toBe('Angel Isabella');
     expect(configGlobal('app.locale')).toBe('en');
     expect(configGlobal('missing.key', 'def')).toBe('def');

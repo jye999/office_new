@@ -329,9 +329,11 @@ export function asset(path = ''): string {
   return url(path);
 }
 
-// route('name', params) — Laravel returns a relative path; absolute callers use url().
+// route('name', params) — Laravel returns an ABSOLUTE URL (request root + path);
+// the T03 routeUrl() helper gives the path part, url() gives the APP_URL root.
 export function route(name: string, params?: Record<string, unknown>): string {
-  return routeUrl(name, params);
+  const p = routeUrl(name, params);
+  return p ? url(p) : '';
 }
 
 // ---------------------------------------------------------------- MessageBag
@@ -570,6 +572,7 @@ export class FormBuilder {
 // at session['flash'] ({type: [msgs]}), so a plain read sees it; consuming (redirect
 // flows) uses reply.flash() which also clears it.
 function sessionGet(req: FastifyRequest, key: string): TemplateValue {
+  // SAFETY: @fastify/secure-session stores flat values (strings/objects) at top-level keys.
   const data = (req.session as unknown as Record<string, TemplateValue> | undefined) ?? {};
   if (key in data) return data[key];
   const flash = data['flash'];
@@ -591,6 +594,7 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
   // SAFETY: req.session is the @fastify/secure-session proxy (get/set by key);
   // property reads/writes go through it, so clearing a key here persists on send.
   const sessionData = (req.session as unknown as Record<string, TemplateValue> | undefined) ?? {};
+  // SAFETY: @fastify/secure-session stores flash payloads under 'flash' (T01 contract).
   const flashStore = sessionData['flash'] as Record<string, TemplateValue> | undefined;
   const flashErrors = flashStore?.['errors'];
   const errors = makeMessageBag((flashErrors as Record<string, string[]>) ?? {});
@@ -680,6 +684,13 @@ export async function render(req: FastifyRequest, reply: FastifyReply, name: str
   if (!rel) throw new Error(`view not found: ${name}`);
   const html = njkEnv.render(rel, ctx);
   reply.type('text/html; charset=UTF-8').send(html);
+}
+
+// Laravel: calling a controller method that does not exist -> 500, rendered
+// through the app's own error view (old app ships resources/views/error/500.blade.php).
+export async function sendServer500(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  reply.code(500);
+  await render(req, reply, 'error/500');
 }
 
 export async function registerViewPlugins(app: FastifyInstance): Promise<void> {

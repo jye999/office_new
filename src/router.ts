@@ -3,6 +3,8 @@
 // app's regex catch-alls (routes/web.php) before defaulting to Laravel's 404.
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import fs from 'node:fs';
+import path from 'node:path';
 
 type Guard = (req: FastifyRequest, reply: FastifyReply) => Promise<void>;
 import { currentUser, hasRole, passportApiAuth, pdaAuth, requireLogin, requireRoles } from './auth.js';
@@ -23,6 +25,42 @@ export function registerRoute(name: string, path: string): void {
 
 export function isRegisteredRoute(name: string): name is string {
   return name in routeTable;
+}
+
+// T10: shared layouts (includes/nav) call route() for every module's named
+// routes. So that route() emits the same URL as the old app before each module
+// task registers its route, pre-load the table from the static route inventory.
+// Modules' own registerRoute() calls overwrite these entries at startup.
+export function preloadRouteTable(): void {
+  let inv: { routes?: { name?: string | null; path?: string | null }[] };
+  try {
+    inv = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'plan', 'inventory.json'), 'utf8'));
+  } catch {
+    return; // no inventory (unit tests) — modules register their own names
+  }
+  // Laravel's Route::resource entries carry no `as` name in routes/web.php, so the
+  // inventory has none; synthesize the `<base>.<action>` names Laravel generates.
+  // Resources first: explicit `as` names (inventory) registered later win, like Laravel.
+  const RESOURCE_BASES = [
+    'staffs', 'opolo', 'windy', 'four', 'FollowUps', 'BulkProduction', 'Production',
+    'Purchase', 'Settings', 'order', 'item', 'itemimage', 'product', 'opolocost', 'Wayfair', 'Tongtool',
+  ];
+  for (const base of RESOURCE_BASES) {
+    const p = singular(base);
+    const names: Record<string, string> = {
+      index: `/${base}`,
+      create: `/${base}/create`,
+      store: `/${base}`,
+      show: `/${base}/{${p}}`,
+      edit: `/${base}/{${p}}/edit`,
+      update: `/${base}/{${p}}`,
+      destroy: `/${base}/{${p}}`,
+    };
+    for (const [action, path] of Object.entries(names)) routeTable[`${base}.${action}`] = path;
+  }
+  for (const r of inv.routes ?? []) {
+    if (r.name && r.path) routeTable[r.name] = r.path.startsWith('/') ? r.path : `/${r.path}`;
+  }
 }
 
 function escapeUri(s: string): string {
