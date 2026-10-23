@@ -1,11 +1,15 @@
-// Port of app/Helpers/WarehouseLocation.php — only the members the PDA API
-// (T24) calls: sortStocked/level (via ensureDefaultStillStocked) and
-// mergeDuplicateLocations. Later tasks (T25a consolidation) add parse/
-// isAdjacent/cluster/recommend/pickForQty from the same PHP file.
+// Port of app/Helpers/WarehouseLocation.php — the members the PDA API (T24)
+// and the consolidation routes (T25b) call: sortStocked/level (via
+// ensureDefaultStillStocked), merge(Duplicate|AllDuplicate)Locations, and
+// parse/isAdjacent/cluster/recommend.
+// All functions take an optional Kysely instance (default `db`) so callers
+// can run them inside a transaction.
 
-import { db } from '../db.js';
+import { db, sql } from '../db.js';
 import { nowDb } from '../db.js';
 import { strtotime } from '../view.js';
+
+type Db = typeof db;
 
 // SAFETY: Kysely types the datetime/timestamp columns as Date, but the pool
 // runs with mysql2 dateStrings (T00), so runtime values are 'YYYY-MM-DD
@@ -65,8 +69,8 @@ function sortStocked(rows: LocRow[]): { location: string; quantity: number; loca
 
 // If stored default is gone or has qty 0, move it to the next stocked
 // lowest-L bin (or null if none remain).
-export async function ensureDefaultStillStocked(productId: number): Promise<string | null> {
-  const product = await db
+export async function ensureDefaultStillStocked(productId: number, k: Db = db): Promise<string | null> {
+  const product = await k
     .selectFrom('os_products')
     .select(['id', 'default_location'])
     .where('id', '=', productId)
@@ -76,7 +80,7 @@ export async function ensureDefaultStillStocked(productId: number): Promise<stri
   const defaultNorm = (product.default_location ?? '').trim().toUpperCase();
   if (defaultNorm === '') return null;
 
-  const rows = await db
+  const rows = await k
     .selectFrom('os_product_locations')
     .selectAll()
     .where('product_id', '=', productId)
@@ -91,7 +95,7 @@ export async function ensureDefaultStillStocked(productId: number): Promise<stri
 
   const next = sorted.length > 0 ? sorted[0].location : null;
   // SAFETY: os_products.updated_at is typed NOT NULL Date; runtime is a string (dateStrings).
-  await db
+  await k
     .updateTable('os_products')
     .set({ default_location: next, updated_at: nowDb() as unknown as Date })
     .where('id', '=', productId)
@@ -109,8 +113,8 @@ function isNumeric(v: unknown): boolean {
 // deleted. Packing stays the shared value when rows agree, otherwise the
 // latest-countdate row. Carton is qty / packing when packing > 0.
 // Pick allocations are pointed at the surviving row.
-export async function mergeDuplicateLocations(productId: number | null = null): Promise<number> {
-  let query = db.selectFrom('os_product_locations').selectAll().orderBy('id', 'asc');
+export async function mergeDuplicateLocations(productId: number | null = null, k: Db = db): Promise<number> {
+  let query = k.selectFrom('os_product_locations').selectAll().orderBy('id', 'asc');
   if (productId !== null) query = query.where('product_id', '=', productId);
   // SAFETY: selectAll() rows are a superset of LocRow with identical field types.
   const rows = (await query.execute()) as unknown as LocRow[];
@@ -173,13 +177,13 @@ export async function mergeDuplicateLocations(productId: number | null = null): 
       .execute();
 
     if (dropIds.length > 0) {
-      const allocs = await db
+      const allocs = await k
         .selectFrom('os_order_pick_allocations')
         .selectAll()
         .where('location_id', 'in', dropIds)
         .execute();
       for (const alloc of allocs) {
-        const existing = await db
+        const existing = await k
           .selectFrom('os_order_pick_allocations')
           .selectAll()
           .where('source', '=', alloc.source)
@@ -188,7 +192,7 @@ export async function mergeDuplicateLocations(productId: number | null = null): 
           .where('location_id', '=', keeper.id)
           .executeTakeFirst();
         if (existing) {
-          await db
+          await k
             .updateTable('os_order_pick_allocations')
             .set({
               pull_qty: existing.pull_qty + alloc.pull_qty,
@@ -197,9 +201,9 @@ export async function mergeDuplicateLocations(productId: number | null = null): 
             })
             .where('id', '=', existing.id)
             .execute();
-          await db.deleteFrom('os_order_pick_allocations').where('id', '=', alloc.id).execute();
+          await k.deleteFrom('os_order_pick_allocations').where('id', '=', alloc.id).execute();
         } else {
-          await db
+          await k
             .updateTable('os_order_pick_allocations')
             .set({
               location_id: keeper.id,
@@ -212,8 +216,158 @@ export async function mergeDuplicateLocations(productId: number | null = null): 
       }
     }
 
-    await db.deleteFrom('os_product_locations').where('id', 'in', dropIds).execute();
+    await k.deleteFrom('os_product_locations').where('id', 'in', dropIds).execute();
     removed += dropIds.length;
   }
   return removed;
+}
+
+// Merge same-name location rows for every product that currently has them.
+// PHP raw SQL: GROUP BY product_id, UPPER(TRIM(location)) HAVING COUNT(*) > 1.
+export async function mergeAllDuplicateLocations(k: Db = db): Promise<number> {
+  // SAFETY: sql.raw in groupBy is the only way to mirror the PHP's
+  // expression group-by; Kysely types it loosely.
+  const rows = await k
+    .selectFrom('os_product_locations')
+    .where(sql<boolean>`${sql.ref('location')} is not null`)
+    .where(sql<boolean>`TRIM(${sql.ref('location')}) <> ${''}`)
+    .select('product_id')
+    // SAFETY: Kysely 0.29 has no havingRaw; sql.raw casts to never.
+    .groupBy(sql.raw('product_id, UPPER(TRIM(location))') as never)
+    .having(sql.raw('COUNT(*) > 1') as never)
+    .execute();
+  const seen = new Set<number>();
+  let removed = 0;
+  for (const row of rows) {
+    const pid = Number(row.product_id);
+    if (seen.has(pid)) continue;
+    seen.add(pid);
+    removed += await mergeDuplicateLocations(pid, k);
+  }
+  return removed;
+}
+
+// ---------------------------------------------------------------- consolidation
+
+interface ParsedCode {
+  code: string;
+  prefix: string;
+  aisle: number;
+  bay: number;
+  level: number;
+}
+
+// PHP static parse: ^([A-Z]+)(\d+)B(\d+)L(\d+)$ on the upper-trimmed code.
+export function parse(code: unknown): ParsedCode | null {
+  const c = String(code ?? '').trim().toUpperCase();
+  if (c === '') return null;
+  const m = /^([A-Z]+)(\d+)B(\d+)L(\d+)$/.exec(c);
+  if (!m) return null;
+  return { code: c, prefix: m[1], aisle: parseInt(m[2], 10), bay: parseInt(m[3], 10), level: parseInt(m[4], 10) };
+}
+
+// 4-neighbor adjacency on aisle/bay/level; same coordinates count as together.
+export function isAdjacent(a: ParsedCode | string | null, b: ParsedCode | string | null): boolean {
+  const pa = typeof a === 'string' ? parse(a) : a;
+  const pb = typeof b === 'string' ? parse(b) : b;
+  if (!pa || !pb) return false;
+  if (pa.prefix !== pb.prefix || pa.aisle !== pb.aisle) return false;
+  const bayDiff = Math.abs(pa.bay - pb.bay);
+  const levelDiff = Math.abs(pa.level - pb.level);
+  if (bayDiff === 0 && levelDiff === 0) return true;
+  if (bayDiff === 1 && levelDiff === 0) return true;
+  if (bayDiff === 0 && levelDiff === 1) return true;
+  return false;
+}
+
+// PHP (int) cast on row qty: null/garbage -> 0.
+function rowInt(v: unknown): number {
+  const s = String(v ?? '').trim();
+  const m = /^[-+]?\d+/.exec(s);
+  return m ? parseInt(m[0], 10) : 0;
+}
+
+export interface ClusterRow {
+  id: number;
+  location: string | null;
+  qty: number | null;
+  packing: number | null;
+  carton: number | null;
+}
+
+// BFS clusters over same-code / adjacent bins.
+export function cluster(locations: ClusterRow[]): ClusterRow[][] {
+  const n = locations.length;
+  if (n === 0) return [];
+  const parsed: (ParsedCode | null)[] = [];
+  const codes: string[] = [];
+  const visited: boolean[] = [];
+  for (let i = 0; i < n; i++) {
+    const raw = locations[i].location ?? '';
+    codes[i] = String(raw).trim().toUpperCase();
+    parsed[i] = parse(codes[i]);
+    visited[i] = false;
+  }
+  const clusters: ClusterRow[][] = [];
+  for (let i = 0; i < n; i++) {
+    if (visited[i]) continue;
+    const queue = [i];
+    visited[i] = true;
+    const group: ClusterRow[] = [];
+    while (queue.length > 0) {
+      const idx = queue.shift() as number;
+      group.push(locations[idx]);
+      for (let j = 0; j < n; j++) {
+        if (visited[j]) continue;
+        const sameCode = codes[idx] !== '' && codes[idx] === codes[j];
+        const closeBy = isAdjacent(parsed[idx], parsed[j]);
+        if (sameCode || closeBy) {
+          visited[j] = true;
+          queue.push(j);
+        }
+      }
+    }
+    clusters.push(group);
+  }
+  return clusters;
+}
+
+export interface Recommendation {
+  clusters: { locations: ClusterRow[]; codes: string[]; total_qty: number; max_location: ClusterRow | null }[];
+  suggested_target: string;
+  suggested_moves: { from: string; to: string; qty: number; reason: string }[];
+}
+
+// Consolidation recommendation, or null when already one adjacent cluster.
+export function recommend(locations: ClusterRow[]): Recommendation | null {
+  const clusters = cluster(locations);
+  if (clusters.length < 2) return null;
+  const summaries = clusters.map((cl) => {
+    let totalQty = 0;
+    let maxQty = -1;
+    let maxLoc: ClusterRow | null = null;
+    const codes: string[] = [];
+    for (const row of cl) {
+      const qty = rowInt(row.qty);
+      totalQty += qty;
+      codes.push(row.location ?? '');
+      if (qty > maxQty) {
+        maxQty = qty;
+        maxLoc = row;
+      }
+    }
+    return { locations: cl, codes, total_qty: totalQty, max_location: maxLoc };
+  });
+  // PHP usort: total_qty desc (JS sort is stable; PHP 7 usort is not — ties keep row order).
+  summaries.sort((a, b) => (a.total_qty === b.total_qty ? 0 : a.total_qty > b.total_qty ? -1 : 1));
+  const targetRow = summaries[0].max_location;
+  const targetCode = targetRow && targetRow.location ? targetRow.location : '';
+  const suggestedMoves: Recommendation['suggested_moves'] = [];
+  for (let i = 1; i < summaries.length; i++) {
+    for (const row of summaries[i].locations) {
+      const from = row.location ?? '';
+      suggestedMoves.push({ from, to: targetCode, qty: rowInt(row.qty), reason: 'scattered from ' + from });
+    }
+  }
+  return { clusters: summaries, suggested_target: targetCode, suggested_moves: suggestedMoves };
 }

@@ -224,3 +224,18 @@ Inventory module: 9 routes from web.php:363-378 (inventory, inv, anyData, create
 - Not verified: live body parity for the write routes (mutating — inject-tested with temp rows per the mutating-routes rule); /inventory.data and /inventory.response live parity (500 both sides, Symfony debug page not reproducible); quickUpdate/ensureDefaultStillStocked on a product with no default_location (no such live row; code mirrors PHP line-for-line).
 - Open questions: none.
 - Manual checklist: none beyond the above (all inventory flows exercised by the inject tests; no browser UI).
+
+## T25b — done
+
+- What: ported the 7 transfer/consolidation routes (uploadTransfer, inventoryTransferData, createTransfer, updateTransfer, deleteTransfer, consolidation, moveConsolidation) from InventoryController.php, plus the full WarehouseLocation helper (parse/isAdjacent/cluster/recommend/mergeAllDuplicateLocations) into src/lib/warehouseLocation.ts and recalculateInventory + transferSum + applyOneConsolidationMove in the module.
+- Files: src/modules/inventory/routes.ts (+handlers), src/lib/warehouseLocation.ts (+helpers), test/t25b.test.ts (8 tests, live DB, temp rows cleaned in finally), src/server.ts (Laravel-style bracket-notation querystringParser — shared T03 file, backward-compatible for flat keys; DataTables GETs need it, e.g. currentItem[sku]), plan/NOTES.md (5 T25b entries).
+- Old-app quirks faithfully reproduced (verified in the office container log + live :6999):
+  - /inventory.transferdata 500s without `currentItem` (unconditional Debugbar::info($request->currentItem['sku']) on null).
+  - /api/inventory/consolidation 500s for ANY non-empty `filter` (Laravel 5.4 framework bug: nested orWhereHas -> compact(): Undefined variable: operator in Query\Builder::addWhereExistsQuery).
+  - /inventory.uploadTransfer is a no-op in the old app -> empty 200.
+  - GET /api/inventory/consolidation runs mergeAllDuplicateLocations() (DB writes) on every request, outside the per-move transactions.
+- Verified (actual output): `pnpm typecheck` clean; `pnpm test` 203 passed, 1 skipped (204). `pnpm parity --task T25b` -> `OK /inventory.transferdata (500)`, `OK /api/inventory/consolidation (200)`, all pass. Ad-hoc: `OK /inventory.transferdata?location=AI&currentItem[sku]=SCA001 (200)` (JSON deep-equal, incl. query-string bracket parsing) and `OK /api/inventory/consolidation?filter=x (500)` — both sides crash, bodies checked by hand (Symfony page vs fastify 500, expected per the APP_DEBUG precedent).
+- Tests: guards (anon 302, non-allowed role 403); transferdata (no currentItem -> 500, location + currentItem sku filters vs direct SQL); create/update/delete transfer lifecycle (insert body incl. status/expected_date, recalculateInventory qty deltas incl. mergeDuplicateLocations side effect, delete missing id -> empty 200, _method DELETE); upload no-op; consolidation (scattered product -> clusters + suggested_target + suggested_moves cross-checked against the pure recommend() helper, filter 500s, empty filter 200); move (legacy single-move, multi-move, 422 validation, 404 missing id, DB rollback on mid-transaction failure).
+- Not verified: live parity for the write routes (mutating — inject-tested with temp rows per the mutating-routes rule); consolidation ordering on sku strcasecmp ties (PHP usort is unstable, JS stable — parity passes on today's data, noted in NOTES.md); moveConsolidation on rows that would trigger mergeDuplicateLocations collisions (inject test covers the normal path + rollback).
+- Open questions: none.
+- Manual checklist: none beyond the above (browser DataTables flow exercised via inject + parity with the real UI query-string shape).
