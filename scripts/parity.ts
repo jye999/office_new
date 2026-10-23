@@ -115,13 +115,15 @@ function normalizeHtml(html: string): string {
     .replaceAll(NEW_BASE, 'BASE')
     // strip the old app's debug-mode PhpDebugBar injection (link + scripts;
     // includes non-deterministic query/timeline data)
-    .replace(/<link rel='stylesheet'[^>]*\/_debugbar[\s\S]*<\/script>\s*(?=<\/body>)/, '')
+    .replace(/<link rel='stylesheet'[^>]*\/_debugbar[\s\S]*<\/script>\s*(?=<\/body>|$)/, '') // T14: also when the debugbar lands at document end (after </html>, no </body>)
     // strip mix-manifest `?id=<hash>` asset versions and csrf/_token values
     .replace(/\?id=[a-f0-9]+/g, '')
     .replace(/(name="_token"[^>]*value=")[^"]*(")/g, '$1$2')
     .replace(/(name="csrf-token"[^>]*content=")[^"]*(")/g, '$1$2')
     // csrf tokens also appear in inline JS payloads (session-specific, per side)
     .replace(/(_token:\s*')[^']*(')/g, '$1$2')
+    // T14: /chat's inline JS sends the session token as 'X-CSRF-TOKEN': '...'
+    .replace(/('X-CSRF-TOKEN':\s*')[^']*(')/g, '$1$2')
     .replace(/>\s+</g, '><') // inter-tag whitespace (old pretty-prints some views)
     .replace(/\s+(<\/[a-z][a-z0-9]*>)/g, '$1') // text space right before a closing tag
     .replace(/(<\/?[a-z][a-z0-9]*[^>]*>)\s+/g, '$1') // text space right after a tag

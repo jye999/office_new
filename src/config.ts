@@ -14,6 +14,13 @@ const EnvSchema = z.object({
   DB_HWC_DATABASE: z.string().min(1),
   REDIS_HOST: z.string().min(1),
   REDIS_PORT: z.coerce.number().int().positive(),
+  // T14: APP_ENV mirrors the old app's .env (local -> error details in JSON).
+  APP_ENV: z.string().default('production'),
+  // T14: OpenAI / MCP (old config/services.php 'openai' + 'mcp' entries).
+  OPENAI_API_KEY: z.string().default(''),
+  OPENAI_MODEL: z.string().default('gpt-4o'),
+  OPENAI_TRANSCRIPTION_MODEL: z.string().default('gpt-4o-mini-transcribe'),
+  N8N_MCP_URL: z.string().default(''),
   PUBLIC_DIR: z.string().min(1),
   OLD_APP_URL: z.string().url(),
   // Used only by scripts/parity.ts (T03); allowed to be empty until then.

@@ -1,0 +1,291 @@
+<html>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script>
+  
+import Alpine from 'alpinejs'
+ 
+ window.Alpine = Alpine
+  
+ Alpine.start()
+ </script>
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
+            Assisant
+        </h2>
+    </x-slot>
+    <div class="container mx-auto" x-data="{ productDescription: '',imageUrl:'' }">
+
+        <div class="grid grid-rows-3 grid-flow-col gap-4">
+            <div class="row-span-3 ...">
+                <div class="relative">
+                    <div>
+                        <div class="flex rounded-lg shadow-sm">
+                            <span
+                                class="px-4 inline-flex items-center min-w-fit rounded-s-md border border-e-0 border-gray-200 bg-gray-50 text-sm text-gray-500 dark:bg-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                Optional Title
+                            </span>
+                            <input type="file" id="imgSelect" accept="image/*" x-ref="myFile" @change="previewFile">
+                            <input type="text" id="textInput" name="textInput" required
+                                class="py-3 px-4 pe-11 block w-full border-gray-200 shadow-sm rounded-e-lg text-sm focus:z-10 focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600">
+                        </div>
+                    </div>
+
+                    <label class="block">
+                        <span class="sr-only">Choose photo</span>
+                        <input type="file" id="imageInput" name="imageInput" accept="image/*" required
+                            onchange="previewImage(event)" class="block w-full text-sm text-gray-500
+      file:me-4 file:py-2 file:px-4
+      file:rounded-lg file:border-0
+      file:text-sm file:font-semibold
+      file:bg-blue-600 file:text-white
+      hover:file:bg-blue-700
+      file:disabled:opacity-50 file:disabled:pointer-events-none
+      dark:file:bg-blue-500
+      dark:hover:file:bg-blue-400
+    ">
+                    </label>
+
+                    <button type="button" id="submitButton" type="button" onclick="resizeAndSubmit()"
+                        class="py-3 px-4 inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent bg-teal-500 text-white hover:bg-teal-600 disabled:opacity-50 disabled:pointer-events-none dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600">
+                        Submit
+                    </button>
+                    <template x-if="imageUrl">
+                        <img :src="imageUrl" class="object-cover rounded border border-gray-200"
+                            style="width: 300px; height: 300px;">
+                            <img id="imagePreview" alt="Image Preview" style="max-width: 300px; max-height: 300px;">
+                    </template>
+                    <!-- Show the gray box when image is not available -->
+                    <template x-if="!imageUrl">
+                        <div class="border rounded border-white-200 bg-white-100" style="width: 300px; height: 300px;">
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+
+            <div class="col-span-2 ...">
+
+                <form id="imageForm">
+                    <label for="productDescription" class="block text-sm font-medium mb-2 dark:text-white">Product
+                        Description</label>
+                    <button type="button" x-clipboard="productDescription"
+                        class="js-clipboard p-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        data-clipboard-target="#hs-clipboard-basic" data-clipboard-action="copy"
+                        data-clipboard-success-text="Copied">
+                        <svg class="js-clipboard-default w-4 h-4 group-hover:rotate-6 transition"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                        </svg>
+
+                        <svg class="js-clipboard-success hidden w-4 h-4 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </button>
+                    <textarea id="productDescription" x-model="productDescription"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        rows="3"></textarea>
+
+                    <label for="bulletPoints" class="block text-sm font-medium mb-2 dark:text-white">Bullet
+                        Points</label>
+                    <button type="button" x-clipboard="bulletPoints"
+                        class="js-clipboard p-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        data-clipboard-target="#hs-clipboard-basic" data-clipboard-action="copy"
+                        data-clipboard-success-text="Copied">
+                        <svg class="js-clipboard-default w-4 h-4 group-hover:rotate-6 transition"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                        </svg>
+
+                        <svg class="js-clipboard-success hidden w-4 h-4 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </button>
+                    <textarea id="bulletPoints"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        rows="3"></textarea>
+
+                    <label for="searchTerms" class="block text-sm font-medium mb-2 dark:text-white">Search Terms</label>
+                    <button type="button" x-clipboard="searchTerms"
+                        class="js-clipboard p-3 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-gray-200 bg-white text-gray-800 shadow-sm hover:bg-gray-50 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-white dark:hover:bg-gray-800 dark:focus:outline-none dark:focus:ring-1 dark:focus:ring-gray-600"
+                        data-clipboard-target="#hs-clipboard-basic" data-clipboard-action="copy"
+                        data-clipboard-success-text="Copied">
+                        <svg class="js-clipboard-default w-4 h-4 group-hover:rotate-6 transition"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                        </svg>
+
+                        <svg class="js-clipboard-success hidden w-4 h-4 text-blue-600"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </button>
+                    <textarea id="searchTerms"
+                        class="py-3 px-4 block w-full border-gray-200 rounded-lg text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-slate-900 dark:border-gray-700 dark:text-gray-400 dark:focus:ring-gray-600"
+                        rows="3"></textarea>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+  Alpine.data('imgPreview', () => ({
+    imgsrc:null,
+    previewFile() {
+        let file = this.$refs.myFile.files[0];
+        if(!file || file.type.indexOf('image/') === -1) return;
+        this.imgsrc = null;
+        let reader = new FileReader();
+
+        reader.onload = e => {
+            this.imgsrc = e.target.result;
+        }
+
+        reader.readAsDataURL(file);
+    
+    }
+  }))
+
+        // Function to show image preview
+        function previewImage (event) {
+            const imageInput = document.getElementById('imageInput');
+            const imagePreview = document.getElementById('imagePreview');
+
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    imagePreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                // Clear the preview if no image is selected
+                imagePreview.src = '';
+            }
+        }
+        // Function to disable the submit button during API request
+        function disableSubmitButton () {
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = true;
+        }
+        // Function to enable the submit button after API request
+        function enableSubmitButton () {
+            const submitButton = document.getElementById('submitButton');
+            submitButton.disabled = false;
+        }
+        function resizeAndSubmit () {
+            // Get the input values
+            const textInputValue = document.getElementById('textInput').value;
+            const imageInput = document.getElementById('imageInput');
+            const imageFile = imageInput.files[0];
+
+            // Create a FormData object and append the text input value
+            const formData = new FormData();
+            formData.append('text', textInputValue);
+
+            // Check if an image is selected
+            if (imageFile) {
+                disableSubmitButton();
+                // Create a FileReader to read the image
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.src = e.target.result;
+
+                    img.onload = function () {
+                        // Create a canvas to resize the image
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+
+                        // Check if the image exceeds 1024px in width or height
+                        if (img.width > 1024 || img.height > 1024) {
+                            // Resize the image to 1024px while maintaining the aspect ratio
+                            canvas.width = 1024;
+                            canvas.height = 1024;
+                            ctx.drawImage(img, 0, 0, 1024, 1024);
+                        } else {
+                            // If the image is smaller than or equal to 1024px, use its original dimensions
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            ctx.drawImage(img, 0, 0, img.width, img.height);
+                        }
+
+                        // Convert the resized image to Base64
+                        const base64Image = canvas.toDataURL('image/jpeg');
+
+                        const username = 'angelisabella';
+                        const password = 'Flowers';
+
+                        // Set up basic authentication
+                        const basicAuth = 'Basic ' + btoa(username + ':' + password);
+                        // Append the Base64-encoded image to the FormData object
+                        formData.append('image', base64Image);
+                        // Use Fetch API to submit the form data to the webhook
+                        fetch('https://flow.angelisabella.com/webhook/be11ca77-3359-4102-a08c-8560fbc4e89c', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                              'Authorization': basicAuth,
+                            },
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                enableSubmitButton();
+                                return response.json();
+                            })
+                            .then(data => {
+                                enableSubmitButton();
+                                console.log(data);
+                                // Handle success, if needed
+
+                                // Display the product information
+                                document.getElementById('productDescription').value = data.ProductDescription;
+
+                                const bulletPointsContainer = document.getElementById('bulletPoints');
+                                data.BulletPoints.forEach((point, index) => {
+                                    const bulletPointInput = document.createElement('textarea');
+                                    bulletPointInput.rows = '2';
+                                    bulletPointInput.cols = '250';
+                                    bulletPointInput.value = point;
+                                    bulletPointsContainer.appendChild(bulletPointInput);
+                                    // Add a new line between each bullet point
+                                    bulletPointsContainer.appendChild(document.createElement('br'));
+                                });
+                                // Merge search terms and remove duplicates
+                                const mergedSearchTerms = Array.from(new Set(data.SearchTerms.split(', '))).join(' ');
+
+                                // Display the merged search terms in the textarea
+                                document.getElementById('searchTerms').value = mergedSearchTerms;
+
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                // Handle error, if needed
+                            });
+                    };
+                };
+
+                // Read the image as data URL
+                reader.readAsDataURL(imageFile);
+            }
+        }
+    </script>
+</x-app-layout>
+</html>
