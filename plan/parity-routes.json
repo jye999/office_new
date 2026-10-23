@@ -81,8 +81,6 @@
   "T25a": [
     "/inventory",
     "/inv",
-    "/inventory.data",
-    "/inventory.response",
     "/inventory.findLocations"
   ],
   "T25b": [

@@ -1,0 +1,698 @@
+
+{% extends "layout.njk" %}
+{% block content %}
+<section class="content">
+<style>
+@media screen and (min-width: 768px) {
+        .modal-dialog {
+          width: 700px; /* New width for default modal */
+        }
+        .modal-sm {
+          width: 350px; /* New width for small modal */
+        }
+    }
+    @media screen and (min-width: 992px) {
+        .modal-lg {
+          width: 90%; /* New width for large modal */
+        }
+    }
+</style>
+    <h3>
+        Inventory
+    </h3>
+    <br>
+    <div class="row">
+        <div class="col-md-3">
+          <button id="btnAllTransfers">All Transfers at this location</button>
+        </div>
+        <!--<div class="col-md-3">
+          <button id="btnAllTransfers">Upload</button>
+        </div>-->
+    </div>
+    <div class="row"></div>
+    <div class="row">
+        <div class="col-md-11">
+        <ul class="nav nav-tabs">
+          <li id="li_AI"><a href="{{ route('inventory') | safe }}?location=AI">USA Warehouse</a></li>
+          <li id="li_China"><a href="{{ route('inventory') | safe }}?location=China">China</a></li>
+          <li id="li_FBA"><a href="{{ route('inventory') | safe }}?location=FBA">FBA</a></li>
+        </ul>
+          <div id="jsGrid"></div>
+        </div>
+    </div>
+
+
+<div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog modal-lg ">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <span id="itemName" style="font-weight:bold"></span>
+                </div>
+                <div class="modal-body" >
+                    <div id="detailsPlaceholder"></div>
+                </div>
+              </div>
+            </div>
+      </div>
+    <div>
+
+        <h4>
+    </div>
+</section>
+
+<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.css" />
+<link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid-theme.min.css" />
+ 
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.3/jsgrid.min.js"></script>
+<script>
+var MyDateField = function(config) {
+    jsGrid.Field.call(this, config);
+};
+ 
+MyDateField.prototype = new jsGrid.Field({
+ 
+    css: "date-field",            // redefine general property 'css'
+    align: "center",              // redefine general property 'align'
+ 
+    sorter: function(date1, date2) {
+        return new Date(date1) - new Date(date2);
+    },
+ 
+    itemTemplate: function(value) {
+        return value;
+    },
+ 
+    insertTemplate: function(value) {
+        return this._insertPicker = $("<input>").datepicker({ format: 'yyyy-mm-dd' });
+    },
+ 
+    editTemplate: function(value) {
+        return this._editPicker = $("<input>").val(value).datepicker({format: 'yyyy-mm-dd'});
+    },
+ 
+    insertValue: function() {
+        return this._insertPicker.val();
+    },
+ 
+    editValue: function(value) {     
+      return this._editPicker.val();
+    }
+});
+ 
+jsGrid.fields.date = MyDateField;
+
+$(document).ready(function(){
+  var currentLocation = '{{ currentLocation }}';
+  $("#li_"+currentLocation).addClass('active');
+  var currentItem=null;
+    var locations = [
+        { Name: "", Value: "" },
+        { Name: "China", Value: "China" },
+        { Name: "AI", Value: "AI" },
+        { Name: "FBA", Value: "FBA" },
+        { Name: "New", Value: "New" },
+        { Name: "Sold", Value: "Sold" }
+    ];
+    var statusList = [
+        { Name: "Pending", Value: "Pending" },
+        { Name: "OnRoute", Value: "OnRoute" },
+        { Name: "Completed", Value: "Completed" },
+        { Name: "Return", Value: "Return" },
+        { Name: "Missing", Value: "Missing" }
+    ];
+    function loadDetail(args){
+      currentItem = args.item;
+      $("#detailsPlaceholder").empty();
+      $("#detailsPlaceholder").append("<div id='jqGridDetails'></div><div id='jqGridDetailsPager'></div>");
+      $("#jqGridDetails").jsGrid({
+            autoload: true,
+            width: "100%",
+            height: "auto",
+            inserting: true,
+            editing: true,
+            sorting: true,
+            paging: true,
+            deleteConfirm: function(item) {
+                console.dir(item);
+                return "The transfer from " + item.from_location +" to " + item.to_location +" on " + item.created_at +" will be removed. Are you sure?";
+            },
+            fields: [
+                { name: "id", type: "number", width: 10, validate: "required",inserting: false,editing:false ,visible: false},
+                { name: "from_location", type: "select", 
+                      items: locations, valueField: "Value", textField: "Name", title: "From", 
+                      validate: [
+                          "required",
+                          {
+                              validator: function(value, item) {
+                                  return item.to_location != value ;
+                              },
+                              message: 'from and to location cannot be the same',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          },
+                          {
+                              validator: function(value, item) {
+                                  return value != "Sold";
+                              },
+                              message: 'cannot transfer from sold',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          }
+                            
+                      ],
+                      width: 50,
+                      editing:true  },
+                { name: "to_location", type: "select", 
+                      items: locations, valueField: "Value", textField: "Name", title: "To", 
+                      validate: [
+                          "required",
+                          {
+                              validator: function(value, item) {
+                                  return value != "New";
+                              },
+                              message: 'cannot transfer to New',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          }
+                            
+                      ],
+                      width: 50, editing:true  },
+                { name: "qty", type: "number", width: 50 , title: "QTY" ,editing:true, 
+                  validate: [
+                          "required",
+                          {
+                              validator: function(value, item) {
+                                  return value > 0;
+                              },
+                              message: 'Qty cannot be less than 1',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          }
+                            
+                      ] 
+                },
+                { name: "expected_date", type: "date", title: "Expected Date", width: 60 , editing:true },
+                { name: "received", type: "number",title: "Received",  width: 50,},
+                { name: "received_date", type: "date", title: "Received Date", width: 60 },
+                { name: "checked_by", type: "text", title: "Checked By", width: 50 },
+                { name: "status", type: "select", title: "Status", width: 75,
+                         items: statusList, valueField: "Value", textField: "Name",  },
+                { name: "created_at", type: "text", title: "Created Date", width: 60 , editing:false,inserting:false},
+                { name: "notes", type: "textarea", title: "Notes", width: 150 },
+                { name: "tracking", type: "text", title: "Tracking", width: 150 },
+                { type: "control" }
+            ],
+            controller:{
+              loadData: function(filter) {
+                console.log('load data1');
+                
+                var data = {
+                  location: currentLocation,
+                  filter: filter,
+                  currentItem : currentItem
+                }
+                console.dir(filter);
+                  return $.ajax({
+                      type: "GET",
+                      url: '{{ route('inventory.transferdata') | safe }}',
+                      data: data
+                  });
+              },
+              insertItem: function(item) {
+                console.log('insert transfer item');
+                console.dir(item);
+                item["sku"] = currentItem.sku;
+                item["currentLocation"] = currentLocation;
+                return $.ajax({
+                    type: "PUT",
+                    url: '{{ route('inventory.createTransfer') | safe }}',
+                    data: item
+                });
+                
+              },
+              updateItem: function(item) {
+                console.log('update item');
+                console.dir(item);
+                item["sku"] = currentItem.sku;
+                item["currentLocation"] = currentLocation;
+                return $.ajax({
+                    type: "POST",
+                    url: '{{ route('inventory.updateTransfer') | safe }}',
+                    data: item
+                });
+              
+              },
+              deleteItem: function(item) {
+                  return $.ajax({
+                      type: "DELETE",
+                      url: '{{ route('inventory.deleteTransfer') | safe }}',
+                      data: item
+                  });
+              }
+            },
+          onDataLoaded: function(args) {
+            console.log('loaded');
+          },     // on done of controller.loadData
+        
+        onError: function(err) {
+          console.log('err');
+          console.dir(err);
+          alert(err.args[0].responseJSON);
+          //$("#jqGridDetails").jsGrid("cancelEdit");
+        },    
+        onInit: function(args) {
+          console.log('ini');
+        },           // after grid initialization 
+        
+        onItemInserting: function(args) {
+          console.log('inserting');
+          console.log(args);
+        },  // before controller.insertItem
+        onItemInserted: function(args) {
+          console.log('inserted');
+          console.dir(args);
+          $("#jsGrid").jsGrid("loadData");
+          // on done of controller.insertItem
+          // onItemUpdating: function(args) {
+          //   console.log('updating');
+          //   console.dir(args);
+          
+        },   // before controller.updateItem
+        onItemUpdated: function(args) {
+          console.log('updated');
+          console.dir(args);
+          $("#jsGrid").jsGrid("loadData");
+        },
+        onItemUpdating: function(args) {
+          console.log('updating');
+          console.dir(args);
+        },
+            // on done of controller.updateItem
+        onItemDeleting: function(args) {},   // before controller.deleteItem
+        onItemDeleted: function(args) {
+
+          $("#jsGrid").jsGrid("loadData");
+        },    // on done of controller.deleteItem
+        onItemInvalid: function(args) {
+        },    // after item validation, in case data is invalid
+    
+        onOptionChanging: function(args) {}, // before changing the grid option
+        onOptionChanged: function(args) {},  // after changing the grid option
+    
+        onPageChanged: function(args) {},    // after changing the current page    
+    
+        onRefreshing: function(args) {},     // before grid refresh
+        onRefreshed: function(args) {},      // after grid refresh
+
+      });
+      $("#jqGridDetails").jsGrid("sort",{field: "created_at", order: "desc"});
+    };
+
+    // var selectedItems = [];
+ 
+    // var selectItem = function(item) {
+    //     selectedItems.push(item);
+    // };
+ 
+    // var unselectItem = function(item) {
+    //     selectedItems = $.grep(selectedItems, function(i) {
+    //         return i !== item;
+    //     });
+    // };
+ 
+    // var deleteSelectedItems = function() {
+    //     if(!selectedItems.length || !confirm("Are you sure?"))
+    //         return;
+ 
+    //     deleteClientsFromDb(selectedItems);
+ 
+    //     var $grid = $("#jsGrid");
+    //     $grid.jsGrid("option", "pageIndex", 1);
+    //     $grid.jsGrid("loadData");
+ 
+    //     selectedItems = [];
+    // };
+ 
+    // var deleteClientsFromDb = function(deletingClients) {
+    //     db.clients = $.map(db.clients, function(client) {
+    //         return ($.inArray(client, deletingClients) > -1) ? null : client;
+    //     });
+    // };
+
+function loadAllTransfers(){
+      $("#detailsPlaceholder").empty();
+      $("#detailsPlaceholder").append("<div id='jqGridDetails'></div><div id='jqGridDetailsPager'></div>");
+      $("#jqGridDetails").jsGrid({
+            autoload: true,
+            width: "100%",
+            height: "auto",
+            inserting: true,
+            editing: true,
+            sorting: true,
+            paging: true,
+            deleteConfirm: function(item) {
+                console.dir(item);
+                return "The transfer from " + item.from_location +" to " + item.to_location +" on " + item.created_at +" will be removed. Are you sure?";
+            },
+            fields: [
+                { name: "id", type: "number", width: 10, validate: "required",inserting: false,editing:false ,visible: false},
+                { name: "sku", type: "text", width: 75, validate: "required"},
+                { name: "from_location", type: "select", 
+                      items: locations, valueField: "Value", textField: "Name", title: "From", 
+                      validate: [
+                          "required",
+                          {
+                              validator: function(value, item) {
+                                  return item.to_location != value ;
+                              },
+                              message: 'from and to location cannot be the same',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          },
+                          {
+                              validator: function(value, item) {
+                                  return value != "Sold";
+                              },
+                              message: 'cannot transfer from sold',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          }
+                            
+                      ],
+                      width: 50,
+                      editing:true  },
+                { name: "to_location", type: "select", 
+                      items: locations, valueField: "Value", textField: "Name", title: "To", 
+                      validate: [
+                          "required",
+                          {
+                              validator: function(value, item) {
+                                  return value != "New";
+                              },
+                              message: 'cannot transfer to New',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          }
+                            
+                      ],
+                      width: 50, editing:true  },
+                { name: "qty", type: "number", width: 50 , title: "QTY" ,editing:true, 
+                  validate: [
+                          "required",
+                          {
+                              validator: function(value, item) {
+                                  return value > 0;
+                              },
+                              message: 'Qty cannot be less than 1',                       // validation message or a function(value, item) returning validation message
+                              //param: any                                      // a plain object with parameters to be passed to validation function
+                          }
+                            
+                      ] 
+                },
+                { name: "expected_date", type: "date", title: "Expected Date", width: 60 , editing:true },
+                { name: "received", type: "number",title: "Received",  width: 50,},
+                { name: "received_date", type: "date", title: "Received Date", width: 60 },
+                { name: "checked_by", type: "text", title: "Checked By", width: 50 },
+                { name: "status", type: "select", title: "Status", width: 75,
+                         items: statusList, valueField: "Value", textField: "Name",  },
+                { name: "created_at", type: "text", title: "Created Date", width: 60 , editing:false,inserting:false},
+                { name: "notes", type: "textarea", title: "Notes", width: 150 },
+                { name: "tracking", type: "text", title: "Tracking", width: 150 },
+                { type: "control" }
+            ],
+            controller:{
+              loadData: function(filter) {
+                console.log('load data');
+                
+                var data = {
+                  location: currentLocation,
+                  filter: filter
+                }
+                console.dir(filter);
+                  return $.ajax({
+                      type: "GET",
+                      url: '{{ route('inventory.transferdata') | safe }}',
+                      data: data
+                  });
+              },
+              insertItem: function(item) {
+                console.log('insert transfer item');
+                console.dir(item);
+                item["currentLocation"] = currentLocation;
+                return $.ajax({
+                    type: "PUT",
+                    url: '{{ route('inventory.createTransfer') | safe }}',
+                    data: item
+                });
+                
+              },
+              updateItem: function(item) {
+                console.log('update item');
+                console.dir(item);
+                item["currentLocation"] = currentLocation;
+                return $.ajax({
+                    type: "POST",
+                    url: '{{ route('inventory.updateTransfer') | safe }}',
+                    data: item
+                });
+              
+              },
+              deleteItem: function(item) {
+                  return $.ajax({
+                      type: "DELETE",
+                      url: '{{ route('inventory.deleteTransfer') | safe }}',
+                      data: item
+                  });
+              }
+            },
+          onDataLoaded: function(args) {},     // on done of controller.loadData
+        
+        onError: function(err) {
+          console.log('err');
+          console.dir(err);
+          alert(err.args[0].responseJSON);
+          //$("#jqGridDetails").jsGrid("cancelEdit");
+        },    
+        onInit: function(args) {},           // after grid initialization 
+        
+        onItemInserting: function(args) {
+          console.log('inserting');
+          console.log(args);
+        },  // before controller.insertItem
+        onItemInserted: function(args) {
+          console.log('inserted');
+          console.dir(args);
+          $("#jsGrid").jsGrid("loadData");
+          // on done of controller.insertItem
+          // onItemUpdating: function(args) {
+          //   console.log('updating');
+          //   console.dir(args);
+          
+        },   // before controller.updateItem
+        onItemUpdated: function(args) {
+          console.log('updated');
+          console.dir(args);
+          $("#jsGrid").jsGrid("loadData");
+        },
+        onItemUpdating: function(args) {
+          console.log('updating');
+          console.dir(args);
+        },
+            // on done of controller.updateItem
+        onItemDeleting: function(args) {},   // before controller.deleteItem
+        onItemDeleted: function(args) {
+
+          $("#jsGrid").jsGrid("loadData");
+        },    // on done of controller.deleteItem
+        onItemInvalid: function(args) {
+        },    // after item validation, in case data is invalid
+    
+        onOptionChanging: function(args) {}, // before changing the grid option
+        onOptionChanged: function(args) {},  // after changing the grid option
+    
+        onPageChanged: function(args) {},    // after changing the current page    
+    
+        onRefreshing: function(args) {},     // before grid refresh
+        onRefreshed: function(args) {},      // after grid refresh
+
+      });
+      $("#jqGridDetails").jsGrid("sort",{field: "created_at", order: "desc"});
+    };
+
+$("#btnAllTransfers").click(function(e){
+  e.preventDefault();
+  loadAllTransfers();
+  $("#itemName").text(" transfers at "+ currentLocation);
+  $("#detailModal").modal('show');
+});
+    $("#jsGrid").jsGrid({
+        autoload: true,
+        width: "100%",
+        height: "auto",
+        filtering: true,
+        inserting: true,
+        editing: true,
+        sorting: true,
+        paging: true,
+        pageSize: 100,
+        deleteConfirm: function(item) {
+            return "The inventory \"" + item.name +"\" will be removed. Are you sure?";
+        },
+        fields: [
+            { name: "id", type: "number", width: 10, validate: "required",inserting: false,editing:false ,visible: false},
+            {
+                name: "id",
+                insertTemplate: function() {
+                    var insertControl = this.insertControl = $("<input>").prop("type", "file");
+                    return insertControl;
+                },
+                insertValue: function() {
+                    return this.insertControl[0].files[0]; 
+                },
+                align: "center",
+                width: 120
+            }, 
+            // {
+            //     headerTemplate: function() {
+            //         return $("<button>").attr("type", "button").text("Transfer")
+            //                 .on("click", function () {
+            //                     deleteSelectedItems();
+            //                 });
+            //     },
+            //     itemTemplate: function(_, item) {
+            //         return $("<input>").attr("type", "checkbox")
+            //                 .prop("checked", $.inArray(item, selectedItems) > -1)
+            //                 .on("change", function () {
+            //                     $(this).is(":checked") ? selectItem(item) : unselectItem(item);
+            //                 });
+            //     },
+            //     align: "center",
+            //     width: 50
+            // },
+            { name: "name", type: "text", width: 200,validate: "required", editing:true  },
+            { name: "color", type: "text", width: 100,editing:true  },
+            { name: "vendor_sku", type: "text", title: "vendor sku", width: 100 , editing:true },
+            { name: "sku", type: "text", width: 100 , validate: "required",editing:true },
+            //{ name: "location", type: "select", items: locations, valueField: "Id", textField: "Name" ,editing:false},
+            { name: "qty", type: "number", width: 50 ,editing:false,inserting:false,filtering:false,},
+            { name: "pending_qty", type: "number", width: 50 ,editing:false,inserting:false,filtering:false,},
+            { name: "updated_at", title:"Last Update", type: "text", width: 50 ,editing:false,inserting:false},
+            // { name: "Married", type: "checkbox", title: "Is Married", sorting: false },
+            { type: "control" }
+        ],
+        controller:{
+            loadData: function(filter) {
+              console.log('load data for master');
+              console.dir(filter);
+              var data = {
+                location: currentLocation,
+                filter: filter
+              }
+                return $.ajax({
+                    type: "GET",
+                    url: '{{ route('inventory.data') | safe }}',
+                    data: data
+                });
+            },
+            
+            insertItem: function(item) {
+              console.log('insert item');
+              console.dir(item);
+                return $.ajax({
+                    type: "PUT",
+                    url: '{{ route('inventory.create') | safe }}',
+                    data: item
+                });
+            },
+            updateItem: function(item) {
+              console.log('update item');
+              console.dir(item);
+                return $.ajax({
+                    type: "POST",
+                    url: '{{ route('inventory.update') | safe }}',
+                    data: item
+                });
+            },
+            deleteItem: function(item) {
+                return $.ajax({
+                    type: "DELETE",
+                    url: '{{ route('inventory.delete') | safe }}',
+                    data: item
+                });
+            }
+        },
+        onError: function(args) {
+          console.log('err');
+          console.dir(args);
+        },          // on fail of any controller call
+        onDataLoading: function(args) {
+          console.log('loading');
+          console.dir(args);
+        },    // before controller.loadData
+
+          onDataLoaded: function(args) {
+            console.log("loaded");
+            $("#jsGrid .jsgrid-table tbody tr.jsgrid-row, #jsGrid .jsgrid-table tbody tr.jsgrid-alt-row").each(function(){
+                var thisTr = $(this);
+                var itemQty = parseInt($(this).find("td:nth-child(5)").first().text().trim());
+                console.log(itemQty);
+                if(itemQty<1000){
+                  thisTr.children('td,th').css('color','red');
+                }
+                else if(itemQty<4000){
+                  thisTr.children('td,th').css('color','orange');
+                }
+            });
+          },     // on done of controller.loadData
+        
+        onError: function(err) {
+          console.log('err');
+          console.dir(err);
+          //$("#jqGridDetails").jsGrid("cancelEdit");
+        },    
+        onInit: function(args) {
+          console.log('init');
+        },         
+        onItemInserting: function(args) {
+
+        },  // before controller.insertItem
+        onItemInserted: function(args) {
+          console.log('inserted');
+          console.dir(args);
+          // on done of controller.insertItem
+          // onItemUpdating: function(args) {
+          //   console.log('updating');
+          //   console.dir(args);
+          
+        },   // before controller.updateItem
+        onItemUpdated: function(args) {
+          console.log('updated');
+          console.dir(args);
+        },    // on done of controller.updateItem
+        onItemDeleting: function(args) {},   // before controller.deleteItem
+        onItemDeleted: function(args) {},    // on done of controller.deleteItem
+        onItemInvalid: function(args) {
+        },    // after item validation, in case data is invalid
+    
+        onOptionChanging: function(args) {}, // before changing the grid option
+        onOptionChanged: function(args) {},  // after changing the grid option
+    
+        onPageChanged: function(args) {},    // after changing the current page    
+    
+        onRefreshing: function(args) {},     // before grid refresh
+        onRefreshed: function(args) {},      // after grid refresh
+        rowClick: function(args) {
+          
+          $("#itemName").text(args.item.name + " transfer at "+ currentLocation);
+          loadDetail(args);
+          $("#detailModal").modal('show');
+        },
+        rowDoubleClick: function(args) {
+          return false;
+        }
+    });
+
+$(".jsgrid-insert-row .jsgrid-cell input").change(function(){
+  console.log($(this).val());
+});
+
+
+
+});
+
+</script>
+{% endblock %}

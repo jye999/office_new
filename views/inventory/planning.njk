@@ -1,0 +1,102 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.stylish-input-group .input-group-addon{
+    background: white !important; 
+}
+.stylish-input-group .form-control{
+	border-right:0; 
+	box-shadow:0 0 0; 
+	border-color:#ccc;
+}
+.stylish-input-group button{
+    border:0;
+    background:transparent;
+}
+</style>
+    <h1>
+        Inventory
+    </h1>
+    <button class="btn btn-primary" id="btnAddInventory">Add Invetory</button>
+    <br>
+    <br>
+    <table class = "table table-striped table-bordered table-hover" style = 'background:#fff'>
+        <thead>
+            <th>UPC</th>
+            <th>SKU</th>
+            <th>Name</th>
+            <th>Location</th>
+            <th>Fulfillable</th>
+            <th>Unfulfillable</th>
+            <th>actions</th>
+        </thead>
+        <tbody>
+            {% for item in inventory %} 
+            <tr>
+                <td>{{ item.upc | safe }}</td>
+                <td>{{ item.sku | safe }}</td>
+                <td>{{ item.name | safe }}</td>
+                <td>{{ product.location | safe }}</td>
+                <td>{{ product.fulfillable | safe }}</td>
+                <td>{{ product.unfulfillable | safe }}</td>
+                <td>
+                    <a class = 'viewEdit btn btn-primary btn-xs' href= {{ url('/') }}/product/{{ product.id | safe }}/edit><i class = 'material-icons'>edit</i></a>
+                    <a data-toggle="modal" data-target="#myModal" class = 'delete btn btn-danger btn-xs' data-link = "/product/{{ product.id | safe }}/deleteMsg" ><i class = 'material-icons'>delete</i></a>
+                </td>
+            </tr>
+            {% endfor %} 
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="productModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id='finishedPrint'>Close</button>
+
+                    <button type="button" class="btn btn-primary" id="printBtn">Print</button>
+                </div>
+                <div class="modal-body" >
+                <div class="input-group stylish-input-group">
+                    <input id="productSearch" type="text" class="form-control"  placeholder="Search" >
+                    <span class="input-group-addon">
+                        <button type="submit" id="btnSearchProduct">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>  
+                    </span>
+                </div>
+                <div id="productlist">
+                </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+<script>
+$(document).ready(function(){
+    $("#btnAddInventory").click(function(e){
+        e.preventDefault();
+        $("#productModal").modal('show');
+    });
+    var searchProduct = function(){
+        var searchKey = $("#productSearch").val();
+        
+    };
+
+    $('#productSearch').keypress(function (e) {
+        var key = e.which;
+        if(key == 13)  // the enter key code
+        {
+            $('input[name = butAssignProd]').click();
+            return false;  
+        }
+    });  
+
+    $("#btnSearchProduct").click(function(e){
+        e.preventDefault();
+    })
+});
+</script>
+{% endblock %}

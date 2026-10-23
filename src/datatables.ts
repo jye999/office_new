@@ -158,8 +158,12 @@ export class DataTablesBuilder {
       if (cols.length) {
         const kw = setupKeyword(keyword);
         // Nested OR group, like v6's where(fn) with orWhereRaw per column.
+        // SAFETY: the join is wrapped in an extra paren group — Kysely 0.29
+        // flattens a bare `sql.join(...)` in where() and silently drops the
+        // preceding conditions (T25a found: base where vanished, full-table
+        // result). Parenthesized it compiles to a single OR expression.
         q = q.where(
-          sql`${sql.join(cols.map((c) => sql`${sql.ref(this.qualified(c))} LIKE ${kw}`), sql` or `)}`,
+          sql`(${sql.join(cols.map((c) => sql`${sql.ref(this.qualified(c))} LIKE ${kw}`), sql` or `)})`,
         );
         isFilterApplied = true;
       }
