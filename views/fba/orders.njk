@@ -1,0 +1,65 @@
+{% extends "layout.njk" %}
+{% block content %}
+<a href="FBA.Orders?days=7" class="btn btn-primary">7 Days</a>
+<a href="FBA.Orders?days=30" class="btn btn-primary">30 Days</a>
+<a href="FBA.Orders?days=90" class="btn btn-primary">90 Days</a>
+<h3>{{ days }} days orders</h3>
+    <table class="table table-bordered table-condensed" id="fba" >
+        <thead>
+            <tr>
+                <th>asin</th>
+                <th>sku</th>
+                <th>image</th>
+                <th>product</th>
+                <th>qty</th>
+                </tr>
+        </thead>
+        <tbody>
+        {% for f in fbaOrders %}
+            <tr>
+            <td>{{ f.asin }}</td>
+            <td>{{ f.sku }}</td>
+            <td><img  class="itemImage" src="{{ f.image }}" style="display: inline;width:150px"> </td>
+
+            <td>{{ f['product-name'] }}</td>
+            <td>{{ f.qty }}</td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+$(document).ready(function(){
+
+		oTable = $('#fba').DataTable({
+			// "aoColumns": [{
+			// 	"sWidth": "10px"
+			// }, {
+			// 	"sWidth": "150px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50%"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }],
+			"aaSorting": [
+				[4, "desc"]
+			],
+			//"sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'packageSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+});
+    </script>
+{% endblock %}

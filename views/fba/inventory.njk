@@ -1,0 +1,62 @@
+{% extends "layout.njk" %}
+{% block content %}
+    <table class="table table-bordered table-condensed" id="fba" >
+        <thead>
+            <tr>
+                <th>asin</th>
+                <th>sku</th>
+                <th>fnsku</th>
+                <th>picture</th>
+                <th>qty</th>
+                <th>condition</th>
+                </tr>
+        </thead>
+        <tbody>
+        {% for f in fbaInventory %}
+            <tr>
+            <td>{{ f.asin }}</td>
+            <td>{{ f.sku }}</td>
+            <td>{{ f.afnsku }}</td>
+            <td><img data-original="/images/{{ f.asin }}.jpg" class="itemImage" src="/images/{{ f.asin }}.jpg" style="display: inline;width:150px"> </td>
+            <td>{{ f.qty }}</td>
+            <td>{{ f.conditionTye }}</td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+$(document).ready(function(){
+
+		oTable = $('#fba').dataTable({
+			// "aoColumns": [{
+			// 	"sWidth": "10px"
+			// }, {
+			// 	"sWidth": "150px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50%"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }],
+			// "aaSorting": [
+			// 	[4, "asc"]
+			// ],
+			//"sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'packageSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": true,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+});
+    </script>
+{% endblock %}

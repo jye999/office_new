@@ -1,0 +1,80 @@
+{% extends "layout.njk" %}
+{% block content %}
+    <table class="table table-bordered table-condensed" id="fba" >
+        <thead>
+            <tr>
+                <th>asin</th>
+                <th>fnsku</th>
+                <th>product</th>
+                <th>picture</th>
+                <th>qty in removal progress</th>
+                <th>long term 6 mo charged</th>
+                <th>long term 12 mo charged</th>
+                <th>long term 6 mo projection</th>
+                <th>long term 12 mo projection</th>
+                <th>inv age 0 - 90</th>
+                <th>inv age 90 - 180</th>
+                <th>inv age 181 - 270</th>
+                <th>inv age 271 - 365</th>
+                <th>inv 365+</th>
+                <th>date</th>
+                </tr>
+        </thead>
+        <tbody>
+        {% for f in fbaAge %}
+            <tr>
+            <td>{{ f.asin }}</td>
+            <td>{{ f.fnsku }}</td>
+            <td>{{ f['product-name'] }}</td>
+            <td><img data-original="/images/{{ f.asin }}.jpg" class="itemImage" src="/images/{{ f.asin }}.jpg" style="display: inline;width:150px"> </td>
+            <td>{{ f['qty-with-removals-in-progress'] }}</td>
+            <td>{{ f['qty-to-be-charged-ltsf-6-mo'] }}</td>
+            <td>{{ f['qty-to-be-charged-ltsf-12-mo'] }}</td>
+            <td>{{ f['projected-ltsf-6-mo'] }}</td>
+            <td>{{ f['projected-ltsf-12-mo'] }}</td>
+            <td>{{ f['inv-age-0-to-90-days'] }}</td>
+            <td>{{ f['inv-age-91-to-180-days'] }}</td>
+            <td>{{ f['inv-age-181-to-270-days'] }}</td>
+            <td>{{ f['inv-age-271-to-365-days'] }}</td>
+            <td>{{ f['inv-age-365-plus-days'] }}</td>
+            <td>{{ f['snapshot-date'] }}</td>
+            </tr>
+
+        {% endfor %}
+        </tbody>
+    </table>
+    <script>
+$(document).ready(function(){
+
+		oTable = $('#fba').DataTable({
+			// "aoColumns": [{
+			// 	"sWidth": "10px"
+			// }, {
+			// 	"sWidth": "150px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50%"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }, {
+			// 	"sWidth": "50px"
+			// }],
+			"aaSorting": [
+				[4, "asc"]
+			],
+			//"sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'packageSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+});
+    </script>
+{% endblock %}

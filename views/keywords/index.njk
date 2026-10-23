@@ -1,0 +1,108 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.jqstooltip {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+</style>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-sparklines/2.1.2/jquery.sparkline.min.js"></script>
+
+<div>
+    <button id="addKeywordsBtn" class="btn btn-primary">Add Keywords</button>
+</div>
+<table class="table table-bordered table-condensed" id="keywords" >
+    <thead>
+        <tr>
+            <td>Keywords</td>
+            <td>ASIN</td>
+            <td>Trend</td>
+            <td>Rank</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+    {% for k in keywords %}
+
+            <tr>
+                <td>
+                    {{ k.keyword }}
+                    <button class="addAsin btn btn-primary" value="{{ k.keyword }}"><span class="glyphicon glyphicon-plus"></span></button>
+                </td>
+                <td>{{ k.asin }}</td>
+                <td>
+                    <div id="chart_div" class="littleChart" style="width: 120px; height: 40px;" data-points="{{ k.trendPoints }}"></div>
+                </td>
+                <td>{{ k.lastTrendRank }}</td>
+                <td></td>
+            </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<script>
+    $(document).ready(function(){
+
+        $(".littleChart").each(function(){
+            var points = String($(this).data('points')).split(',');
+            if(points.length>1){
+               $(this).sparkline(points, { type: 'bar',height:'30px' });
+            }
+        });
+        $("#addKeywordsBtn").click(function(e){
+            e.preventDefault();
+            bootbox.prompt("Enter new keywords, separate by comma", function(result){
+                console.log(result);
+                if($.trim(result)!=''){
+                    $.ajax({
+                        type : 'post',
+                        url : '{{ route("AddKeywords") }}', // in here you should put your query
+                        data :  {
+                            "keywords":result
+                        },
+                        success : function(r)
+                        {
+                            console.dir(r);
+                            if(r=='ok'){
+                                location.reload();
+                            }
+                        },
+                        error: function(r){
+                        }
+                    });
+                }
+            });
+        });
+
+        $(".addAsin").click(function(e){
+            var keyword = $(this).prop('value');
+            console.log(keyword);
+            e.preventDefault();
+            bootbox.prompt("Enter new ASINs, separate by comma", function(result){
+                console.log(result);
+                console.log(keyword);
+                if($.trim(result)!=''){
+                    $.ajax({
+                        type : 'post',
+                        url : '{{ route("AddAsin") }}', // in here you should put your query
+                        data :  {
+                            "keyword":keyword,
+                            "asins":result
+                        },
+                        success : function(r)
+                        {
+                            console.dir(r);
+                            if(r=='ok'){
+                                location.reload();
+                            }
+                        },
+                        error: function(r){
+                        }
+                    });
+                }
+            });
+
+        })
+    });
+</script>
+{% endblock %}
