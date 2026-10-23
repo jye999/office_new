@@ -1,0 +1,331 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.finished{
+    text-decoration: line-through;
+}
+
+.highlight{
+    background-color:#7DCEA0;
+}
+</style>
+<button class="btn btn-primary " id="createBtn">
+  Create New
+</button>
+    <table class="table table-bordered table-condensed" id="productions" >
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Name</th>
+                <th>Date</th>
+                <th>Assign To</th>
+                <th>Target</th>
+                <th>Finished</th>
+                <th>Notes</th>
+                <th>Pictures</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for production in productions %}
+            <tr class="{% if production.target_qty <= production.finished_qty %}finished{% endif %}">
+                <td><a href="#" class="productionId" >{{ production.id }}</a>
+                </td>
+                <td>{{ production.name }}
+                </td>
+                <td>{{ production.production_date }}
+                </td>
+                <td>{{ production.assignTo }}
+		        </td>
+                <td>{{ production.target_qty }}
+		        </td>
+                <td><input type="text" class="finished_qty" value="{{ production.finished_qty }}" />
+		        </td>
+                <td style="padding:35px">{{ production.notes }}
+		        </td>
+                <td>
+                {{ production.imagesHtml | safe }}
+		        </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+
+    <!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create Production</h4>
+      </div>
+      <div class="modal-body">
+      <form enctype="multipart/form-data" id="upload_form" role="form" method="POST" class="form-horizontal" action="" >
+<fieldset>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="name">Name</label>
+  <div class="controls">
+    <input id="name" name="name" type="text" placeholder="" class="input">
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="production_date">Date</label>
+  <div class="controls">
+    <input id="production_date" name="production_date" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd">
+    
+  </div>
+</div>
+
+<div class="control-group">
+  <label class="control-label" for="assignTo">Assign To</label>
+  <div class="controls">
+    <select id="assignTo" name="assignTo" class="select">
+        <option value=""></option>
+        <option value="boutonniere">boutonniere</option>
+        <option value="corsage">corsage</option>
+        <option value="bouquet">bouquet</option>
+        <option value="other">other</option>
+    </select>
+    
+  </div>
+</div>
+<!-- Textarea -->
+<div class="control-group">
+  <label class="control-label" for="notes">Notes</label>
+  <div class="controls">                     
+    <textarea id="notes" name="notes" style="width:300px;height:200px"></textarea>
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="images">Notes</label>
+  <div class="controls" id="imageUploadControl">  
+  
+{{ form.file('images[]', {multiple: true}) | safe }}
+  </div>
+  <div class="controls" id="imagesDiv"></div>
+</div>
+
+<div class="control-group">
+  <label class="control-label" for="target_qty">Target Qty</label>
+  <div class="controls">  
+    <input id="target_qty" name="target_qty" type="text" placeholder="" class="input">
+  </div>
+</div>
+
+</fieldset>
+</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeButton" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="saveNewButton" class="btn btn-primary">Create</button>
+        <button type="button" id="updateButton" class="btn btn-info">Update</button>
+        <button type="button" id="deleteButton" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+    <script>
+
+$(document).ready(function() {
+	$("#production").addClass("active");
+$("#myModal").hide();
+var productionId=0;
+	
+var oTable = $('#productions').dataTable({
+"bAutoWidth" : false, 
+"aoColumns": [
+{"sWidth": "50px"},
+{"sWidth": "150px"},
+{"sWidth": "50px"},
+{"sWidth": "50px"},
+{"sWidth": "50px"},
+{"sWidth": "50px"},
+{"sWidth": "250px"},
+{"sWidth": "250px"}
+],
+        "aaSorting": [[0, "desc"]],
+        "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+        "bPaginate": false,
+        "oLanguage": {
+        "sLengthMenu": "_MENU_ records per page"
+        },
+        "fnRowCallback": function(nRow, aData) {
+
+        }
+});
+
+    $('#production_date').datepicker("option", "dateFormat", 'yy-mm-dd' );    
+    $("#saveNewButton").click(function(){
+            $.ajax({
+                type : 'post',
+                dataType:'json',
+                url : '{{ url('Production.store')}}', // in here you should put your query 
+                data:new FormData($("#upload_form")[0]),
+                processData:false,//need this to process form
+                contentType: false,
+                // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&production_date="+$("#production_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+                success : function(r)
+                {
+                    location.reload();
+                    console.dir(r);
+                },
+                error: function(e){
+                    console.dir(e);
+                }
+            });
+    });
+
+    $("#createBtn").click(function(){
+        productionId='';
+       $("#myModal").modal('show');
+       
+        $("#saveNewButton").show();
+        $("#updateButton").hide();
+        $("#deleteButton").hide();
+        $("#name").val('');
+        $("#target_qty").val('');
+        $("#imageUploadControl").show('');
+         $( "input:file" ).replaceWith($( "input:file" ).val('').clone(true));
+        $("#imagesDiv").html('');
+        $("#production_date").val('');
+        $("#notes").val('');
+        $("#assignTo").val('');
+    });
+    
+    $("#closeButton").click(function(){
+        productionId='';
+        $("#name").val('');
+        $("#target_qty").val('');
+        $("#production_date").val('');
+        $("#notes").val('');
+        $("#assignTo").val('');
+        $("#imagesDiv").html('');
+        
+    });
+
+    $("#deleteButton").click(function(){
+        
+        $.ajax({
+        type : 'delete',
+                url : '{{ url('Production.destroy')}}', // in here you should put your query c
+                data :  'id=' + productionId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success : function(r)
+                {
+                    productionId='';
+                    $("#name").val('');
+                    $("#target_qty").val('');
+                    $("#production_date").val('');
+                    $("#notes").val('');
+                    $("#assignTo").val('');
+                    $("#imagesDiv").html('');
+                    $("#myModal").modal('hide');
+                    location.reload();
+                },
+                error: function(r)
+                {
+                    alert('error');
+                    console.dir(r);
+                }
+        });
+    });
+    
+    $("#updateButton").click(function(){
+        $.ajax({
+            type : 'put',
+                    url : '{{ url('Production.update')}}', // in here you should put your query 
+                    data :  'id='+productionId+'&name=' + $("#name").val() + "&production_date="+$("#production_date").val()+"&target_qty="+$("#target_qty").val()+"&finished_qty="+$("#finished_qty").val()+"&notes="+encodeURIComponent($("#notes").val())+"&assignTo="+$("#assignTo").val(), // here you pass your id via ajax .
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success : function(r)
+                    {
+                        productionId='';
+                        $("#name").val('');
+                        $("#target_qty").val('');
+                        $("#production_date").val('');
+                        $("#notes").val('');
+                        $("#assignTo").val('');
+                        $("#myModal").modal('hide');
+                        location.reload();
+                        console.dir(r);
+                    },
+                    error: function(r)
+                    {
+                        alert('error');
+                        console.dir(r);
+                    }
+            });
+    });
+    
+    $(".finished_qty").change(function(e){
+        var currentObj = $(this);
+        var newQty = $(this).val();
+        var productionId = $(this).closest('tr').find('.productionId').text();
+        console.log(productionId);
+        
+        $.ajax({
+            type : 'put',
+                    url : '{{ url('Production.update')}}', // in here you should put your query 
+                    data :  'id='+productionId+'&finished_qty=' + newQty,
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success : function(r)
+                    {
+                        console.dir(r);
+                        currentObj.addClass('highlight');
+                        setTimeout(
+                            function() { currentObj.removeClass('highlight'); },
+                            2000
+                        );
+                    },
+                    error: function(r)
+                    {
+                        alert('error');
+                        console.dir(r);
+                    }
+            });
+    });
+
+    $(".productionId").click(function(){
+        var id = $(this).text();
+       $.ajax({
+        type : 'get',
+                url : '{{ url('Production.show')}}', // in here you should put your query c
+                data :  'id=' + id, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success : function(r)
+                {
+                    console.dir(r);
+                    productionId = r.id;
+                    $("#name").val(r.name);
+                    $("#target_qty").val(r.target_qty);
+                    $("#production_date").val(r.production_date);
+                    $("#notes").val(r.notes);
+                    $("#assignTo").val(r.assignTo);
+                    if(r.images!=null){
+                        var followupImags = r.images.split("|||");
+                        console.dir(followupImags);
+                        var imagesHtml ="";
+                        for(var i=0;i<followupImags.length;i++){
+                            if(followupImags[i]!=''){
+                                imagesHtml += "<img src='./storage/production/"+followupImags[i]+"' style='width:150px'>";
+
+                            }
+                        }
+                    }
+                    $("#imagesDiv").html(imagesHtml);
+                    
+                    $("#myModal").modal('show');
+                    $("#imageUploadControl").hide();
+                    $("#saveNewButton").hide();
+                    $("#updateButton").show();
+                    $("#deleteButton").show();
+                }
+        });
+    });
+});
+    </script>	
+{% endblock %}
