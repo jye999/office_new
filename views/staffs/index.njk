@@ -1,0 +1,45 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+<div class="container">
+
+    <h1>Staffs <a href="{{ url('admin/staffs/create') }}" class="btn btn-primary btn-xs" title="Add New staff"><span class="glyphicon glyphicon-plus" aria-hidden="true"/></a></h1>
+    <div class="table">
+        <table class="table table-bordered table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Can be tasked</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in staffs %}
+                <tr>
+                    <td>{{ loop.index0 + 1 }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.email }}</td>
+                    <td>{{ item.status }}</td>
+                    <td>{{ item.CanBeTasked }}</td>
+
+
+                    <td>
+                        <a href="{{ url('admin/staffs/' + item.id) }}" class="btn btn-success btn-xs" title="View staff"><span class="glyphicon glyphicon-eye-open" aria-hidden="true"/></a>
+                        <a href="{{ url('admin/staffs/' + item.id + '/edit') }}" class="btn btn-primary btn-xs" title="Edit staff"><span class="glyphicon glyphicon-pencil" aria-hidden="true"/></a>
+                        {{ form.open({'method':'DELETE','url':'admin/staffs/' + item.id,'style':'display:inline'}) | safe }}
+                        {% set _delOpts = {'type':'submit','class':'btn btn-danger btn-xs','title':'Delete staff','onclick':'return confirm("Confirm delete?")'} %}
+                            {{ form.button('<span class="glyphicon glyphicon-trash" aria-hidden="true" title="Delete staff" />', _delOpts) | safe }}
+                        {{ form.close() | safe }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-wrapper">  </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,330 @@
+{% extends "layout.njk" %}
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/css/bootstrap-datepicker.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.6.0/js/bootstrap-datepicker.min.js"></script>
+
+<link rel="stylesheet/less" type="text/css" href="{{ asset("assets/css/timepicker.less") }}" />
+<script src="{{ asset("assets/js/bootstrap-timepicker.js") }}"></script>
+{% if current_staff == null %}
+	<button class="btn btn-primary" id="btnStaffLogin">Login</button>
+{% endif %}
+	<div class="row">
+<div class="form-group">
+  <label for="sel1">Who are you?</label>
+  <select class="form-control" id="staff">
+  	<option value="">Select</option>
+{% for s in staffs %}
+	<option value="{{ s.name }}">{{ s.name }}</option>
+{% endfor %}
+
+  </select>
+</div>
+</div>
+
+ 
+<div id="divTimesheet" class="row">
+	<div class="form-group row">
+		<h3 id="staffName"></h3>
+	</div> 
+	<div class="row">
+		<button class="btn btn-primary" id="addTimesheet">Add</button>
+	</div>
+	<div class="row">
+		<table id="timetable" class="table table-stripe table-hover table-collapse">
+			<thead>
+				<tr>
+					<td></td>
+					<td>Date</td>
+					<td>Work</td>
+					<td>Lunch</td>
+					<td>Hours</td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+	<div class="row">
+		<hr/>
+		<h3>Report</h3>
+	</div>
+
+	<div class="row">
+		<table id="reporttable" class="table table-stripe table-hover table-collapse">
+			<thead>
+				<tr>
+					<td>Year</td>
+					<td>Month</td>
+					<td>Hours</td>
+				</tr>
+			</thead>
+			<tbody>
+			</tbody>
+		</table>
+	</div>
+</div>
+<!-- Modal -->
+<div id="modalTimesheet" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Time Sheet</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group row">
+		<div class="col-sm-2">
+			<span >Date</span>
+		</div>
+		<div class="col-sm-4">
+			<input type="hidden" id="timesheetId">
+			<input type="text" class="form-control"  id="workdate">
+		</div>
+	</div>
+
+	<div class="form-group row">
+		<div class="col-sm-2">
+			<span>Work </span>
+		</div>
+		<div class="col-sm-4">
+
+	        <div class="input-group bootstrap-timepicker timepicker">
+	            <input id="workstart" type="text" class="form-control input-small time">
+	            <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+	        </div>
+		</div>
+		<div class="col-sm-1">
+			<span>To</span>
+		</div>
+		<div class="col-sm-4">
+	        <div class="input-group bootstrap-timepicker timepicker">
+	            <input id="workend" type="text" class="form-control input-small time">
+	            <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+	        </div>
+		</div>
+	</div>
+
+	<div class="form-group row">
+		<div class="col-sm-2">
+			<span>Lunch </span>
+		</div>
+		<div class="col-sm-4">
+	        <div class="input-group bootstrap-timepicker timepicker">
+	            <input id="lunchstart" type="text" class="form-control input-small time">
+	            <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+	        </div>
+		</div>
+		<div class="col-sm-1">
+			<span>To</span>
+		</div>
+		<div class="col-sm-4">
+			
+	        <div class="input-group bootstrap-timepicker timepicker">
+	            <input id="lunchend" type="text" class="form-control input-small time">
+	            <span class="input-group-addon"><i class="glyphicon glyphicon-time"></i></span>
+	        </div>
+		</div>
+	</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="btnSave" class="btn btn-primary " data-dismiss="modal">Save</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+$(document).ready(function(){
+	$("#divTimesheet").hide();
+	$("#staff").change(function(){
+		var staff = $("#staff").val();
+		if(staff!=''){
+			$("#divTimesheet").show();
+			$("#staffName").text(staff);
+			getStaffTimesheet(staff);
+			getStaffTimesheetReport(staff);
+		}
+		else{
+
+			$("#divTimesheet").hide();
+		}
+	});
+
+	$("#workdate").datepicker({autoclose:true,format:'yyyy-mm-dd',todayHighlight:true});
+	$('.time').timepicker();
+	$("#addTimesheet").click(function(){
+		$("#timesheetId").val('');
+		$("#modalTimesheet").modal('show');
+		$("#workstart").val('9:00 AM');
+		$("#workend").val('5:00 PM');
+		$("#lunchstart").val('12:00 PM');
+		$("#lunchend").val('12:30 PM');
+	});
+
+	var getStaffTimesheetReport = function(staff){
+		console.log('in staff report');
+        $.ajax({
+            type: 'get',
+            dataType: 'json',
+            url: '{{ route("getTimesheetReport") }}',
+            data: {
+                "staff": staff
+            },
+            success: function(r) {
+            	console.dir(r);
+
+            	$("#reporttable").show();
+            	$("#reporttable tbody").html('');
+            	for(var i=0;i<r.length;i++){
+	            	var rowStr = "<tr>";
+	            	rowStr += "<td>"+ r[i].year +"</td>";
+	            	rowStr += "<td>"+ r[i].month +"</td>";
+	            	rowStr += "<td>"+ r[i].workhours+"</td>";
+	            	rowStr+="</tr>";
+	            	$("#reporttable tbody").append(rowStr);
+            	}
+            },
+            error: function(e) {
+                console.log('oops');
+                console.dir(e);
+            }
+        });
+
+	}
+	var getStaffTimesheet = function(staff){
+        $.ajax({
+            type: 'get',
+            dataType: 'json',
+            url: '{{ route("getTimesheet") }}',
+            data: {
+                "staff": staff
+            },
+            success: function(r) {
+            	$("#timetable").show();
+            	$("#timetable tbody").html('');
+            	for(var i=0;i<r.length;i++){
+	            	var rowStr = "<tr>";
+	            	rowStr += "<td><button class='btn btn-primary btnEdit' value='"+r[i].id+"'><i class='glyphicon glyphicon-pencil'></i></button><button class='btn btn-danger btnDelete' value='"+r[i].id+"'><i class='glyphicon glyphicon-remove'></i></button></td>";
+	            	rowStr += "<td>"+ r[i].workdate +"</td>";
+	            	rowStr += "<td>"+ r[i].start + " - "+ r[i].end +"</td>";
+	            	rowStr += "<td>"+ r[i].lunchstart + " - "+ r[i].lunchend +"</td>";
+	            	rowStr += "<td>"+ r[i].hours+"</td>";
+	            	rowStr+="</tr>";
+	            	$("#timetable tbody").append(rowStr);
+            	}
+            },
+            error: function(e) {
+                console.log('oops');
+                console.dir(e);
+            }
+        });
+	};
+
+	$("#btnSave").click(function(){
+		var staff = $("#staff").val();
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            url: '{{ route("saveTimesheet") }}',
+            data: {
+                "staff": staff,
+                "timesheetId":$("#timesheetId").val(),
+                "workdate":$("#workdate").val(),
+                "start":$("#workstart").val(),
+                "end":$("#workend").val(),
+                "lunchstart":$("#lunchstart").val(),
+                "lunchend":$("#lunchend").val()
+            },
+            success: function(r) {
+                // console.dir(r);
+		        getStaffTimesheet(staff);
+				getStaffTimesheetReport(staff);
+            },
+            error: function(e) {
+                console.log('oops btnSave');
+                console.dir(e);
+            }
+        });
+	});
+
+	$(document).on('click','.btnEdit',function(){
+		// console.log($(this).val());
+		// $("#timesheetId").val();
+		
+		$.ajax({
+            type: 'get',
+            dataType: 'json',
+            url: '{{ route("getTimesheet") }}',
+            data: {
+                "timesheetId": $(this).val()
+            },
+            success: function(r) {
+                $("#timesheetId").val(r[0].id);
+                $("#workdate").val(r[0].workdate);
+                $("#workstart").val(r[0].start);
+                $("#workend").val(r[0].end);
+                $("#lunchstart").val(r[0].lunchstart);
+                $("#lunchend").val(r[0].lunchend);
+                $("#modalTimesheet").modal('show');
+            },
+            error: function(e) {
+                console.log('oops btnEdit');
+                console.dir(e);
+            }
+        });
+	});
+
+
+	$(document).on('click','.btnDelete',function(){
+		var staff = $("#staff").val();
+		var sure = confirm('Are you sure?');
+		if(sure){
+			$.ajax({
+	            type: 'post',
+	            dataType: 'json',
+	            url: '{{ route("deleteTimesheet") }}',
+	            data: {
+	                "timesheetId": $(this).val()
+	            },
+	            success: function(r) {
+	                // console.dir(r);
+			        getStaffTimesheet(staff);
+					getStaffTimesheetReport(staff);
+	            },
+	            error: function(e) {
+	                console.log('oops btnDelete');
+	                console.dir(e);
+	            }
+	        });
+
+		}
+	});
+	$("#btnStaffLogin").click(function(){
+		bootbox.dialog({
+	        title: "Enter Your Pin",
+	        message: '<div>\
+	            <button type="button" class="btn btn-primary" id="printBtn">Print</button>\
+	            </div>\
+	            <div id="ups-tracking"></div>\
+	            <div id="labelModalBodyDiv" style="width:80%;float:left">\
+	            </div>\
+	            ',
+	        buttons: {
+	            success: {
+	                label: "Close",
+	                className: "btn-success",
+	                callback: function () {
+	                    
+	                }
+	            }
+	        }
+	    });
+	});
+        
+});
+</script>
+{% endblock %}

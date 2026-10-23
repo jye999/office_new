@@ -12,6 +12,8 @@ import { registerApiAuthRoutes } from './modules/api/routes.js';
 import { registerHomeRoutes } from './modules/home/routes.js';
 import { registerActionLogRoutes } from './modules/actionlog/routes.js';
 import { registerSettingsRoutes } from './modules/settings/routes.js';
+import { registerTimesheetRoutes } from './modules/timesheet/routes.js';
+import { registerStaffsRoutes } from './modules/staffs/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
@@ -37,6 +39,8 @@ registerApiAuthRoutes(app);
 registerHomeRoutes(app);
 registerActionLogRoutes(app);
 registerSettingsRoutes(app);
+registerTimesheetRoutes(app);
+registerStaffsRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

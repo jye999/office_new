@@ -1,0 +1,65 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+<div class="container">
+
+    <h1>Edit staff {{ staff.id }}</h1>
+
+    {{ form.model(staff, {'method':'PATCH','url':'admin/staffs/' + staff.id,'class':'form-horizontal'}) | safe }}
+
+
+    <div class="form-group {{ 'has-error' if errors.has('name') else ''}}">
+        {{ form.label('name', 'Name', {'class':'col-sm-3 control-label'}) | safe }}
+        <div class="col-sm-6">
+            {{ form.text('name', null, {'class':'form-control','required':'required'}) | safe }}
+            {% set _m = errors.first('name') %}{% if _m %}<p class="help-block">{{ _m }}</p>{% endif %}
+        </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors.has('email') else ''}}">
+        {{ form.label('email', 'Email', {'class':'col-sm-3 control-label'}) | safe }}
+        <div class="col-sm-6">
+            {{ form.text('email', null, {'class':'form-control','required':'required'}) | safe }}
+            {% set _m = errors.first('email') %}{% if _m %}<p class="help-block">{{ _m }}</p>{% endif %}
+        </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors.has('pin') else ''}}">
+        {{ form.label('pin', 'Pin', {'class':'col-sm-3 control-label'}) | safe }}
+        <div class="col-sm-6">
+            {{ form.text('pin', null, {'class':'form-control','required':'required'}) | safe }}
+            {% set _m = errors.first('pin') %}{% if _m %}<p class="help-block">{{ _m }}</p>{% endif %}
+        </div>
+    </div>
+    <div class="form-group {{ 'has-error' if errors.has('status') else ''}}">
+        {{ form.label('status', 'Status', {'class':'col-sm-3 control-label'}) | safe }}
+        <div class="col-sm-6">
+            {{ form.select('status', {'Active':'Active','Inactive':'Inactive'}, null, {'class':'form-control','required':'required'}) | safe }}
+            {% set _m = errors.first('status') %}{% if _m %}<p class="help-block">{{ _m }}</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="form-group {{ 'has-error' if errors.has('status') else ''}}">
+        {{ form.label('Can be assigned', 'assign', {'class':'col-sm-3 control-label'}) | safe }}
+        <div class="col-sm-6">
+            {{ form.select('CanBeTasked', {'Yes':'Yes','No':'No'}, null, {'class':'form-control','required':'required'}) | safe }}
+            {% set _m = errors.first('CanBeTasked') %}{% if _m %}<p class="help-block">{{ _m }}</p>{% endif %}
+        </div>
+    </div>
+
+
+    <div class="form-group">
+        <div class="col-sm-offset-3 col-sm-3">
+            {{ form.submit('Update', {'class':'btn btn-primary form-control'}) | safe }}
+        </div>
+    </div>
+    {{ form.close() | safe }}
+
+    {% if errors.any() %}
+        <ul class="alert alert-danger">
+            {% for error in errors.all() %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+<div class="container">
+
+    <h1>staff {{ staff.name }}
+        <a href="{{ url('admin/staffs/' + staff.id + '/edit') }}" class="btn btn-primary btn-xs" title="Edit staff"><span class="glyphicon glyphicon-pencil" aria-hidden="true"/></a>
+        {{ form.open({'method':'DELETE','url':'admin/staffs/' + staff.id,'style':'display:inline'}) | safe }}
+        {% set _delOpts = {'type':'submit','class':'btn btn-danger btn-xs','title':'Delete staff','onclick':'return confirm("Confirm delete?")'} %}
+            {{ form.button('<span class="glyphicon glyphicon-trash" aria-hidden="true"/>', _delOpts) | safe }}
+        {{ form.close() | safe }}
+    </h1>
+    <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+            <tbody>
+                <tr>
+                    <th>ID</th><td>{{ staff.id }}</td>
+                </tr>
+                <tr>
+                    <th>Name</th><td>{{ staff.name }}</td>
+                </tr>
+                <tr>
+                    <th>Email</th><td>{{ staff.email }}</td>
+                </tr>
+                <tr>
+                    <th>Pin</th><td>{{ staff.pin }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th><td>{{ staff.status }}</td>
+                </tr>
+                <tr>
+                    <th>can assign task to</th><td>{{ staff.CanBeTasked }}</td>
+                </tr>
+                <tr>
+                    <th>Last Updated</th><td>{{ staff.updated_at }}</td>
+                </tr>
+                <tr>
+                    <th>Created</th><td>{{ staff.created_at }}</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

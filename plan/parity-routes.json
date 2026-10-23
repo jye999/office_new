@@ -5,7 +5,6 @@
   "/actionLogs"
  ],
  "T11": [
-  "/timesheet",
   "/getTimesheet",
   "/getTimesheetReport",
   "/getTimesheetRangeReport"
