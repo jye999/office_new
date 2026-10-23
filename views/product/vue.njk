@@ -1,0 +1,32 @@
+<html>
+
+<body>
+    <link rel="stylesheet" href="{{ mix('/css/app.css') }}">
+      <!--<style href="{{ asset('css/app.style.css') }}"></style>-->
+<!-- Buefy CSS -->
+<!--<link rel="stylesheet" href="https://unpkg.com/buefy/lib/buefy.min.css">-->
+<!-- Material design icons-->
+<link rel="stylesheet" href="//cdn.materialdesignicons.com/2.0.46/css/materialdesignicons.min.css">
+
+<!-- CSRF Token -->
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<script>
+    var isAdmin = false;
+    var userName = '{{ auth.user.username }}';
+    var userFirstRole = '{{ auth.roles[0] }}';
+</script>
+
+{% if hasRole(['admin']) %}
+<script>
+    isAdmin = true;
+</script>
+{% endif %}
+
+<div id="app">
+</div>
+    <script src="{{ mix('/js/app.js') }}"></script>
+
+
+
+</body>
+</html>

@@ -283,6 +283,12 @@ export function registerFallback(name: string, handler: RouteHandler): void {
   fallbacks.set(name, handler);
 }
 
+// Shared findOrFail/abort(404) body: the old app has no 404 view, so Laravel
+// falls through to Symfony's default page (same body the fallback sends).
+export function notFoundPage(reply: FastifyReply): void {
+  reply.code(404).type('text/html; charset=UTF-8').send(SYMFONY_404);
+}
+
 // The old app has no resources/views/errors/404 view, so Laravel falls through
 // to Symfony's default 404 HTML page (HttpException::createResponse).
 const SYMFONY_404 = `<!DOCTYPE html>

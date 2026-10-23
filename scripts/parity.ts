@@ -231,6 +231,7 @@ async function compare(label: string, oldJar: Jar, newJar: Jar): Promise<boolean
         problems.push('json bodies differ');
       }
     } catch (e) {
+      ok = false; // one side's body is not valid JSON — that IS a diff
       problems.push(`json parse failed: ${String(e)}`);
       bodyA = o.body;
       bodyB = n.body;

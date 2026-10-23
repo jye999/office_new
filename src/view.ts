@@ -403,6 +403,25 @@ export function asset(path = ''): string {
   return url(path);
 }
 
+// Laravel Mix mix(): the PUBLIC_DIR mix-manifest.json value, returned as-is
+// (verified live: the old app emits the manifest path unmodified, e.g.
+// '/css/app.css'; missing manifest/entry -> the argument, like the unhashed
+// build the old app ships).
+let mixManifest: Record<string, string> | null = null;
+export function mix(pathName = ''): string {
+  if (mixManifest === null) {
+    try {
+      mixManifest = JSON.parse(fs.readFileSync(path.join(appConfig.PUBLIC_DIR, 'mix-manifest.json'), 'utf8')) as Record<
+        string,
+        string
+      >;
+    } catch {
+      mixManifest = {};
+    }
+  }
+  return mixManifest[pathName] ?? pathName;
+}
+
 // route('name', params) — Laravel returns an ABSOLUTE URL (request root + path);
 // the T03 routeUrl() helper gives the path part, url() gives the APP_URL root.
 export function route(name: string, params?: Record<string, unknown>): string {
@@ -732,6 +751,7 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     trans,
     url,
     asset,
+    mix,
     route,
   };
 }
