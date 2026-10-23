@@ -1,0 +1,26 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="content">
+{% if code!='' %}
+
+<div class="alert alert-info">
+  <strong>{{ code }}</strong>
+</div>
+{% endif %}
+	<div class="box box-primary">
+        <form action="{{ url('exec.run') }}" method = "post">
+				{{ csrf_field() | safe }}
+				<div class="form-group">
+				<label for="">what</label>
+					<input type="text" name = "what" class = "form-control" placeholder = "">
+				</div>
+				<label for="">who</label>
+					<input type="text" name = "who" class = "form-control" placeholder = "">
+				</div>
+				<div class="box-footer">
+					<button class = 'btn btn-primary' type = "submit">Run</button>
+				</div>
+        </form>
+    </div>
+</section>
+{% endblock %}

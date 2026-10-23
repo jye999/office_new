@@ -1,0 +1,76 @@
+<!DOCTYPE html><html>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src='https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.js'></script>
+<script src='https://cdn.jsdelivr.net/npm/pdf-lib/dist/pdf-lib.min.js'></script>
+<body>
+
+<div id="print-body">generating file to downoad</div>
+</body>
+<script>
+    {{ ordersScript | safe }}
+    console.log(orders.map(o=>"/getOrderLabel?orderId="+o));
+    var qs = (function(a) {
+        if (a == "") return {};
+        var b = {};
+        for (var i = 0; i < a.length; ++i)
+        {
+            var p=a[i].split('=', 2);
+            if (p.length == 1)
+                b[p[0]] = "";
+            else
+                b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+        return b;
+    })(window.location.search.substr(1).split('&'));
+
+function downloadPDF(pdf) {
+    const linkSource = `${pdf}`;
+    const downloadLink = document.createElement("a");
+    const fileName = "labels-"+qs["queueId"]+".pdf";
+    downloadLink.href = linkSource;
+    downloadLink.download = fileName;
+    downloadLink.text = "download";
+    $("#print-body").append(downloadLink);
+    //downloadLink.click();
+}
+
+async function mergeAllPDFs(urls) {
+
+    const pdfDoc = await PDFLib.PDFDocument.create();
+    const numDocs = urls.length;
+
+    for(var i = 0; i < numDocs; i++) {
+        console.log(i);
+        try{
+            const donorPdfBytes = await fetch(urls[i]).then(res => res.arrayBuffer());
+            const donorPdfDoc = await PDFLib.PDFDocument.load(donorPdfBytes);
+            const docLength = donorPdfDoc.getPageCount();
+            for(var k = 0; k < docLength; k++) {
+                const [donorPage] = await pdfDoc.copyPages(donorPdfDoc, [k]);
+                //console.log("Doc " + i+ ", page " + k);
+                pdfDoc.addPage(donorPage);
+            }
+        } catch(error){
+            alert(urls[i]);
+        }
+    }
+
+    const pdfDataUri = await pdfDoc.saveAsBase64({ dataUri: true });
+    downloadPDF(pdfDataUri);
+    //console.log(pdfDataUri);
+    //$("#print-body").html('<iframe height="100%" width="100%" src="'+pdfDataUri+'"></iframe>');
+    // $('<iframe />').remove();
+    // $('<iframe />'); // Create an iframe element
+    // $('<iframe />', {
+    //     name: 'labelFrame',
+    //     id: 'labelFrame',
+    //     scrolling: 'no',
+    //     frameborder: '0',
+    //     style: "width: 3.812in; height: 5.718in; border: 1px dashed black;",
+    //     src:pdfDataUri
+    // }).appendTo('#print-body');
+    // $('#labelFrame').contents().find('body').html('');
+}
+mergeAllPDFs(orders.map(o=>"/getOrderLabel?orderId="+o))
+</script>
+</html>

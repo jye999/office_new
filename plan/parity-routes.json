@@ -11,9 +11,7 @@
  ],
  "T12": [
   "/queue",
-  "/queue.stuck",
-  "/price",
-  "/price.ajax"
+  "/queue.stuck"
  ],
  "T13": [
   "/msg",

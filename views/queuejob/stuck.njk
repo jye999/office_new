@@ -1,0 +1,30 @@
+{% extends "layout.njk" %}
+{% block title %}Stuck orders{% endblock %}
+{% block content %}
+<div class = 'container'>
+    <h1>
+        Stuck orders
+    </h1>
+    <br>
+    <form method = 'get' action = '{{ url("queue.reset_stuck") | safe }}'>
+        <button class = 'btn btn-primary'>Put them back </button> (make sure no job is currently running)
+    </form>
+    <br>
+    <table class = 'table table-bordered'>
+        <thead>
+            <th>Order ID</th>
+            <th>Status</th>
+        </thead>
+        <tbody>
+            {% for o in stuckOrders %}
+            <tr>
+                <td>
+                    <b><i>{{ o.orderId }}</i></b>
+                </td>
+                <td>{{ o.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

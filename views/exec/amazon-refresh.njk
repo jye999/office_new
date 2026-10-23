@@ -1,0 +1,23 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="content">
+{% if code!='' %}
+
+<div class="alert alert-info">
+  <strong>{{ code }}</strong>
+</div>
+{% endif %}
+	<div class="box box-primary">
+        <form action="{{ url('exec.refreshAmz') }}" method = "post">
+				{{ csrf_field() | safe }}
+				<div class="form-group">
+				<label for="">asin</label>
+					<input type="text" name = "asin" class = "form-control" placeholder = "">
+				</div>
+				<div class="box-footer">
+					<button class = 'btn btn-primary' type = "submit">Refresh</button>
+				</div>
+        </form>
+    </div>
+</section>
+{% endblock %}

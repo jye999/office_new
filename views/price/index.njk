@@ -1,0 +1,844 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.floweroption{
+	width:100px;
+	float:left;
+	text-align: center;
+}
+.requestInfo {
+	margin-top:10px;
+	margin-bottom:10px; 
+	background-color: #f7f7f9;
+	border: 1px solid #e1e1e8;
+}
+
+.comment{
+	color: #3366FF;
+}
+</style>
+
+<button id="reqBtn" class="btn btn-primary">Select Request</button>
+<div id="reqInfo">
+</div>
+<table class="table  table-bordered table-striped">
+	<thead>
+		<tr>
+			<td>Item</td>
+			<td>Qty</td>
+			<td>Options</td>
+			<td>Unit Price</td>
+			<td>Total</td>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>Cascade Bridal <span id="cascade_comment" class="comment"></span></td>
+			<td><input type="text" id="cascade_qty" name="cascade_qty" value="0" size="5"></td>
+			<td>
+				
+			</td>
+			<td><input type="text" id="cascade_price" name="cascade_price" size="5"></td>
+			<td><input class="total" type="text" id="cascade_total" name="cascade_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Round Bridal <span id="round_comment" class="comment"></span></td>
+			<td><input type="text" id="round_qty" name="round_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="round_base" id="round_base" value="35.99" />
+				<div class="floweroption">
+					<input type="radio" name="round_options_color" value="0" checked>1 color
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="round_options_color" value="4">2 colors
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="round_options_color" value="5">3 colors
+				</div>
+				<br/>
+				<div class="floweroption">
+					<input type="checkbox" name="round_options[]" value="4" />diamond 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="round_options[]" value="12" />calla lily 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="round_options[]" value="3" />baby breath 
+				</div>
+			</td>
+			<td><input type="text" id="round_price" name="round_price" size="5"></td>
+			<td><input class="total" type="text" id="round_total" name="round_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>MOH <span id="moh_comment" class="comment"></span></td>
+			<td><input type="text" id="moh_qty" name="moh_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="moh_base" id="moh_base" value="29.99" />
+
+				<div class="floweroption">
+					<input type="radio" name="moh_options_color"  value="0" checked>1 color
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="moh_options_color" value="4">2 colors
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="moh_options_color" value="5">3 colors
+				</div>
+				<br/>
+				<div class="floweroption">
+					<input type="checkbox" name="moh_options[]" value="4" />diamond 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="moh_options[]" value="12" />calla lily 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="moh_options[]" value="3" />baby breath 
+				</div>
+			</td>
+			<td><input type="text" id="moh_price" name="moh_price" size="5"></td>
+			<td><input class="total" type="text" id="moh_total" name="moh_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Bridesmaid <span id="bb_comment" class="comment"></span></td>
+			<td><input type="text" id="bb_qty" name="bb_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="bb_base" id="bb_base" value="19.99" />
+
+				<div class="floweroption">
+					<input type="radio" name="bb_options_color" value="0" checked>1 color
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="bb_options_color" value="4">2 colors
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="bb_options_color" value="5">3 colors
+				</div>
+				<br/>
+				<div class="floweroption">
+					<input type="checkbox" name="bb_options[]" value="4" />diamond 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="bb_options[]" value="12" />calla lily 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="bb_options[]" value="3" />baby breath 
+				</div>
+			</td>
+			<td><input type="text" id="bb_price" name="bb_price" size="5"></td>
+			<td><input class="total" type="text" id="bb_total" name="bb_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Flower Girl Bouquet <span id="fg_comment" class="comment"></span></td>
+			<td><input type="text" id="fg_qty" name="fg_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="fg_base" id="fg_base" value="19.99" />
+
+				<div class="floweroption">
+					<input type="radio" name="fg_options_color"  value="0" checked>1 color
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="fg_options_color" value="4">2 colors
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="fg_options_color" value="5">3 colors
+				</div>
+				<br/>
+				<div class="floweroption">
+					<input type="checkbox" name="fg_options[]" value="4" />diamond 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="fg_options[]" value="12" />calla lily 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="fg_options[]" value="3" />baby breath 
+				</div>
+			</td>
+			<td><input type="text" id="fg_price" name="fg_price" size="5"></td>
+			<td><input class="total" type="text" id="fg_total" name="fg_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Toss <span id="toss_comment" class="comment"></span></td>
+			<td><input type="text" id="toss_qty" name="toss_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="toss_base" id="toss_base" value="19.99" />
+
+				<div class="floweroption">
+					<input type="radio" name="toss_options_color"  value="0" checked>1 color
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="toss_options_color" value="4">2 colors
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="toss_options_color" value="5">3 colors
+				</div>
+				<br/>
+				<div class="floweroption">
+					<input type="checkbox" name="toss_options[]" value="4" />diamond 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="toss_options[]" value="12" />calla lily 
+				</div>
+				<div class="floweroption">
+					<input type="checkbox" name="toss_options[]" value="3" />baby breath 
+				</div>
+			</td>
+			<td><input type="text" id="toss_price" name="toss_price" size="5"></td>
+			<td><input class="total" type="text" id="toss_total" name="toss_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Flower Girl Basket <span id="basket_comment" class="comment"></span></td>
+			<td><input type="text" id="basket_qty" name="basket_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="basket_base" id="basket_base" value="19.99" />
+
+			</td>
+			<td><input type="text" id="basket_price" name="basket_price" size="5"></td>
+			<td><input class="total" type="text" id="basket_total" name="basket_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Grooms Boutonniere <span id="groom_comment" class="comment"></span></td>
+			<td><input type="text" id="groom_qty" name="groom_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="groom_base" id="groom_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="groom_options" value="3.99" checked>Rose
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="groom_options" value="5.99">Calla Lily
+				</div>
+			</td>
+			<td><input type="text" id="groom_price" name="groom_price" size="5"></td>
+			<td><input class="total" type="text" id="groom_total" name="groom_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Bestman Boutonniere <span id="bestman_comment" class="comment"></span></td>
+			<td><input type="text" id="bestman_qty" name="bestman_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="bestman_base" id="bestman_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="bestman_options" value="3.5" checked>Rose
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="bestman_options" value="4.99">Calla Lily
+				</div>
+			</td>
+			<td><input type="text" id="bestman_price" name="bestman_price" size="5"></td>
+			<td><input class="total" type="text" id="bestman_total" name="bestman_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Groomsmen Boutonniere <span id="groomsmen_comment" class="comment"></span></td>
+			<td><input type="text" id="groomsmen_qty" name="groomsmen_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="groomsmen_base" id="groomsmen_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="groomsmen_options" value="3.5" checked>Rose
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="groomsmen_options" value="4.99">Calla Lily
+				</div>
+			</td>
+			<td><input type="text" id="groomsmen_price" name="groomsmen_price" size="5"></td>
+			<td><input class="total" type="text" id="groomsmen_total" name="groomsmen_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Other Boutonniere <span id="other_comment" class="comment"></span></td>
+			<td><input type="text" id="other_qty" name="other_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="other_base" id="other_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="other_options" value="3.5" checked>Rose
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="other_options" value="4.99">Calla Lily
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="other_options" value="1.99">Baby Breath
+				</div>
+			</td>
+			<td><input type="text" id="other_price" name="other_price" size="5"></td>
+			<td><input class="total" type="text" id="other_total" name="other_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Pin Corsage Boutonniere <span id="pincorsage_comment" class="comment"></span></td>
+			<td><input type="text" id="pincorsage_qty" name="pincorsage_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="pincorsage_base" id="pincorsage_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="pincorsage_options" value="4.99" checked>Rose
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="pincorsage_options" value="5.99">Calla Lily
+				</div>
+			</td>
+			<td><input type="text" id="pincorsage_price" name="pincorsage_price" size="5"></td>
+			<td><input class="total" type="text" id="pincorsage_total" name="pincorsage_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Wrist Boutonniere <span id="wristcorsage_comment" class="comment"></span></td>
+			<td><input type="text" id="wristcorsage_qty" name="wristcorsage_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="wristcorsage_base" id="wristcorsage_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="wristcorsage_options" value="12.99" checked>Rose
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="wristcorsage_options" value="14.99">Calla Lily
+				</div>
+			</td>
+			<td><input type="text" id="wristcorsage_price" name="wristcorsage_price" size="5"></td>
+			<td><input class="total" type="text" id="wristcorsage_total" name="wristcorsage_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Altar  <span id="altar_comment" class="comment"></span></td>
+			<td><input type="text" id="altar_qty" name="altar_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="altar_base" id="altar_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="altar_options" value="169.99" checked>Single Sided
+				</div>
+				<div class="floweroption">
+					<input type="radio" name="altar_options" value="199.99">Double Sided
+				</div>
+			</td>
+			<td><input type="text" id="altar_price" name="altar_price" size="5"></td>
+			<td><input class="total" type="text" id="altar_total" name="altar_total" size="5"></td>
+		</tr>
+
+
+		<tr>
+			<td>Kissing Ball  <span id="kissing_comment" class="comment"></span></td>
+			<td><input type="text" id="kissing_qty" name="kissing_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="kissing_base" id="kissing_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="kissing_options" value="15" checked>7''
+				</div>
+			</td>
+			<td><input type="text" id="kissing_price" name="kissing_price" size="5"></td>
+			<td><input class="total" type="text" id="kissing_total" name="kissing_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Arch  <span id="arch_comment" class="comment"></span></td>
+			<td><input type="text" id="arch_qty" name="arch_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="arch_base" id="arch_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="arch_options" value="179.99" checked>3pc set
+				</div>
+			</td>
+			<td><input type="text" id="arch_price" name="arch_price" size="5"></td>
+			<td><input class="total" type="text" id="arch_total" name="arch_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Head Table Centerpiece <span id="headtable_comment" class="comment"></span></td>
+			<td><input type="text" id="headtable_qty" name="headtable_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="headtable_base" id="headtable_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="headtable_options" value="69.99" checked>Head Table
+				</div>
+			</td>
+			<td><input type="text" id="headtable_price" name="headtable_price" size="5"></td>
+			<td><input class="total" type="text" id="headtable_total" name="headtable_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Guest Table Centerpiece  <span id="guesttable_comment" class="comment"></span></td>
+			<td><input type="text" id="guesttable_qty" name="guesttable_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="guesttable_base" id="guesttable_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="guesttable_options" value="15.99" checked>Guest Table
+				</div>
+			</td>
+			<td><input type="text" id="guesttable_price" name="guesttable_price" size="5"></td>
+			<td><input class="total" type="text" id="guesttable_total" name="guesttable_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Petal  <span id="petal_comment" class="comment"></span></td>
+			<td><input type="text" id="petal_qty" name="petal_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="petal_base" id="petal_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="petal_options" value="6.99" checked>300pc
+				</div>
+			</td>
+			<td><input type="text" id="petal_price" name="petal_price" size="5"></td>
+			<td><input class="total" type="text" id="petal_total" name="petal_total" size="5"></td>
+		</tr>
+
+		<tr>
+			<td>Garland  <span id="garland_comment" class="comment"></span></td>
+			<td><input type="text" id="garland_qty" name="garland_qty" value="0" size="5"></td>
+			<td>
+				<input type="hidden" name="garland_base" id="garland_base" value="0" />
+
+				<div class="floweroption">
+					<input type="radio" name="garland_options" value="8.99" checked>Each
+				</div>
+			</td>
+			<td><input type="text" id="garland_price" name="garland_price" size="5"></td>
+			<td><input class="total" type="text" id="garland_total" name="garland_total" size="5"></td>
+		</tr>
+		<tr>
+			<td>Total</td>
+			<td></td>
+			<td>
+
+			</td>
+			<td></td>
+			<td><input type="text" id="grandTotal" name="grandTotal" size="5"></td>
+		</tr>
+	</tbody>
+</table>
+
+<!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title" id="myModalLabel">Create Follow up</h4>
+			</div>
+			<div class="modal-body">
+				<div id="listReq">
+					<table class="table table-bordered table-hover" id="reqTable">
+						<thead>
+							<tr>
+								<td>ID </td>
+								<td>Name</td>
+								<td>Color</td>
+								<td>Wedding Date</td>
+								<td>Comment</td>
+								<td>Email</td>
+								<td>Phone</td>
+							</tr>
+						</thead>
+						<tbody>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<div class="modal-footer">
+				<button type="button" id="closeButton" class="btn btn-default" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+$(document).ready(function(){
+	var recal = function(id){
+		var unit=parseFloat($("#"+id+"_base").val());
+		$("input[name='"+id+"_options[]']:checked").each(function ()
+		{
+			unit += parseFloat($(this).val());
+		});
+		$("input[name='"+id+"_options_color']:checked").each(function ()
+		{
+			unit += parseFloat($(this).val());
+		});
+		$("#"+id+"_price").val(unit.toFixed(2) );
+		$("#"+id+"_total").val((unit * parseInt($("#"+id+"_qty").val())).toFixed(2));
+		calGrandTotal();
+
+	};
+
+
+	var recalOther = function(id){
+		var unit=parseFloat($("#"+id+"_base").val());
+		
+		$("input[name='"+id+"_options']:checked").each(function ()
+		{
+			unit += parseFloat($(this).val());
+		});
+		$("#"+id+"_price").val(unit.toFixed(2) );
+		$("#"+id+"_total").val((unit * parseInt($("#"+id+"_qty").val())).toFixed(2));
+		calGrandTotal();
+
+	};
+
+	var calGrandTotal = function(){
+
+		var grandTotal = 0.0;
+		$(".total").each(function ()
+		{
+			if(!isNaN($(this).val().trim()) && $(this).val().trim() !=''){
+				grandTotal += parseFloat($(this).val().trim());
+			}
+		});
+		$("#grandTotal").val(grandTotal.toFixed(2));
+	}
+
+	$("#round_qty").change(function(){
+		recal("round");
+	});
+	$("input[name='round_options[]']").change(function(){
+		recal("round");
+	});
+	$("input[name='round_options_color']").change(function(){
+		recal("round");
+	});
+
+	$("#moh_qty").change(function(){
+		recal("moh");
+	});
+	$("input[name='moh_options[]']").change(function(){
+		recal("moh");
+	});
+	$("input[name='moh_options_color']").change(function(){
+		recal("moh");
+	});
+
+	$("#bb_qty").change(function(){
+		recal("bb");
+	});
+	$("input[name='bb_options[]']").change(function(){
+		recal("bb");
+	});
+	$("input[name='bb_options_color']").change(function(){
+		recal("bb");
+	});
+
+	$("#fg_qty").change(function(){
+		recal("fg");
+	});
+	$("input[name='fg_options[]']").change(function(){
+		recal("fg");
+	});
+	$("input[name='fg_options_color']").change(function(){
+		recal("fg");
+	});
+
+	$("#toss_qty").change(function(){
+		recal("toss");
+	});
+	$("input[name='toss_options[]']").change(function(){
+		recal("toss");
+	});
+	$("input[name='toss_options_color']").change(function(){
+		recal("toss");
+	});
+
+
+	$("#groom_qty").change(function(){
+		recalOther("groom");
+	});
+	$("input[name='groom_options']").change(function(){
+		recalOther("groom");
+	});
+
+	$("#bestman_qty").change(function(){
+		recalOther("bestman");
+	});
+	$("input[name='bestman_options']").change(function(){
+		recalOther("bestman");
+	});
+
+	$("#groomsmen_qty").change(function(){
+		recalOther("groomsmen");
+	});
+	$("input[name='groomsmen_options']").change(function(){
+		recalOther("groomsmen");
+	});
+
+	$("#other_qty").change(function(){
+		recalOther("other");
+	});
+	$("input[name='other_options']").change(function(){
+		recalOther("other");
+	});
+
+	$("#pincorsage_qty").change(function(){
+		recalOther("pincorsage");
+	});
+	$("input[name='pincorsage_options']").change(function(){
+		recalOther("pincorsage");
+	});
+
+	$("#wristcorsage_qty").change(function(){
+		recalOther("wristcorsage");
+	});
+	$("input[name='wristcorsage_options']").change(function(){
+		recalOther("wristcorsage");
+	});
+
+	$("#altar_qty").change(function(){
+		recalOther("altar");
+	});
+	$("input[name='altar_options']").change(function(){
+		recalOther("altar");
+	});
+
+	$("#kissing_qty").change(function(){
+		recalOther("kissing");
+	});
+	$("input[name='kissing_options']").change(function(){
+		recalOther("kissing");
+	});
+
+	$("#arch_qty").change(function(){
+		recalOther("arch");
+	});
+	$("input[name='arch_options']").change(function(){
+		recalOther("arch");
+	});
+
+	$("#headtable_qty").change(function(){
+		recalOther("headtable");
+	});
+	$("input[name='headtable_options']").change(function(){
+		recalOther("headtable");
+	});
+
+	$("#guesttable_qty").change(function(){
+		recalOther("guesttable");
+	});
+	$("input[name='guesttable_options']").change(function(){
+		recalOther("guesttable");
+	});
+
+	$("#petal_qty").change(function(){
+		recalOther("petal");
+	});
+	$("input[name='petal_options']").change(function(){
+		recalOther("petal");
+	});
+
+	$("#garland_qty").change(function(){
+		recalOther("garland");
+	});
+	$("input[name='garland_options']").change(function(){
+		recalOther("garland");
+	});
+
+	$(".total").change(function(){
+		calGrandTotal();
+	});
+
+
+	$("#reqBtn").click(function(e){
+		e.preventDefault();
+
+		$.ajax({
+			type : 'get',
+			url : '{{ route('price.ajax') }}', 
+			success : function(r)
+			{
+				$("#myModal").modal('show');
+				$("#reqTable tbody").html('');
+				content="";
+				$.each(r, function(idx,val){
+
+					content += '<tr style="cursor:pointer" class="reqRow">';
+
+					content += "<td>"+val.id+"</td>";
+					content += "<td>"+val.name+"</td>";
+					content += "<td>"+val.color+"</td>";
+					content += "<td>"+val.date+"</td>";
+					content += "<td>"+val.comment+"</td>";
+					content += "<td>"+val.email+"</td>";
+					content += "<td>"+val.phone+"</td>";
+					
+					content += '</tr>';
+				});
+				$("#reqTable tbody").html(content);
+			}
+		});
+	});
+
+	$(document).on('click','.reqRow',function(e){
+		e.preventDefault();
+		var id = $(this).children().first().html();
+		$.ajax({
+			type : 'get',
+			url : '{{ route('price.getRequest.ajax') }}', 
+			data : {id:id},
+			success : function(r)
+			{
+				$("#reqInfo").html('');
+				var reqInfo = "<div class='requestInfo'>";
+				reqInfo += "Name : "+ r.name+"<br/>";
+				reqInfo += "Color : "+ r.color+"<br/>";
+				reqInfo += "Wedding Date : "+ r.date+"<br/>";
+				reqInfo += "Email : "+ r.email+"<br/>";
+				reqInfo += "Phone : "+ r.phone+"<br/>";
+				reqInfo += "Comment : "+ r.comment+"<br/>";
+				
+				$("#reqInfo").html(reqInfo);
+				$("#myModal").modal('hide');
+				console.dir(r);
+
+
+				if(r.bridalbouquet=='Cascade'){
+					$("#cascade_qty").val(1);
+					$( "#cascade_qty" ).trigger( "change" );
+					if(r.bridalbouquet_comment!=''){
+						$("#cascade_comment").html("<br/>"+r.bridalbouquet_comment);
+					}
+				}else if(r.bridalbouquet=='Round'){
+					$("#round_qty").val(1);
+					$( "#round_qty" ).trigger( "change" );
+					if(r.bridalbouquet_comment!=''){
+						$("#round_comment").html("<br/>"+r.bridalbouquet_comment);
+					}
+				}
+
+				if(r.maidofhonor!=''){
+					$("#moh_qty").val(r.maidofhonor);
+					$( "#moh_qty" ).trigger( "change" );
+					if(r.maidofhonor_comment!=''){
+						$("#moh_comment").html("<br/>"+r.maidofhonor_comment);
+					}
+				}
+
+				if(r.bridesmaid!=''){
+					$("#bb_qty").val(r.bridesmaid);
+					$( "#bb_qty" ).trigger( "change" );
+					if(r.bridesmaid_comment!=''){
+						$("#bb_comment").html("<br/>"+r.bridesmaid_comment);
+					}
+				}
+
+				if(r.flowergirlbouquet!=''){
+					$("#fg_qty").val(r.flowergirlbouquet);
+					$( "#fg_qty" ).trigger( "change" );
+					if(r.flowergirlbouquet_comment!=''){
+						$("#fg_comment").html("<br/>"+r.flowergirlbouquet_comment);
+					}
+				}
+				if(r.toss!=''){
+					$("#toss_qty").val(r.toss);
+					$( "#toss_qty" ).trigger( "change" );
+					if(r.toss_comment!=''){
+						$("#toss_comment").html("<br/>"+r.toss_comment);
+					}
+				}
+				if(r.flowergirlbasket!=''){
+					$("#basket_qty").val(r.flowergirlbasket);
+					$( "#basket_qty" ).trigger( "change" );
+					if(r.flowergirlbasket_comment!=''){
+						$("#basket_comment").html("<br/>"+r.flowergirlbasket_comment);
+					}
+				}
+				if(r.groomsboutonniere!=''){
+					$("#groom_qty").val(r.groomsboutonniere);
+					$( "#groom_qty" ).trigger( "change" );
+					if(r.groomsboutonniere_comment!=''){
+						$("#groom_comment").html("<br/>"+r.groomsboutonniere_comment);
+					}
+				}
+				if(r.bestmanboutonniere!=''){
+					$("#bestman_qty").val(r.bestmanboutonniere);
+					$( "#bestman_qty" ).trigger( "change" );
+					if(r.bestmanboutonniere_comment!=''){
+						$("#bestman_comment").html("<br/>"+r.bestmanboutonniere_comment);
+					}
+				}
+				if(r.groomsmennboutonniere!=''){
+					$("#groomsmen_qty").val(r.groomsmennboutonniere);
+					$( "#groomsmen_qty" ).trigger( "change" );
+					if(r.groomsmennboutonniere_comment!=''){
+						$("#groomsmen_comment").html("<br/>"+r.groomsmennboutonniere_comment);
+					}
+				}
+				if(r.otherboutonniere!=''){
+					$("#other_qty").val(r.otherboutonniere);
+					$( "#other_qty" ).trigger( "change" );
+					if(r.otherboutonniere_comment!=''){
+						$("#other_comment").html("<br/>"+r.otherboutonniere_comment);
+					}
+				}
+				if(r.pincorsage!=''){
+					$("#pincorsage_qty").val(r.pincorsage);
+					$( "#pincorsage_qty" ).trigger( "change" );
+					if(r.pincorsage_comment!=''){
+						$("#pincorsage_comment").html("<br/>"+r.pincorsage_comment);
+					}
+				}
+				if(r.wristcorsage!=''){
+					$("#wristcorsage_qty").val(r.wristcorsage);
+					$( "#wristcorsage_qty" ).trigger( "change" );
+					if(r.wristcorsage_comment!=''){
+						$("#wristcorsage_comment").html("<br/>"+r.wristcorsage_comment);
+					}
+				}
+				if(r.altar!=''){
+					$("#altar_qty").val(r.altar);
+					$( "#altar_qty" ).trigger( "change" );
+					if(r.altar_comment!=''){
+						$("#altar_comment").html("<br/>"+r.altar_comment);
+					}
+				}
+				if(r.kissingball!=''){
+					$("#kissing_qty").val(r.kissingball);
+					$( "#kissing_qty" ).trigger( "change" );
+					if(r.kissingball_comment!=''){
+						$("#kissing_comment").html("<br/>"+r.kissingball_comment);
+					}
+				}
+				if(r.arch!=''){
+					$("#arch_qty").val(r.arch);
+					$( "#arch_qty" ).trigger( "change" );
+					if(r.arch_comment!=''){
+						$("#arch_comment").html("<br/>"+r.arch_comment);
+					}
+				}
+				if(r.headtable!=''){
+					$("#headtable_qty").val(r.headtable);
+					$( "#headtable_qty" ).trigger( "change" );
+					if(r.headtable_comment!=''){
+						$("#headtable_comment").html("<br/>"+r.headtable_comment);
+					}
+				}
+				if(r.centerpiece!=''){
+					$("#guesttable_qty").val(r.centerpiece);
+					$( "#guesttable_qty" ).trigger( "change" );
+					if(r.centerpiece_comment!=''){
+						$("#guesttable_comment").html("<br/>"+r.centerpiece_comment);
+					}
+				}
+				if(r.petals!=''){
+					$("#petal_qty").val(r.petals);
+					$( "#petal_qty" ).trigger( "change" );
+					if(r.petals_comment!=''){
+						$("#petal_comment").html("<br/>"+r.petals_comment);
+					}
+				}
+				if(r.garland!=''){
+					$("#garland_qty").val(r.garland);
+					$( "#garland_qty" ).trigger( "change" );
+					if(r.garland_comment!=''){
+						$("#garland_comment").html("<br/>"+r.garland_comment);
+					}
+				}
+				
+			},
+			error: function(e){
+				alert('oooops');
+			}
+		});
+
+	});
+});
+</script>
+{% endblock %}
