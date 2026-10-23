@@ -13,6 +13,7 @@ for (const id of args.ids) {
 2. The old app at /home/johnny/code/office is READ-ONLY. Never modify it. Work only inside /home/johnny/code/office_new.
 3. Read previous tasks' entries in plan/STATUS.md and reuse what they built. Do not rewrite shared files from earlier tasks unless your task says so.
 4. Never call anything that buys postage, uploads tracking, writes to a marketplace, or sends email.
+4b. Time-box: you have about 90 minutes. If one test or edge case (e.g. multipart uploads, exotic payloads) stays stuck after 3 attempts, mark that single test it.skip with a NOTES.md line, record it as 'not verified' in STATUS.md, and move on. Commit your work before you run out of time, even if partial.
 5. Run the verification steps in the task file. Fix failures before finishing. Do not claim something passed unless you ran it and saw it pass.
 6. Append your "## ${id} — done|partial|blocked" entry to plan/STATUS.md (files created, what you verified with the actual command output summary, what is not verified, open questions).
 7. Commit: git add -A && git commit -m "${id}: <short summary>".
