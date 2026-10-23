@@ -25,6 +25,8 @@ import { registerFbaRoutes } from './modules/fba/routes.js';
 import { registerOpoloRoutes } from './modules/opolo/routes.js';
 import { registerWindyRoutes } from './modules/windy/routes.js';
 import { registerFourRoutes } from './modules/four/routes.js';
+import { registerItemRoutes } from './modules/item/routes.js';
+import { registerItemimageRoutes } from './modules/itemimage/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
@@ -63,6 +65,8 @@ registerFbaRoutes(app);
 registerOpoloRoutes(app);
 registerWindyRoutes(app);
 registerFourRoutes(app);
+registerItemRoutes(app);
+registerItemimageRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

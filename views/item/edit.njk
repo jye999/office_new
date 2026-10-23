@@ -1,0 +1,38 @@
+{% extends "scaffold-interface/layouts/app.njk" %}
+
+{% block content %}
+
+<section class="content">
+    <h1>
+        Edit item
+    </h1>
+    <form method = 'get' action = '{{ url("item") }}'>
+        <button class = 'btn btn-danger'>item Index</button>
+    </form>
+    <br>
+    <form method = 'POST' action = '{{ url("item") }}/{{ item.id }}/update'>
+        <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}'>
+        <div class="form-group">
+            <label for="SKU">SKU</label>
+            <input id="SKU" name = "SKU" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <input id="Name" name = "Name" type="text" class="form-control" value="{{ item.Name | safe }}">
+        </div>
+        <div class="form-group">
+            <label for="Description">Description</label>
+            <input id="Description" name = "Description" type="text" class="form-control" value="{{ item.Description | safe }}">
+        </div>
+        <div class="form-group">
+            <label for="Cost">Cost</label>
+            <input id="Cost" name = "Cost" type="text" class="form-control" value="{{ item.Cost | safe }}">
+        </div>
+        <div class="form-group">
+            <label for="Qty">Qty</label>
+            <input id="Qty" name = "Qty" type="text" class="form-control" value="{{ item.Qty | safe }}">
+        </div>
+        <button class = 'btn btn-primary' type ='submit'>Update</button>
+    </form>
+</section>
+{% endblock %}

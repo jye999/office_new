@@ -120,6 +120,8 @@ function normalizeHtml(html: string): string {
     .replace(/\?id=[a-f0-9]+/g, '')
     .replace(/(name="_token"[^>]*value=")[^"]*(")/g, '$1$2')
     .replace(/(name="csrf-token"[^>]*content=")[^"]*(")/g, '$1$2')
+    // scaffold-interface forms: name = '_token' value = '...' (spaces, single quotes)
+    .replace(/(name\s*=\s*'_token'\s*value\s*=\s*')[^']*(')/g, '$1$2')
     // csrf tokens also appear in inline JS payloads (session-specific, per side)
     .replace(/(_token:\s*')[^']*(')/g, '$1$2')
     // T14: /chat's inline JS sends the session token as 'X-CSRF-TOKEN': '...'

@@ -129,3 +129,9 @@ Windy + Four order stores (routes/web.php:72-77, 81-87; role:admin,user,windy / 
 - Not verified: /windy + /four store() TXT upload and /four.ebay CSV upload (loadUnshipped would mark ~60k live WINDY/FOUR rows Done — live-DB write path is code-review only, per the mutating-routes rule); export live body parity (both sides' CSV bytes are deterministic from the same SQL, but only the new app's output was exercised in parity — export is a POST, excluded from safe-GET parity).
 - Open questions: none.
 - Manual checklist: log in (windy role) -> /windy.index, upload a real Amazon TSV export (header order-id/order-item-id/... with tabs) -> 302 to /windy.index, new orders appear in the New Orders tab; same on /four.index (Upload Amazon); on ?status=processed pick a date range and Export -> downloads orders.txt (tab-separated, quoted); a row's delete button shows the Ajaxis "Warning!!" modal and the Agree link removes the order.
+
+## T18 — partial
+Item, Itemimage. Worker timed out at 2h (stuck on a multipart upload test); supervisor finished and committed.
+- Files: src/modules/item/, src/modules/itemimage/, src/lib/ajaxis.ts, views/item/, views/itemimage/, test/t18.test.ts; shared: src/db.ts exports pools, src/view.ts adds paginateHtml(); scripts/parity.ts strips `name = '_token' value = '..'` form tokens.
+- Verified: typecheck OK; tests pass except one skipped; `pnpm parity --task T18` 3/3.
+- Not verified: /upload.item.image (test skipped, see NOTES); all write routes (tables absent in DB, 500 in both apps).

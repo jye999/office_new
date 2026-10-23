@@ -1,0 +1,30 @@
+{% extends "scaffold-interface/layouts/app.njk" %}
+
+{% block content %}
+
+<section class="content">
+    <h1>
+        Edit itemimage
+    </h1>
+    <form method = 'get' action = '{{ url("itemimage") }}'>
+        <button class = 'btn btn-danger'>itemimage Index</button>
+    </form>
+    <br>
+    <form method = 'POST' action = '{{ url("itemimage") }}/{{ itemimage.id }}/update'>
+        <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}'>
+        <div class="form-group">
+            <label for="path">path</label>
+            <input id="path" name = "path" type="text" class="form-control" value="{{ itemimage.path | safe }}">
+        </div>
+        <div class="form-group">
+            <label for="isPrimary">isPrimary</label>
+            <input id="isPrimary" name = "isPrimary" type="text" class="form-control" value="{{ itemimage.isPrimary | safe }}">
+        </div>
+        <div class="form-group">
+            <label for="itemId">itemId</label>
+            <input id="itemId" name = "itemId" type="text" class="form-control" value="{{ itemimage.itemId | safe }}">
+        </div>
+        <button class = 'btn btn-primary' type ='submit'>Create</button>
+    </form>
+</section>
+{% endblock %}

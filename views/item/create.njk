@@ -1,0 +1,89 @@
+{% extends "scaffold-interface/layouts/app.njk" %}
+
+{% block content %}
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+<script src="{{ asset('assets/js/dropzone.min.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('assets/css/dropzone.min.css') }}">
+<section class="content">
+    <h1>
+        Create item
+    </h1>
+
+    <form method = 'get' action = '{{ url("item") }}'>
+        <button class = 'btn btn-danger'>item Index</button>
+    </form>
+    <br>
+    {{ Form.open({'url': 'item', 'method': 'POST', 'files': true, 'id': 'addItemForm'}) | safe }}
+
+        <input type = 'hidden' name = '_token' value = '{{ csrf_token() }}'>
+        <div class="form-group">
+            <label for="SKU">SKU</label>
+            <input id="SKU" name = "SKU" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="Name">Name</label>
+            <input id="Name" name = "Name" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="Description">Description</label>
+            <input id="Description" name = "Description" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="Cost">Cost</label>
+            <input id="Cost" name = "Cost" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="Qty">Qty</label>
+            <input id="Qty" name = "Qty" type="text" class="form-control">
+        </div>
+        <div class="form-group">
+        <div class="dropzone" id="dropzoneFileUpload">
+                    </div>
+            <div class="input-group" id="divImg">
+
+            </div><!-- /input-group -->
+        </div>
+        <button class = 'btn btn-primary' type ='submit'>Create</button>
+
+    {{ Form.close() | safe }}
+</section>
+
+
+<script>
+    $(document).ready(function(){
+
+    });
+    var baseUrl = "{{ url('/') }}";
+    var token = "{{ csrf_token() }}";
+    Dropzone.autoDiscover = false;
+      var myDropzone = new Dropzone("div#dropzoneFileUpload", {
+          url: baseUrl+"/upload.item.image",
+          params: {
+            _token: token
+          }
+      });
+      Dropzone.options.myAwesomeDropzone = {
+        paramName: "file", // The name that will be used to transfer the file
+        maxFilesize: 20, // MB
+        addRemoveLinks: true,
+        accept: function(file, done) {
+        }
+      };
+
+      myDropzone.on("error", function(file,errorMessage) {
+          alert(file.fileName +'\n'+errorMessage);
+      });
+
+      myDropzone.on("success", function(file,msg) {
+          console.dir(file);
+          console.dir(msg);
+
+          $("<input type='hidden' />")
+          .attr("name", "images[]")
+          .attr("value", msg)
+          .appendTo("#addItemForm");
+      });
+</script>
+{% endblock %}

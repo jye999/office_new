@@ -1,0 +1,61 @@
+{% extends "scaffold-interface/layouts/app.njk" %}
+
+{% block content %}
+
+<section class="content">
+    <h1>
+        Show item
+    </h1>
+    <br>
+    <form method = 'get' action = '{{ url("item") }}'>
+        <button class = 'btn btn-primary'>item Index</button>
+    </form>
+    <br>
+    <table class = 'table table-bordered'>
+        <thead>
+            <th>Key</th>
+            <th>Value</th>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <b><i>SKU : </i></b>
+                </td>
+                <td>{{ item.SKU | safe }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <b><i>Name : </i></b>
+                </td>
+                <td>{{ item.Name | safe }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <b><i>Description : </i></b>
+                </td>
+                <td>{{ item.Description | safe }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <b><i>Cost : </i></b>
+                </td>
+                <td>{{ item.Cost | safe }}</td>
+            </tr>
+            <tr>
+                <td>
+                    <b><i>Qty : </i></b>
+                </td>
+                <td>{{ item.Qty | safe }}</td>
+            </tr>
+            <tr>
+            <td><b><i>Images : </i></b></td>
+                <td>
+                {% for ii in item.images %}
+                    <img src='{{ url("/") }}/images/catalog/{{ ii.path }}'>
+                {% endfor %}
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</section>
+{% endblock %}

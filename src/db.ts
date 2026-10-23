@@ -19,8 +19,8 @@ const mysqlOptions = {
   timezone: 'local' as const,
 };
 
-const officePool = mysql.createPool({ ...mysqlOptions, database: config.DB_DATABASE });
-const hwcPool = mysql.createPool({ ...mysqlOptions, database: config.DB_HWC_DATABASE });
+export const officePool = mysql.createPool({ ...mysqlOptions, database: config.DB_DATABASE });
+export const hwcPool = mysql.createPool({ ...mysqlOptions, database: config.DB_HWC_DATABASE });
 
 export type OfficeDatabase = import('./db/office.js').DB;
 export type HwcDatabase = import('./db/hwc.js').DB;

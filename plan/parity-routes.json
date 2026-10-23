@@ -37,7 +37,11 @@
   "/windy.index",
   "/four.index"
  ],
- "T18": [],
+ "T18": [
+  "/itemimage/create",
+  "/item/1/deleteMsg",
+  "/itemimage/1/deleteMsg"
+ ],
  "T19": [
   "/FollowUps.show",
   "/FollowUps.findOrder",

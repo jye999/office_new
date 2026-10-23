@@ -741,6 +741,39 @@ export async function renderToString(req: FastifyRequest, name: string, data: Re
   return njkEnv.render(rel, ctx);
 }
 
+// Laravel 5.4 `LengthAwarePaginator::render()` — the framework's default
+// pagination Blade view (vendor Illuminate/Pagination/resources/views/
+// default.blade.php). `base` is the absolute request URL without the `page`
+// param. Empty string when there is at most one page (hasPages() = false).
+export function paginateHtml(total: number, perPage: number, currentPage: number, base: string): string {
+  const lastPage = Math.max(1, Math.ceil(total / perPage));
+  if (lastPage <= 1) return '';
+  const page = Math.min(Math.max(1, currentPage), lastPage);
+  const u = (n: number) => `${base}${base.includes('?') ? '&' : '?'}page=${n}`;
+  // AbstractPaginator::getUrlRanges: [1] + window(1..5 around page) + [last],
+  // merged into ranges with '...' between non-adjacent ranges.
+  const raw: [number, number][] = [
+    [1, 1],
+    [Math.max(1, page - 2), Math.min(lastPage, page + 2)],
+    [lastPage, lastPage],
+  ];
+  const ranges: { start: number; end: number }[] = [];
+  for (const [lo, hi] of raw) {
+    const last = ranges[ranges.length - 1];
+    if (last && lo <= last.end + 1) last.end = Math.max(last.end, hi);
+    else ranges.push({ start: lo, end: hi });
+  }
+  let lis = page === 1 ? ' <li class="disabled"><span>&laquo;</span></li>' : ` <li><a href="${u(page - 1)}" rel="prev">&laquo;</a></li>`;
+  ranges.forEach((r, i) => {
+    for (let n = r.start; n <= r.end; n++) {
+      lis += n === page ? ` <li class="active"><span>${n}</span></li>` : ` <li><a href="${u(n)}">${n}</a></li>`;
+    }
+    if (i < ranges.length - 1) lis += ' <li class="disabled"><span>...</span></li>';
+  });
+  lis += page < lastPage ? ` <li><a href="${u(page + 1)}" rel="next">&raquo;</a></li>` : ' <li class="disabled"><span>&raquo;</span></li>';
+  return `<ul class="pagination">${lis}</ul>`;
+}
+
 // Laravel: calling a controller method that does not exist -> 500, rendered
 // through the app's own error view (old app ships resources/views/error/500.blade.php).
 export async function sendServer500(req: FastifyRequest, reply: FastifyReply): Promise<void> {
