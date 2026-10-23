@@ -1,0 +1,553 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.finished{
+    text-decoration: line-through;
+}
+</style>
+<button class="btn btn-primary btn-lg" id="createBtn">
+  Create New
+</button>
+<br/><br/>
+<div style="font-size:13pt">
+Filter by assign to: 
+    <select id="assignToFilter" name="assignToFilter" class="select">
+        <option value=""></option>
+        <option value="Boutonniere and Corsage">Boutonniere and Corsage</option>
+        <!--
+        <option value="boutonniere">boutonniere</option>
+        <option value="corsage">corsage</option>
+        -->
+        <option value="bouquet">bouquet</option>
+        <option value="packing">packing</option>
+        <option value="angela">angela</option>
+        <option value="cathy">cathy</option>
+        <option value="sophia">sophia</option>
+        <option value="other">other</option>
+    </select>
+    </div>
+    <table class="table table-bordered table-condensed" id="followups" >
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Order #</th>
+                <th>Date</th>
+                <th>User</th>
+                <th>Assign To</th>
+                <th>Notes</th>
+                <th>Pictures</th>
+                <th>Done</th>
+                <th>Finish</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for followup in followups %}
+            <tr class="{{ 'finished' if followup.done == 2 else '' }}">
+                <td><a href="#" class="followupId" >{{ followup.id }}</a>
+                <br/>
+                <button class="btn btn-xs btnAddTracking" value="{{ followup.id }}"><span class="glyphicon glyphicon-check"></span></button>
+                </td>
+                <td><a href="#" class="followupOrder">{{ followup.orderId }}</a><br/>
+                <br/><span class="trackingNumber">{{ followup.tracking }}</span>
+                </td>
+                <td>{{ followup.followup_date }}
+                </td>
+                <td>{{ followup.cs_user }}
+                </td>
+                <td>{{ followup.assignTo }}
+		        </td>
+                <td style="padding:35px">{{ followup.notes }}
+		        </td>
+                <td>
+                {{ followup.imagesHtml }}		        </td>
+                <td>{% if followup.done == 2 %}
+                        <input type="checkbox" class="done" name="done"  value="{{ followup.id }}" checked/>
+                    {% else %}
+                        <input type="checkbox" class="done" name="done"  value="{{ followup.id }}"/>
+                    {% endif %}
+                </td>
+                <td>{% if followup.done == 1 %}
+                        <input type="checkbox" class="finalDone" name="finalDone"  value="{{ followup.id }}" checked/>
+                    {% else %}
+                        <input type="checkbox" class="finalDone" name="finalDone"  value="{{ followup.id }}"/>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+
+    <!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create Follow up</h4>
+      </div>
+      <div class="modal-body">
+      <form enctype="multipart/form-data" id="upload_form" role="form" method="POST" class="form-horizontal" action="" >
+<fieldset>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="orderId">Order ID</label>
+  <div class="controls">
+    <input id="orderId" name="orderId" type="text" placeholder="" class="input-xlarge">
+    
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="followup_date">Date</label>
+  <div class="controls">
+    <input id="followup_date" name="followup_date" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd">
+    
+  </div>
+</div>
+
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="cs_user">CS User</label>
+  <div class="controls">
+    <select id="cs_user" name="cs_user" class="form-control">
+        <option></option>
+        <option value="Amazon">Amazon</option>
+        <option value="eBay">eBay</option>
+        <option value="Etsy">Etsy Retail </option>
+        <option value="EtsyCorsage">Etsy Corsage & Boutonniere</option>
+        <option value="EtsyFloralSupply">Etsy Floral Supply</option>
+        <option value="Walmart">Walmart</option>
+        <option value="Shopify">Shopify</option>
+        <option value="Other">Other</option>
+    </select>
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="assignTo">Assign To</label>
+  <div class="controls">
+    <select id="assignTo" name="assignTo" class="select">
+        <option value=""></option>
+        <option value="Boutonniere and Corsage">Boutonniere and Corsage</option>
+        <!--
+        <option value="boutonniere">boutonniere</option>
+        <option value="corsage">corsage</option>
+        -->
+        <option value="bouquet">bouquet</option>
+        <option value="packing">packing</option>
+        <option value="angela">angela</option>
+        <option value="cathy">cathy</option>
+        <option value="sophia">sophia</option>
+        <option value="other">other</option>
+    </select>
+    
+  </div>
+</div>
+<!-- Textarea -->
+<div class="control-group">
+  <label class="control-label" for="notes">Notes</label>
+  <div class="controls">                     
+    <textarea id="notes" name="notes" style="width:300px;height:200px"></textarea>
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="notes">Notes</label>
+  <div class="controls" id="imageUploadControl">  
+  
+{{ form.file('images[]', {multiple: true}) | safe }}
+  </div>
+  <div class="controls" id="imagesDiv"></div>
+</div>
+
+<div class="control-group">
+  <label class="control-label" for="finalDone">Done</label>
+  <div class="controls">  
+       <input id="finalDone" type="checkbox" name="finalDone"  />
+  </div>
+</div>
+
+<div class="control-group">
+  <label class="control-label" for="done">Finish</label>
+  <div class="controls">  
+       <input id="done" type="checkbox" name="done"  />
+  </div>
+</div>
+
+
+</fieldset>
+</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeButton" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="saveNewButton" class="btn btn-primary">Create</button>
+        <button type="button" id="updateButton" class="btn btn-info">Update</button>
+        <button type="button" id="deleteButton" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+    <script>
+
+$(document).ready(function() {
+	$("#followup").addClass("active");
+$("#myModal").hide();
+var followUpId=0;
+	
+var oTable = $('#followups').DataTable({
+"bAutoWidth" : false, 
+"aoColumns": [
+{"sWidth": "50px"},
+{"sWidth": "150px"},
+{"sWidth": "100px"},
+{"sWidth": "50px"},
+{"sWidth": "50px"},
+{"sWidth": "250px"},
+{"sWidth": "250px"},
+{"sWidth": "50px"},
+{"sWidth": "50px"}
+],
+        "aaSorting": [[0, "desc"]],
+        "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+        "bPaginate": false,
+        "oLanguage": {
+        "sLengthMenu": "_MENU_ records per page"
+        },
+        "fnRowCallback": function(nRow, aData) {
+
+        }
+});
+
+    $('#followup_date').datepicker("option", "dateFormat", 'yy-mm-dd' );    
+    $("#saveNewButton").click(function(){
+        var done = 0;
+        if($("#done").attr('checked')){
+            done = 2;
+        }
+            $.ajax({
+                type : 'post',
+                dataType:'json',
+                url : '{{ url('FollowUps.store')}}', // in here you should put your query 
+                data:new FormData($("#upload_form")[0]),
+                processData:false,//need this to process form
+                contentType: false,
+                // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+                success : function(r)
+                {
+                    location.reload();
+                    console.dir(r);
+                },
+                error: function(e){
+                    console.dir(e);
+                }
+            });
+    });
+
+    $(".done").click(function(){
+        var done = 0;
+        if($(this).is(':checked')){
+            done = 2;
+        }
+        target_row = $(this).closest("tr").get(0); // this line did the trick
+        
+        $.ajax({
+            type : 'put',
+                    url : '{{ url('FollowUps.update')}}', // in here you should put your query c
+                    data :  'id=' + $(this).val() + "&done="+done, // here you pass your id via ajax .
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success : function(r)
+                    {
+                        if(done == 2){
+                            $(target_row).addClass('finished');
+                        }
+                        else{
+                            $(target_row).removeClass('finished');
+                        }
+                        console.dir(r);
+                    }
+            });
+    });
+
+    $(".finalDone").click(function(){
+        var done = 0;
+            target_row = $(this).closest("tr").get(0); // this line did the trick
+        if($(this).is(':checked')){
+            done = 1;
+            
+            $.ajax({
+                type : 'post',
+                        url : '{{ url('FollowUps.update')}}', // in here you should put your query c
+                        data :  'id=' + $(this).val() + "&done="+done, // here you pass your id via ajax .
+                        // in php you should use $_POST['post_id'] to get this value 
+                        success : function(r)
+                        {
+                            if(done == 1){
+                                $(target_row).remove();
+                            }
+                            else{
+                                $(target_row).removeClass('finished');
+                            }
+                            console.dir(r);
+                        }
+                });
+        }
+    });
+    $("#createBtn").click(function(){
+        followUpId='';
+       $("#myModal").modal('show');
+       
+        $("#saveNewButton").show();
+        $("#updateButton").hide();
+        $("#deleteButton").hide();
+        $("#orderId").val('');
+        $("#cs_user").val('');
+        $("#imageUploadControl").show('');
+         $( "input:file" ).replaceWith($( "input:file" ).val('').clone(true));
+        $("#imagesDiv").html('');
+        $("#followup_date").val('');
+        $("#notes").val('');
+        $("#assignTo").val('');
+        $('#done').closest('span').removeClass("checked");
+        $('#done').removeAttr("checked");
+    });
+    
+    $("#closeButton").click(function(){
+        followUpId='';
+        $("#orderId").val('');
+        $("#cs_user").val('');
+        $("#followup_date").val('');
+        $("#notes").val('');
+        $("#assignTo").val('');
+        $("#imagesDiv").html('');
+        
+        $('#done').closest('span').removeClass("checked");
+        $('#done').removeAttr("checked");
+    });
+
+    $(".followupOrder").click(function(e){
+        e.preventDefault();
+        var oId = $(this).text().trim();
+        console.log(oId);
+        if(oId!=''){
+
+            $.ajax({
+            type : 'post',
+                    url : '{{ url('FollowUps.findOrder')}}', // in here you should put your query c
+                    data :  'orderId=' + oId, // here you pass your id via ajax .
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success : function(r)
+                    {
+                        console.dir(r);
+                        var info ='';
+                        if(r==''){
+                            info +=" can't find this order";
+                        }
+                        else{
+                            info +=" <strong>order :"+r.orderId+"</strong><br>";
+                            info +=" customer :"+r.buyer+"<br>";
+                            info +=" email :"+r.email+"<br>";
+                            info +=" recipient :"+r.recipientName+"<br>";
+
+                            if(r.tracking!=null && r.tracking.length>0){
+                                for(var i=0;i<r.tracking.length;i++){
+                                    var uspsLookup='https://tools.usps.com/go/TrackConfirmAction.action?tRef=fullpage&tLc=1&text28777=&tLabels='+r.tracking[i].tracking;
+                                    info +=" tracking # :<a href='"+uspsLookup+"' target='_blank'>"+r.tracking[i].tracking+"</a><br>";
+
+                                }
+                            }
+                            info +=" tracking status :"+(r.trackingStatus==null?"":r.trackingStatus)+"<br>";
+                            info +=" Items <br>";
+                            if(r.detail!=null && r.detail.length>0){
+                                info +=" <table class='table'><thead><tr><th>qty</th><th>product name</th><th></th></tr></thead>";
+                                info +="<tbody>";
+                                for(var i=0;i<r.detail.length;i++){
+                                    info +="<tr>";
+                                    info +=" <td> "+r.detail[i].qty+"</td>";
+                                    info +=" <td>"+r.detail[i].name+"</td>";
+                                    info +="<td><img src='"+r.detail[i].image+"' height='100px'></td>";
+                                    info +="</tr>";
+                                }
+                                info +="</tbody></table>";
+                            }
+                        }
+                        bootbox.alert(info);
+                    },
+                    error: function(r)
+                    {
+                        alert('error');
+                        console.dir(r);
+                    }
+            });
+        }
+        
+    });
+
+    $("#deleteButton").click(function(){
+        
+        $.ajax({
+        type : 'delete',
+                url : '{{ url('FollowUps.destroy')}}', // in here you should put your query c
+                data :  'id=' + followUpId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success : function(r)
+                {
+                    followUpId='';
+                    $("#orderId").val('');
+                    $("#cs_user").val('');
+                    $("#followup_date").val('');
+                    $("#notes").val('');
+                        $("#assignTo").val('');
+                    $("#imagesDiv").html('');
+                    $('#done').closest('span').removeClass("checked");
+                    $('#done').removeAttr("checked");
+                    $("#myModal").modal('hide');
+                    location.reload();
+                },
+                error: function(r)
+                {
+                    alert('error');
+                    console.dir(r);
+                }
+        });
+    });
+    
+    $("#updateButton").click(function(){
+        var done = 0;
+        if($("#done").attr('checked')){
+            done = 1;
+        }
+//         console.dir($("#upload_form")[0]);
+// var formData = new FormData($("#upload_form")[0]); 
+// console.dir(formData);
+// formData.append('id', followUpId);
+// console.dir(formData);
+//             $.ajax({
+//                 type : 'put',
+//                 dataType:'json',
+//                 url : '{{ url('FollowUps.updateFollowUp')}}', // in here you should put your query 
+//                 data:formData,
+//                 processData:false,//need this to process form
+//                 contentType: false,
+//                 // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+//                 success : function(r)
+//                 {
+//                     location.reload();
+//                     console.dir(r);
+//                 },
+//                 error: function(e){
+//                     console.dir(e);
+//                 }
+//             });
+
+        $.ajax({
+            type : 'put',
+                    url : '{{ url('FollowUps.update')}}', // in here you should put your query 
+                    data :  'id='+followUpId+'&orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+"&assignTo="+encodeURIComponent($("#assignTo").val())+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success : function(r)
+                    {
+                        followUpId='';
+                        $("#orderId").val('');
+                        $("#cs_user").val('');
+                        $("#followup_date").val('');
+                        $("#notes").val('');
+                        $("#assignTo").val('');
+                        $('#done').closest('span').removeClass("checked");
+                        $('#done').removeAttr("checked");
+                        $("#myModal").modal('hide');
+                        location.reload();
+                        console.dir(r);
+                    },
+                    error: function(r)
+                    {
+                        alert('error');
+                        console.dir(r);
+                    }
+            });
+    });
+    
+    $(".btnAddTracking").click(function(e){
+        e.preventDefault();
+        var curObj = $(this);
+
+        
+        var id = $(this).val();
+        bootbox.prompt("Enter new tracking number", 
+            function(result){ 
+                if(result!=null && result.trim()!=''){
+                    console.log(result);
+                     $.ajax({
+                        type : 'post',
+                                url : '{{ url('FollowUps.updateTracking')}}', // in here you should put your query 
+                                data :  {'id':id,'tracking':result},
+                                success : function(r)
+                                {
+                                    console.log(r);
+                                    if(r=="ok"){
+                                        console.log('updating');
+                                        $(curObj).closest("tr").find(".trackingNumber").first().text(result);
+                                    }
+                                },
+                                error: function(r)
+                                {
+                                    alert('error');
+                                    console.dir(r);
+                                }
+                        });
+                }
+            });
+    });
+
+    $(".followupId").click(function(){
+        var id = $(this).text();
+       $.ajax({
+        type : 'get',
+                url : '{{ url('FollowUps.show')}}', // in here you should put your query c
+                data :  'id=' + id, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success : function(r)
+                {
+                    console.dir(r);
+                    followUpId = r.id;
+                    $("#orderId").val(r.orderId);
+                    $("#cs_user").val(r.cs_user);
+                    $("#followup_date").val(r.followup_date);
+                    $("#notes").val(r.notes);
+                    $("#assignTo").val(r.assignTo);
+                    if(r.images!=null){
+                        var followupImags = r.images.split("|||");
+                        console.dir(followupImags);
+                        var imagesHtml ="";
+                        for(var i=0;i<followupImags.length;i++){
+                            if(followupImags[i]!=''){
+                                imagesHtml += "<img src='./storage/follow_up/"+followupImags[i]+"' style='width:150px'>";
+
+                            }
+                        }
+                    }
+                    $("#imagesDiv").html(imagesHtml);
+                    
+                    if(r.done==1){
+                        $('#done').closest('span').addClass("checked");
+                        $("#done").attr('checked','checked');
+                    }
+                    $("#myModal").modal('show');
+                    $("#imageUploadControl").hide();
+                    $("#saveNewButton").hide();
+                    $("#updateButton").show();
+                    $("#deleteButton").show();
+                }
+        });
+    });
+
+    $("#assignToFilter").change(function(e){
+        var searchText = $(this).val();
+        console.log(searchText);
+        oTable.search(searchText,4,false).draw();
+        $('#orders_filter label input').val(searchText);
+    });
+});
+    </script>	
+{% endblock %}
