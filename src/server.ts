@@ -28,6 +28,7 @@ import { registerFourRoutes } from './modules/four/routes.js';
 import { registerItemRoutes } from './modules/item/routes.js';
 import { registerItemimageRoutes } from './modules/itemimage/routes.js';
 import { registerFollowUpsRoutes } from './modules/followups/routes.js';
+import { registerBulkProductionRoutes } from './modules/bulkproduction/routes.js';
 import { registerProductionRoutes } from './modules/production/routes.js';
 import { registerPurchaseRoutes } from './modules/purchase/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
@@ -71,6 +72,7 @@ registerFourRoutes(app);
 registerItemRoutes(app);
 registerItemimageRoutes(app);
 registerFollowUpsRoutes(app);
+registerBulkProductionRoutes(app);
 registerProductionRoutes(app);
 registerPurchaseRoutes(app);
 

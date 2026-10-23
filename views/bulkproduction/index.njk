@@ -1,0 +1,333 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.finished{
+    text-decoration: line-through;
+}
+</style>
+<button class="btn btn-primary btn-lg" id="createBtn">
+  Create New
+</button>
+<br/><br/>
+    <table class="table table-bordered table-condensed" id="bulkProductions" >
+        <thead>
+            <tr>
+                <th>id</th>
+                <th>Pictures</th>
+                <th>ETA</th>
+                <th>Notes</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for bulkProduction in bulkProductions %}
+            <tr>
+                <td>
+                    <a href="#" class="bulkProductionId" >{{ bulkProduction.id }}</a>
+                </td>
+                <td>
+                    <div id="images-{{ bulkProduction.id }}">
+                        {{ bulkProduction.imagesHtml | safe }}
+                    </div>
+                    <div id="upload-{{ bulkProduction.id }}" style="display: none;">
+                        <input type="file" multiple name="new-images[]" class="new-images" data-id="{{ bulkProduction.id }}">
+                        <button type="button" class="btn btn-success btn-sm save-images" data-id="{{ bulkProduction.id }}">Save</button>
+                        <button type="button" class="btn btn-secondary btn-sm cancel-upload" data-id="{{ bulkProduction.id }}">Cancel</button>
+                    </div>
+                </td>
+                <td>
+                    {{ bulkProduction.eta }}
+                </td>
+                <td>
+                    {{ bulkProduction.notes }}
+                </td>
+                <td>
+                    <button type="button" class="btn btn-warning btn-sm replace-images" data-id="{{ bulkProduction.id }}">
+                        Replace Images
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+
+    <!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Create Bulk Production</h4>
+      </div>
+      <div class="modal-body">
+      <form enctype="multipart/form-data" id="upload_form" role="form" method="POST" class="form-horizontal" action="" >
+<fieldset>
+
+<div class="control-group">
+  <label class="control-label" for="images">Images</label>
+  <div class="controls" id="imageUploadControl">  
+    <input type="file" multiple name="images[]" class="new-images">
+  </div>
+  <div class="controls" id="imagesDiv"></div>
+  
+</div>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="eta">ETA</label>
+  <div class="controls">
+    <input id="eta" name="eta" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd">
+
+  </div>
+</div>
+
+<!-- Textarea -->
+<div class="control-group">
+  <label class="control-label" for="notes">Notes</label>
+  <div class="controls">
+    <textarea id="notes" name="notes" style="width:300px;height:200px"></textarea>
+  </div>
+</div>
+
+</fieldset>
+</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeButton" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="saveNewButton" class="btn btn-primary">Create</button>
+        <button type="button" id="updateButton" class="btn btn-info">Update</button>
+        <button type="button" id="deleteButton" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+    <script>
+
+$(document).ready(function() {
+	$("#bulkProduction").addClass("active");
+$("#myModal").hide();
+var bulkProductionId=0;
+
+var oTable = $('#bulkProductions').DataTable({
+"bAutoWidth" : false,
+"aoColumns": [
+{"sWidth": "50px"},
+{"sWidth": "150px"},
+{"sWidth": "100px"},
+{"sWidth": "50px"},
+{"sWidth": "50px"}
+],
+        "aaSorting": [[0, "desc"]],
+        "sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+        "bPaginate": false,
+        "oLanguage": {
+        "sLengthMenu": "_MENU_ records per page"
+        },
+        "fnRowCallback": function(nRow, aData) {
+
+        }
+});
+
+    $('#eta').datepicker("option", "dateFormat", 'yy-mm-dd' );
+    $("#saveNewButton").click(function(){
+        var done = 0;
+        if($("#done").attr('checked')){
+            done = 2;
+        }
+            $.ajax({
+                type : 'post',
+                dataType:'json',
+                url : '{{ url('BulkProduction.store')}}', // in here you should put your query
+                data:new FormData($("#upload_form")[0]),
+                processData:false,//need this to process form
+                contentType: false,
+                // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+                success : function(r)
+                {
+                    location.reload();
+                    console.dir(r);
+                },
+                error: function(e){
+                    console.dir(e);
+                }
+            });
+    });
+
+    $("#createBtn").click(function(){
+        bulkProductionId='';
+       $("#myModal").modal('show');
+
+        $("#saveNewButton").show();
+        $("#updateButton").hide();
+        $("#deleteButton").hide();
+        $("#eta").val('');
+        $("#imageUploadControl").show('');
+        $("#imagesDiv").html('');
+        $("#notes").val('');
+    });
+
+    $("#closeButton").click(function(){
+        bulkProductionId='';
+        $("#eta").val('');
+        $("#notes").val('');
+        $("#imagesDiv").html('');
+    });
+
+    $(".bulkProductionId").click(function(e){
+        e.preventDefault();
+        var oId = $(this).text().trim();
+        console.log(oId);
+
+    });
+
+    $("#deleteButton").click(function(){
+
+        $.ajax({
+        type : 'delete',
+                url : '{{ url('BulkProduction.destroy')}}', // in here you should put your query c
+                data :  'id=' + bulkProductionId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value
+                success : function(r)
+                {
+                    bulkProductionId='';
+                    $("#eta").val('');
+                    $("#notes").val('');
+                    $("#imagesDiv").html('');
+                    $("#myModal").modal('hide');
+                    location.reload();
+                },
+                error: function(r)
+                {
+                    alert('error');
+                    console.dir(r);
+                }
+        });
+    });
+
+    $("#replaceImagesBtn").click(function() {
+        $("#imageUploadControl").show();
+        $(this).hide();
+    });
+
+    $(".bulkProductionId").click(function(){
+        var id = $(this).text();
+        $.ajax({
+            type : 'get',
+            url : '{{ url('BulkProduction.show')}}',
+            data :  'id=' + id,
+            success : function(r)
+            {
+                console.dir(r);
+                bulkProductionId = r.id;
+                $("#eta").val(r.eta);
+                $("#notes").val(r.notes);
+                $("#assignTo").val(r.assignTo);
+                if(r.images!=null){
+                    var bulkProductionImages = r.images.split("|||");
+                    console.dir(bulkProductionImages);
+                    var imagesHtml ="";
+                    for(var i=0;i<bulkProductionImages.length;i++){
+                        if(bulkProductionImages[i]!=''){
+                            imagesHtml += "<img src='./storage/bulk_production/"+bulkProductionImages[i]+"' style='width:150px'>";
+
+                        }
+                    }
+                }
+                $("#imagesDiv").html(imagesHtml);
+                $("#myModal").modal('show');
+                $("#imageUploadControl").hide();
+                $("#replaceImagesBtn").show();
+                $("#saveNewButton").hide();
+                $("#updateButton").show();
+                $("#deleteButton").show();
+            }
+        });
+    });
+
+    $("#updateButton").click(function(){
+        var formData = new FormData();
+        formData.append('id', bulkProductionId);
+        formData.append('eta', $("#eta").val());
+        formData.append('notes', $("#notes").val());
+        
+        // Add image files if they exist
+        var fileInput = $('input[type="file"]')[0];
+        if (fileInput && fileInput.files.length > 0) {
+            for (var i = 0; i < fileInput.files.length; i++) {
+                formData.append('images[]', fileInput.files[i]);
+            }
+        } else {
+            // If no new images, pass the existing images HTML
+            formData.append('existing_images', $("#imagesDiv").html());
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '{{ url('BulkProduction.update') }}',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(r) {
+                bulkProductionId = '';
+                $("#eta").val('');
+                $("#notes").val('');
+                $("#imagesDiv").html('');
+                $("#myModal").modal('hide');
+                location.reload();
+            },
+            error: function(r) {
+                alert('error');
+                console.dir(r);
+            }
+        });
+    });
+
+    // Add new event handlers for image replacement
+    $(".replace-images").click(function() {
+        var id = $(this).data('id');
+        $("#images-" + id).hide();
+        $("#upload-" + id).show();
+        $(this).hide();
+    });
+
+    $(".cancel-upload").click(function() {
+        var id = $(this).data('id');
+        $("#upload-" + id).hide();
+        $("#images-" + id).show();
+        $(".replace-images[data-id='" + id + "']").show();
+        // Clear the file input
+        $(".new-images[data-id='" + id + "']").val('');
+    });
+
+    $(".save-images").click(function() {
+        var id = $(this).data('id');
+        var formData = new FormData();
+        formData.append('id', id);
+        
+        // Add the files
+        var fileInput = $(".new-images[data-id='" + id + "']")[0];
+        if (fileInput.files.length > 0) {
+            for (var i = 0; i < fileInput.files.length; i++) {
+                formData.append('images[]', fileInput.files[i]);
+            }
+        }
+
+        $.ajax({
+            type: 'POST',
+            url: '{{ url('BulkProduction.updateImages') }}',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(r) {
+                location.reload();
+            },
+            error: function(r) {
+                alert('Error updating images');
+                console.dir(r);
+            }
+        });
+    });
+});
+    </script>
+{% endblock %}
