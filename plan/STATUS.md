@@ -115,3 +115,9 @@ Keywords, Fba (routes/web.php:156-159, 321-324; all role:admin,user,remote).
 - Not verified: /Keywords, /FBA.Orders, /GetRank 500 bodies byte-parity (old app's APP_DEBUG Symfony debug page is non-reproducible — same precedent as T03/T10/T11/T12); /AddKeywords + /AddAsin success paths (the os_keywords table would need to exist for the insert to succeed; only the no-input 200 and the with-input 500 branches are exercised — code review for the insert logic).
 - Open questions: none.
 - Manual checklist: create the `os_keywords` table (or run against a DB where it exists) -> /Keywords lists keywords with their ASIN/trend sparkline; the "Add Keywords" and per-row "+" buttons POST to /AddKeywords + /AddAsin and reload on `ok`; /FBA.Orders renders the 7/30/90-day order table once `os_FBA_ORDERS` exists.
+
+## T16 — done
+Opolo, OpoloCost. Worker timed out at 2h before verifying/committing; supervisor verified and committed.
+- Files: src/modules/opolo/routes.ts, views/opolo/, views/opolocost/, views/followups/ (shared show view), test/t16.test.ts, small fix in src/datatables.ts (missing `draw` -> 0 like PHP).
+- Verified: typecheck OK; 129/129 tests; `pnpm parity --task T16` 3/3 (/opolo.index, /opolocost.show?id=9, /opolocost.ajaxData). parity.ts now ignores yajra debug keys `input`/`queries` (see NOTES).
+- Not verified: write routes (store/update/destroy), CSV import in OpoloController@store.

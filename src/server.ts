@@ -22,6 +22,7 @@ import { registerChatRoutes } from './modules/chat/routes.js';
 import { registerGptRoutes } from './modules/gpt/routes.js';
 import { registerKeywordsRoutes } from './modules/keywords/routes.js';
 import { registerFbaRoutes } from './modules/fba/routes.js';
+import { registerOpoloRoutes } from './modules/opolo/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
@@ -57,6 +58,7 @@ registerChatRoutes(app);
 registerGptRoutes(app);
 registerKeywordsRoutes(app);
 registerFbaRoutes(app);
+registerOpoloRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

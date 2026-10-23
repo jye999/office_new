@@ -96,7 +96,8 @@ export class DataTablesBuilder {
     }
     const rows = await q.execute();
     return {
-      draw: Number(get(input, 'draw')),
+      // PHP: (int) input('draw') — missing/null draw -> 0 (not NaN->null).
+      draw: Number(get(input, 'draw') ?? 0),
       recordsTotal: totalRecords,
       recordsFiltered: filteredRecords,
       data: rows.map((row) => this.processRow(row)),

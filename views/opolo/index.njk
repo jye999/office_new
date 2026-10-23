@@ -1,0 +1,83 @@
+{% extends "layout.njk" %}
+{% block content %}
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class = 'AjaxisModal'>
+            </div>
+        </div>
+        <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <script> var baseURL = "{{ url('/') }}"</script>
+        <script src = "{{ asset('js/AjaxisBootstrap.js') }}"></script>
+        <script src = "{{ asset('js/scaffold-interface-js/customA.js') }}"></script>
+<div class = 'container'>
+    <h1>
+        Orders
+    </h1>
+    <form class = 'col ' method = 'POST' action = '{{ url("opolo") | safe }}' enctype="multipart/form-data">
+        <input type="file"  name="ordersfile">
+
+        <button class = 'btn btn-primary' type = 'submit'>上传文件</button>
+    </form>
+    <br>
+    <ul class="nav nav-tabs">
+    <li id="noshipped" class="{{ '' if status == 'processed' else 'active' }}"><a href="{{ route('opolo.index') }}">未寄出订单</a></li>
+    <li id="shipped" class="{{ 'active' if status == 'processed' else '' }}"><a href="{{ route('opolo.index', {status: 'processed'}) }}">已经寄出订单</a></li>
+    </ul>
+    <br>
+    <table class = "table table-striped table-bordered">
+        <thead>
+            <th>Date</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address 1</th>
+            <th>Address 2</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zipcode</th>
+            <th>SKU</th>
+            <th>Qty</th>
+            <th>Status</th>
+            <th>Tracking</th>
+            <th></th>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            {% for od in order.detail %}
+            <tr>
+                <td>{{ order.purchaseDate | safe }}</td>
+                <td>{{ order.orderId | safe }}</td>
+                <td>{{ order.recipientName | safe }}</td>
+                <td>{{ order.address1 | safe }}</td>
+                <td>{{ order.address2 | safe }}</td>
+                <td>{{ order.city | safe }}</td>
+                <td>{{ order.state | safe }}</td>
+                <td>{{ order.zipcode | safe }}</td>
+                <td>{{ od.itemId | safe }}</td>
+                <td>{{ od.qty | safe }}</td>
+                <td>{{ order.status | safe }}</td>
+                <td>
+                {% if order.tracking != null %}
+                    {% for ot in order.tracking %}
+                        {{ ot.tracking | safe }}
+                    {% endfor %}
+                {% endif %}
+                </td>
+                <td>
+                    {% if order.status == null %}
+                    <a data-toggle="modal" data-target="#myModal" class = 'delete btn btn-danger btn-xs' data-link = "/opolo/{{ order.orderId | safe }}/deleteMsg" ><i class = 'material-icons'>delete</i></a>
+                    {% else %}
+
+                        {% for ot in order.tracking %}
+                            {{ ot.Amount | safe }}
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

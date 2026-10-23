@@ -30,7 +30,7 @@
  ],
  "T16": [
   "/opolo.index",
-  "/opolocost.show",
+  "/opolocost.show?id=9",
   "/opolocost.ajaxData"
  ],
  "T17": [

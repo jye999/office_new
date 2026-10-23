@@ -1,0 +1,258 @@
+{% extends "layout.njk" %}
+{% block content %}
+<p>
+<button class="btn btn-primary btn-lg" id="createBtn">
+  Create New
+</button>
+</p>
+    <table class="table table-bordered" id="myTable">
+        <thead>
+            <tr>
+                <th></th>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th>Cost</th>
+            </tr>
+        </thead>
+    </table>
+
+    <!-- Modal -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel"></h4>
+      </div>
+      <div class="modal-body">
+      <form enctype="multipart/form-data" id="upload_form" role="form" method="POST" class="form-horizontal" action="" >
+<fieldset>
+
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="date">Date</label>
+  <div class="controls">
+    <input id="date" name="date" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd">
+    
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="category">Category</label>
+  <div class="controls">
+    <select id="category" name="category" class="select">
+        <option value=""></option>
+        <option value="Labor">Labor</option>
+        <option value="Shipping">Shipping</option>
+        <option value="Material">Material</option>
+        <option value="Other">Other</option>
+    </select>
+    
+  </div>
+</div>
+<div class="control-group">
+  <label class="control-label" for="cost">Cost</label>
+  <div class="controls">
+    <input type="text" id="cost" name="cost" class="" />
+    
+  </div>
+</div>
+<!-- Textarea -->
+<div class="control-group">
+  <label class="control-label" for="description">Description</label>
+  <div class="controls">                     
+    <textarea id="description" name="description" style="width:300px;height:200px;color:black"></textarea>
+  </div>
+</div>
+
+
+</fieldset>
+</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeButton" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="saveNewButton" class="btn btn-primary">Create</button>
+        <button type="button" id="updateButton" class="btn btn-info">Update</button>
+        <button type="button" id="deleteButton" class="btn btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+$(document).ready(function() {
+	$("#opolocost").addClass("active");
+    var dTable = $('#myTable').DataTable({
+        processing: true,
+        serverSide: true,
+        pageLength: 50,
+        aaSorting: [[1, "desc"]],
+        sDom: "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+        ajax: '{{ route('opolocost.ajaxData') | safe }}',
+        columns: [
+            {data: 'action', name: 'action', orderable: false, searchable: false},
+            { data: 'date', name: 'date' },
+            { data: 'category', name: 'category' },
+            { data: 'description', name: 'description' },
+            { data: 'cost', name: 'cost' }
+        ]
+    });
+
+$("#myModal").hide();
+var opolocostId=0;
+    $('#date').datepicker("option", "dateFormat", 'yy-mm-dd' );    
+    $("#saveNewButton").click(function(){
+            $.ajax({
+                type : 'post',
+                dataType:'json',
+                url : '{{ url('opolocost.store')}}', // in here you should put your query 
+                data:new FormData($("#upload_form")[0]),
+                processData:false,//need this to process form
+                contentType: false,
+                // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+                success : function(r)
+                {
+                    dTable.ajax.reload();
+                    clearModal();
+                    $("#myModal").modal('hide');
+                    // location.reload();
+                },
+                error: function(e){
+                    if (e.status ==422){
+                        displayFieldErrors(e);
+                    }
+                    else{
+                        alert(e);
+                    }
+                }
+            });
+    });
+    var clearModal = function(){
+        $("#date").val('');
+        $("#category").val('');
+        $("#description").val('');
+        $("#cost").val('');
+
+    };
+
+    $("#createBtn").click(function(){
+        opolocostId='';
+       $("#myModal").modal('show');
+       
+        $("#saveNewButton").show();
+        $("#updateButton").hide();
+        $("#deleteButton").hide();
+        clearModal();
+
+    });
+    
+    $("#closeButton").click(function(){
+        opolocostId='';
+        clearModal();
+    });
+
+    $("#deleteButton").click(function(){
+        
+        $.ajax({
+        type : 'delete',
+                url : '{{ url('opolocost.destroy')}}', // in here you should put your query c
+                data :  'id=' + opolocostId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success : function(r)
+                {
+                    $("#myModal").modal('hide');
+                    dTable.ajax.reload();
+                },
+                error: function(r)
+                {
+                    alert('error');
+                    console.dir(r);
+                }
+        });
+    });
+    
+    $("#updateButton").click(function(){
+        $.ajax({
+            type : 'put',
+            url : '{{ url('opolocost.update')}}', // in here you should put your query 
+            data :  'id='+opolocostId+ "&date="+$("#date").val()+"&description="+encodeURIComponent($("#description").val())+"&cost="+$("#cost").val(), // here you pass your id via ajax .
+            // in php you should use $_POST['post_id'] to get this value 
+            success : function(r)
+            {
+                opolocostId='';
+                dTable.ajax.reload();
+                clearModal();
+                $("#myModal").modal('hide');
+            },
+            error: function(r)
+            {
+                alert('error');
+                console.dir(r);
+            }
+            });
+    });
+    $(document).on('click',".btnEdit",function(){
+        var id = $(this).val();
+       $.ajax({
+        type : 'get',
+                url : '{{ url('opolocost.show')}}', // in here you should put your query c
+                data :  'id=' + id, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success : function(r)
+                {
+                    console.dir(r);
+                    opolocostId = r.id;
+
+                    $("#date").val(r.date);
+                    $("#category").val(r.category);
+                    $("#description").val(r.description);
+                    $("#cost").val(r.cost);
+                    
+                    $("#myModal").modal('show');
+                    $("#saveNewButton").hide();
+                    $("#updateButton").show();
+                    $("#deleteButton").show();
+                }
+        });
+    });
+
+
+    $(document).on('click',".btnDelete",function(){
+        var id = $(this).val();
+        bootbox.confirm({
+            message: "Are you sure?",
+            buttons: {
+                confirm: {
+                    label: 'Yes',
+                    className: 'btn-success'
+                },
+                cancel: {
+                    label: 'No',
+                    className: 'btn-danger'
+                }
+            },
+            callback: function (result) {
+                if(result){
+                        $.ajax({
+                        type : 'delete',
+                                url : '{{ url('opolocost.destroy')}}', // in here you should put your query c
+                                data :  'id=' + id, // here you pass your id via ajax .
+                                // in php you should use $_POST['post_id'] to get this value 
+                                success : function(r)
+                                {
+                                    dTable.ajax.reload();
+                                },
+                                error: function(r)
+                                {
+                                    alert('error');
+                                    console.dir(r);
+                                }
+                        });
+
+                    }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

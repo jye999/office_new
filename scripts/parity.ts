@@ -216,9 +216,15 @@ async function compare(label: string, oldJar: Jar, newJar: Jar): Promise<boolean
   const ctIsJson = (ct: string) => ct.includes('json');
   if (ctIsJson(o.ct) || ctIsJson(n.ct)) {
     try {
-      bodyA = JSON.stringify(JSON.parse(o.body), null, 2);
-      bodyB = JSON.stringify(JSON.parse(n.body), null, 2);
-      if (!deepEqual(JSON.parse(o.body), JSON.parse(n.body))) {
+      // Old app runs with APP_DEBUG: yajra adds `input`/`queries` (raw SQL) to DataTables replies. Intentionally not ported.
+      const stripDebug = (t: string) => {
+        const j = JSON.parse(t);
+        if (j && typeof j === 'object' && 'recordsTotal' in j) { delete j.input; delete j.queries; }
+        return j;
+      };
+      bodyA = JSON.stringify(stripDebug(o.body), null, 2);
+      bodyB = JSON.stringify(stripDebug(n.body), null, 2);
+      if (!deepEqual(stripDebug(o.body), stripDebug(n.body))) {
         ok = false;
         problems.push('json bodies differ');
       }
