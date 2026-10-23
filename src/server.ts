@@ -17,6 +17,7 @@ import { registerStaffsRoutes } from './modules/staffs/routes.js';
 import { registerExecRoutes } from './modules/exec/routes.js';
 import { registerQueueJobRoutes } from './modules/queuejob/routes.js';
 import { registerPriceRoutes } from './modules/price/routes.js';
+import { registerMessageRoutes } from './modules/message/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true } });
@@ -47,6 +48,7 @@ registerStaffsRoutes(app);
 registerExecRoutes(app);
 registerQueueJobRoutes(app);
 registerPriceRoutes(app);
+registerMessageRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

@@ -7,6 +7,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import nunjucks from 'nunjucks';
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
 import { randomBytes } from 'node:crypto';
 import { config as appConfig } from './config.js';
 import { routeUrl } from './router.js';
@@ -16,6 +17,19 @@ import { currentUser, hasRole as roleCheck, type Auth } from './auth.js';
 // ---------------------------------------------------------------- env
 
 export const viewsDir = path.join(process.cwd(), 'views');
+
+// Laravel's e() encodes a single quote as &#039;; nunjucks' escape uses
+// &#39;. Patch the shared escape once so every {{ }} matches e() byte-for-byte
+// (nunjucks ignores a custom autoescape function and hardcodes lib.escape).
+// SAFETY: createRequire loads nunjucks' CJS lib.js (no bundled types); the
+// exports object is mutable and `escape` is a plain data property.
+const njkLib = createRequire(import.meta.url)('nunjucks/src/lib.js') as {
+  escape: (v: string) => string;
+};
+if (typeof njkLib.escape === 'function') {
+  const origEscape = njkLib.escape;
+  njkLib.escape = (v: string) => origEscape(v).replaceAll('&#39;', '&#039;');
+}
 
 // Autoescape on (same as Blade's {{ }}), undefined vars render empty
 // (same as PHP with warnings suppressed — the old app runs with E_ALL|E_STRICT off).
@@ -163,6 +177,37 @@ export function nl2br(value: string): string {
     .replace(/\r\n/g, '<br />\n')
     .replace(/\n/g, '<br />\n')
     .replace(/\r/g, '<br />');
+}
+
+// PHP strtotime() for the 'Y-m-d [H:i[:s]]' datetime/date strings the DB
+// returns (dateStrings). Interpreted in the app timezone, like PHP. Returns
+// epoch seconds.
+export function strtotime(s: string | Date | null | undefined): number {
+  const str = s instanceof Date ? s.toISOString() : String(s ?? '').trim();
+  const m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):?(\d{1,2})(?::?(\d{1,2}))?)?/.exec(str);
+  if (!m) return 0; // PHP strtotime() failure = false; date() then renders epoch 0
+  const u = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4] ?? 0), Number(m[5] ?? 0), Number(m[6] ?? 0));
+  // Wall clock in the app timezone -> epoch: shift by the tz offset at that instant.
+  const dt = new Date(u);
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: appConfig.APP_TIMEZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23',
+  }).formatToParts(dt);
+  const wall = Date.UTC(
+    Number(parts.find((p) => p.type === 'year')?.value),
+    Number(parts.find((p) => p.type === 'month')?.value) - 1,
+    Number(parts.find((p) => p.type === 'day')?.value),
+    Number(parts.find((p) => p.type === 'hour')?.value),
+    Number(parts.find((p) => p.type === 'minute')?.value),
+    Number(parts.find((p) => p.type === 'second')?.value),
+  );
+  return Math.round((u + (wall - u)) / 1000);
 }
 
 // PHP date() format chars, in the app timezone.
@@ -650,6 +695,7 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     json_encode,
     nl2br,
     date,
+    strtotime,
     env,
     randomOf,
     config,
@@ -684,6 +730,15 @@ export async function render(req: FastifyRequest, reply: FastifyReply, name: str
   if (!rel) throw new Error(`view not found: ${name}`);
   const html = njkEnv.render(rel, ctx);
   reply.type('text/html; charset=UTF-8').send(html);
+}
+
+// T13: /msg may prefix print_r() output before the view HTML, so it needs the
+// rendered string. Same env and context as render().
+export async function renderToString(req: FastifyRequest, name: string, data: Record<string, unknown> = {}): Promise<string> {
+  const ctx = await buildContext(req, data);
+  const rel = resolveView(name);
+  if (!rel) throw new Error(`view not found: ${name}`);
+  return njkEnv.render(rel, ctx);
 }
 
 // Laravel: calling a controller method that does not exist -> 500, rendered

@@ -1,0 +1,177 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.unread{
+    font-weight:bold;
+}
+.read{
+    background-color:#eee;
+}
+#message{
+    color:black;
+}
+</style>
+<button class="btn btn-info" id="btnWrite">Write Message</button>
+<a class="btn btn-primary pull-right" href="{{route('showSentMessage')}}">Sent Box</a><br/><br/>
+<table id="messages" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>Date</td>
+            <td>From</td>
+            <td>Message</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for msg in messages %}
+            <tr class="{{ 'unread' if msg.hasRead != 1 else 'read' }}">
+                <td>{{ msg.created_at }} </td>
+                <td>{{ msg.from_user.username if msg.from_user else '' }}</td>
+                <td>{{ msg.message }}</td>
+                <td>
+                {% if msg.hasRead != 1 %}
+                    <a href='#' class="okLink" data-params='{"id":"{{ msg.id }}","readFlag":"1"}'> Mark as read </a>
+                {% else %}
+                    <a href='#' class="okLink" data-params='{"id":"{{ msg.id }}","readFlag":"0"}'> Mark as Unread </a>
+                {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+    <!-- Modal -->
+<div class="modal fade" id="msgModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">Write Message</h4>
+      </div>
+      <div class="modal-body">
+        <form class="form-horizontal">
+<fieldset>
+<!-- Text input-->
+<div class="control-group">
+  <label class="control-label" for="orderId">To</label>
+  <div class="controls">
+    <select id="to_user" name="to_user" class="form-control">
+    <option value="0">Everyone</option>
+    {% for user in users %}
+    <option value="{{user.id}}">{{user.username}}</option>
+    {% endfor %}
+    </select>
+  </div>
+</div>
+
+
+<div class="control-group">
+  <label class="control-label" for="message">Message</label>
+  <div class="controls">
+    <textarea id="message" name="message" >
+    </textarea>
+  </div>
+</div>
+
+</fieldset>
+</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="closeButton" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="sendButton" class="btn btn-primary">Send</button>
+      </div>
+    </div>
+  </div>
+	<script>
+	$(document).ready(function() {
+        var currentMsg = null;
+        $("#msg").addClass("active");
+
+		mTable = $('#messages').dataTable({
+			"aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "70%"
+			}, {
+				"sWidth": "50px"
+			}, ],
+			"aaSorting": [
+				[0, "desc"]
+			],
+            "bPaginate": true,
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+
+        $(".okLink").click(function(e){
+            e.preventDefault();
+            currentMsg = $(this);
+            var data = $(this).data('params');
+            var msgId = data.id;
+            var readFlag = data.readFlag;
+            $.ajax({
+                type : 'post',
+                dataType: 'json',
+                url : '{{ route('flagUserMsg') }}',
+                data: {
+                    "id":msgId,
+                    "readFlag":readFlag
+                },
+                success : function(r)
+                {
+                    if(readFlag==1){
+                        $(currentMsg).closest('tr').removeClass('unread');
+                        $(currentMsg).closest('tr').addClass('read');
+                    }
+                    else{
+                        $(currentMsg).closest('tr').removeClass('read');
+                        $(currentMsg).closest('tr').addClass('unread');
+                    }
+                },
+                error: function(e){
+
+                }
+            });
+        });
+
+        $("#btnWrite").click(function(){
+            $("#msgModal").modal('show');
+        });
+        $("#closeButton").click(function(){
+            $("#message").val('');
+        });
+        $("#sendButton").click(function(e){
+            e.preventDefault();
+            var toUser = $("#to_user").val();
+            var message = $("#message").val();
+            var data ={
+                "to_user":toUser,
+                "message":message
+            }
+            console.dir(data);
+            $.ajax({
+                type : 'post',
+                dataType: 'json',
+                url : '{{ route('sendMessage') }}',
+                data: data,
+                success : function(r)
+                {
+                    if(r=='sent'){
+                        $("#message").val('');
+                        $("#msgModal").modal('hide');
+                    }
+                    else{
+                        alert(r);
+                    }
+                },
+                error: function(e){
+                    console.dir(e);
+                }
+            });
+        })
+    });
+
+	</script>
+{% endblock %}

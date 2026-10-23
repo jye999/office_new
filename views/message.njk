@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link id="bs-css" href="css/bootstrap-cerulean.css" rel="stylesheet">
+        <meta charset="utf-8">
+        <title>Messages</title>
+    </head>
+    <body style="background-color:gainsboro">
+        <div class="row-fluid">
+            <div class="box span3" style='background-color:white;margin-top:20px;padding:10px 10px 10px 10px;overflow-y:auto;height:500px'>
+                {% for msg in msgsHeaders %}
+                    {% if msg.RecipientUserID == 'bridalfavor' %}
+                    {% if msg.Read == 0 %}
+                    <div style="color:blue">
+                    {% else %}
+                    <div>
+                    {% endif %}
+                        {{ date('Y-m-d H:i', strtotime(msg.ReceiveDate)) }}<br/>
+                        <b>{{ msg.Sender }}</b><br/>
+                        {{ msg.Subject }} <br/>
+                        <hr/>
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div class="box span9" style="overflow-y:auto;height:500px">
+                {% for msg in msgs %}
+                <div style=" background-color:white;margin-top:20px;box-shadow:0px 10px 5px #888888;padding:10px 10px 10px 10px">
+                    {{ date('Y-m-d H:i', strtotime(msg.ReceiveDate)) }}<br/>
+                    <b>{{ msg.Sender }}</b><br/>
+                    to : {{ msg.RecipientUserID }}<br/>
+                    {{ msg.Subject }} <br/>
+                    <hr/>
+                    {{ msg.Text }} <br/>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </body>
+</html>

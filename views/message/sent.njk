@@ -1,0 +1,100 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.unread{
+    font-weight:bold;
+}
+.read{
+    background-color:#eee;
+}
+.deleted{
+    background-color: #eee;
+    text-decoration: line-through;
+}
+</style>
+<a class="btn btn-primary" href="{{route('showMessage')}}">Messages Received</a><br/><br/>
+<table id="messages" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>Date</td>
+            <td>To</td>
+            <td>Message</td>
+            <td>Updated</td>
+            <td></td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for msg in messages %}
+            <tr class="{{ 'unread' if msg.hasRead != 1 else 'read' }} {{ 'deleted' if msg.deleted == 1 else '' }}">
+                <td>{{ msg.created_at }} </td>
+                <td>{{ msg.to_user.username if msg.to_user else '' }}</td>
+                <td>{{ msg.message }}</td>
+                <td>{{ msg.updated_at }}</td>
+                <td>
+                {% if msg.deleted != 1 %}
+                    <a href='#' class="deleteLink" data-params='{"id":"{{ msg.id }}"}'>Delete</a>
+                {% endif %}
+            </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+	<script>
+	$(document).ready(function() {
+        var currentMsg = null;
+        $("#msg").addClass("active");
+
+		mTable = $('#messages').dataTable({
+			"aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "70%"
+			},{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			},],
+			"aaSorting": [
+				[0, "desc"]
+			],
+            "bPaginate": true,
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+
+
+        $(".deleteLink").click(function(e){
+            e.preventDefault();
+            currentMsg = $(this);
+            var data = $(this).data('params');
+            var msgId = data.id;
+
+            var r = confirm("Are you sure?!");
+            if (r == true) {
+                $.ajax({
+                    type : 'post',
+                    dataType: 'json',
+                    url : '{{ route('deleteMsg') }}',
+                    data: {
+                        "id":msgId
+                    },
+                    success : function(r)
+                    {
+                        console.dir(r);
+                            $(currentMsg).closest('tr').addClass('deleted');
+                    },
+                    error: function(e){
+
+                    }
+
+                });
+            }
+        });
+
+
+    });
+
+	</script>
+{% endblock %}
