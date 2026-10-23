@@ -1,0 +1,121 @@
+{% extends "layout.njk" %}
+{% block content %}
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class = 'AjaxisModal'>
+            </div>
+        </div>
+        <script> var baseURL = "{{ url('/') }}"</script>
+        <script src = "{{ asset('js/AjaxisBootstrap.js') }}"></script>
+        <script src = "{{ asset('js/scaffold-interface-js/customA.js') }}"></script>
+        <script type="text/javascript" src="https://unpkg.com/xlsx@0.15.1/dist/xlsx.full.min.js"></script>
+<div class = 'container'>
+    <h1>
+        Orders
+    </h1>
+    <form class = 'col ' method = 'POST' action = '{{ url("windy") | safe }}' enctype="multipart/form-data">
+        <input type="file"  name="ordersfile">
+
+        <button class = 'btn btn-primary' type = 'submit'>Upload</button>
+    </form>
+
+    <br>
+    <ul class="nav nav-tabs">
+    <li id="noshipped" class="{{ '' if status == 'processed' else 'active' }}"><a href="{{ route('windy.index') }}">New Orders</a></li>
+    <li id="shipped" class="{{ 'active' if status == 'processed' else '' }}"><a href="{{ route('windy.index', {status: 'processed'}) }}">Shipped Orders</a></li>
+    </ul>
+    {% if status == 'processed' %}
+    <form class = 'col ' method = 'POST' action = '{{ url("windy.export") | safe }}' >
+        <input id="ship_startdate" name="ship_startdate" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd" value='{{ ship_startdate }}'>
+        To <input id="ship_enddate" name="ship_enddate" type="text" placeholder="" class="datepicker" data-date-format="yyyy-mm-dd" value='{{ ship_enddate }}'>
+        <button class = 'btn btn-primary' type = 'submit'>Export</button>
+    </form>
+    {% endif %}
+    <br>
+    <table id="orderTable" class = "table table-striped table-bordered">
+        <thead>
+            <th>Date</th>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Address 1</th>
+            <th>Address 2</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Zipcode</th>
+            <th>SKU</th>
+            <th>Qty</th>
+            <th>Status</th>
+            <th>Tracking</th>
+            <th>Label Date</th>
+            <th></th>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+            {% for od in order.detail %}
+            <tr>
+                <td>{{ order.purchaseDate | safe }}</td>
+                <td>{{ order.orderId | safe }}</td>
+                <td>{{ order.recipientName | safe }}</td>
+                <td>{{ order.address1 | safe }}</td>
+                <td>{{ order.address2 | safe }}</td>
+                <td>{{ order.city | safe }}</td>
+                <td>{{ order.state | safe }}</td>
+                <td>{{ order.zipcode | safe }}</td>
+                <td>{{ od.itemId | safe }}</td>
+                <td>{{ od.qty | safe }}</td>
+                <td>{{ order.status | safe }}</td>
+                <td>
+                {% if order.tracking != null %}
+                    {% for ot in order.tracking %}
+                        {{ ot.tracking | safe }}
+                    {% endfor %}
+                {% endif %}
+                </td>
+                <td>
+                {% if order.tracking != null %}
+                    {% for ot in order.tracking %}
+                        {{ ot.created_at | safe }}
+                    {% endfor %}
+                {% endif %}
+                </td>
+                <td>
+                    {% if order.status == null %}
+                    <a data-toggle="modal" data-target="#myModal" class = 'delete btn btn-danger btn-xs' data-link = "/windy/{{ order.orderId | safe }}/deleteMsg" ><i class = 'material-icons'>delete</i></a>
+                    {% else %}
+
+                        {% for ot in order.tracking %}
+                            {{ ot.Amount | safe }}
+                        {% endfor %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+<script>
+  $(document).ready(function(){
+    $('#ship_startdate').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    $('#ship_enddate').datepicker("option", "dateFormat", 'yy-mm-dd' );  
+    //$("#shipdate").datepicker({ format: 'yyyy-mm-dd' });
+
+    
+    oTable = $('#orderTable').dataTable({
+        "aaSorting": [
+            [0, "desc"]
+        ]
+    });
+});
+/*
+function ExportToExcel(type, fn, dl) {
+       var elt = document.getElementById('orderExport');
+       var wb = XLSX.utils.table_to_book(elt, { sheet: "ShippingConfirmation" });
+       return dl ?
+         XLSX.write(wb, { bookType: type, bookSST: true, type: 'base64' }):
+         XLSX.writeFile(wb, fn || ('MySheetName.' + (type || 'xlsx')));
+    }
+*/
+</script>
+{% endblock %}
