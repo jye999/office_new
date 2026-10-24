@@ -35,6 +35,9 @@ import { registerPurchaseRoutes } from './modules/purchase/routes.js';
 import { registerInventoryRoutes } from './modules/inventory/routes.js';
 import { registerOrderRoutes } from './modules/order/routes.js';
 import { registerProductRoutes } from './modules/product/routes.js';
+import { registerSupplierRoutes } from './modules/supplier/routes.js';
+import { registerProductImageRoutes } from './modules/productimage/routes.js';
+import { registerFaireImportRoutes } from './modules/faireimport/routes.js';
 import { registerPdaRoutes } from './modules/pda/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
@@ -86,6 +89,9 @@ registerPurchaseRoutes(app);
 registerInventoryRoutes(app);
 registerOrderRoutes(app);
 registerProductRoutes(app);
+registerSupplierRoutes(app);
+registerProductImageRoutes(app);
+registerFaireImportRoutes(app);
 registerPdaRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).

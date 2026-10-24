@@ -104,7 +104,13 @@
   ],
   "T30": [
     "/api/supplierproducts",
-    "/productImageOnServer"
+    "/api/supplierproducts?filter=%E6%B5%8B&sort=name&order=desc&page=1&pageSize=5",
+    "/api/supplierproduct/3580",
+    "/api/supplierproduct/3580/messages",
+    "/productImageOnServer",
+    "/Supplier",
+    "/SupplierProduct",
+    "/SupplierProduct/5"
   ],
   "T40": [
     "/getMultiCleanse",
