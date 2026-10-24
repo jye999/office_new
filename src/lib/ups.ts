@@ -111,7 +111,10 @@ export function parseXml(xml: string): XmlReply {
       stack[stack.length - 1].kids.push([f.name, finish(f)]);
     } else if (m[3] !== undefined) {
       const attrs: Record<string, string> = {};
-      for (const a of m[4].matchAll(/([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) attrs[a[1]] = decodeEntities(a[2] ?? a[3]);
+      for (const a of m[4].matchAll(/([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
+        if (a[1] === 'xmlns' || a[1].startsWith('xmlns:')) continue; // namespace declarations are not SimpleXML attributes
+        attrs[a[1]] = decodeEntities(a[2] ?? a[3]);
+      }
       const f: Frame = { name: m[3], attrs, kids: [], text: '' };
       if (m[5]) top.kids.push([f.name, finish(f)]);
       else stack.push(f);

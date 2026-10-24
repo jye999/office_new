@@ -432,6 +432,12 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - Not verified: POST /products.shopify, ImportListing, ImportAmazonAsin, RemoveLink and Etsy/Amazon import execution (write to DB / call marketplaces). Manual checklist: run only with DRY_RUN=1 and mocked transports; compare os_shopify_variants_links rows after updateShopifyLink.
 - `scripts/parity.ts`: unifiedDiff now skips the LCS table for >4M cells (it OOM'd on large mismatching JSON).
 
+## U9 — done
+- Files: `src/modules/unshipped/ebay.ts`, `src/modules/unshipped/ebayImport.ts`, `src/lib/{simplexml,cache}.ts`, `views/ebayPics.njk`, `test/{u9,simplexml}.test.ts`; routes registered through `src/modules/unshipped/routes.ts`.
+- Ported all ten legacy eBay actions, including legacy `print_r` before `ebayPics`, SimpleXML response shapes, the literal `LIKE '%variant%'` image-update bug, cache throttling, import and tracking insert flows. Added a SimpleXML compatibility layer and excluded every U9 GET from safe parity because each calls the live eBay Trading API.
+- Verified: `pnpm typecheck`; focused tests `test/simplexml.test.ts` (2) and `test/u9.test.ts` (4), with Trading transport stubs and temporary DB rows cleaned up; `pnpm parity --task U9` (empty safe route set).
+- Not verified: live eBay reads; mutating `updateEbayOrder`, `EbayComplete`, `loadeBayOrderIntoDB`, and picture updates against live eBay. The former two are transport-stub tested; cache-throttled import and picture update are inject-tested. Never call marketplace-writing endpoints outside `DRY_RUN=1`.
+
 ## U1 — partial
 
 ## U1 — done (supervisor fixes after Qwen port)

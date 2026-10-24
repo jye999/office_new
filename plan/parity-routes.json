@@ -172,13 +172,7 @@
     "/trackings",
     "/scanform"
   ],
-  "U9": [
-    "/getEbayItem",
-    "/getEbayOrder",
-    "/getEbayTran",
-    "/geteBayImage",
-    "/getRayeBayImage"
-  ],
+  "U9": [],
   "U10": [
     "/ShopifyDesc",
     "/getAmzImage",

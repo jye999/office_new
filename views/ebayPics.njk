@@ -1,0 +1,17 @@
+<html>
+<head>
+
+        <link href='css/colorbox.css' rel='stylesheet'>
+    <script src="js/jquery-1.7.2.min.js"></script>
+    <script src="js/jquery.colorbox.min.js"></script>
+</head>
+<body>
+{% for i in range(1, 21) %}<a class="group1" href="http://galleryplus.ebayimg.com/ws/web/261521059197_{{ i }}_0_1/500x500.jpg" >link</a>{% endfor %}
+<script>
+$(document).ready(function(){
+	$(".group1").colorbox({rel:'group1',
+open:true});
+});
+</script>
+</body>
+</html>

@@ -19,5 +19,6 @@
  "/* @foreach": "",
  "echo date('Y-m-d', strtotime($item->promiseDate . ' - 2 days'));": "{{ date('Y-m-d', strtotime(cat(item.promiseDate, ' - 2 days'))) }}",
  "switch($o->store){": "{% set storeNames = {\"TEMU\":\"101 - TEMU\", \"A\":\"1 - Amazon\", \"E\":\"7 - eBay - Retail\", \"R\":\"8 - eBay - Floral Supply\", \"S\":\"3 - Shopify\", \"T\":\"4 - Etsy - Retail 1\", \"H\":\"9 - Houzz\", \"W\":\"2 - Walmart\", \"D\":\"10 - Walmart Ddropship\", \"T2\":\"6 - Etsy - Floral Supply\", \"T3\":\"5 - Etsy - Retail 2\", \"WINDY\":\"90 - WINDY\", \"mermaid\":\"92 - MERMAID\", \"EF\":\"11 - Enfloral\"} %}{{ storeNames[o.store] | safe }}",
- "foreach($order->tracking as $t){": "{% for t in order.tracking %}{{ cat(t.tracking, '<br>') | safe }}{% endfor %}"
+ "foreach($order->tracking as $t){": "{% for t in order.tracking %}{{ cat(t.tracking, '<br>') | safe }}{% endfor %}",
+ "for($i=1;$i<=20;$i++){ echo '<a class=\"group1\"": "{% for i in range(1, 21) %}<a class=\"group1\" href=\"http://galleryplus.ebayimg.com/ws/web/261521059197_{{ i }}_0_1/500x500.jpg\" >link</a>{% endfor %}"
 }
