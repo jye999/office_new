@@ -213,3 +213,8 @@
 - `EbayController@ebayAccept` constructs `new eBayApi('raystore')` only (its getTokenFromCode line is commented out) — no network call; ported the same (the ported EbayApi client is lazy).
 - `ShopifyController@CallBack` returns `Response::json("ok")` -> body is the JSON string literal `"ok"`.
 - `AmzAdController@signin`/`@Test` just `echo "hi"` (text/html). /echo (AmzAd@Test) is unauthenticated; /amz_signin is role:admin,user,remote.
+
+## U4 — Faire pick list
+- The old app runs PHP 7.4 (docker `office`): `usort` is NOT stable (hybrid insertion/quick sort). `src/lib/phpSort.ts` ports zend_sort; `plan/tools/phpsort-fuzz.ts` checks it against the container's PHP (300 random cases, 0 mismatches). Use `phpUsort` for any other usort whose ties are visible.
+- GET /fairePickList is not read-only in the old app: it merges duplicate bin rows (os_product_locations) and seeds os_order_pick_allocations for every listed order. Ported as is.
+- `strtotime(null)` is false in PHP; `false > strtotime('1700-01-01')` is a boolean compare => Ship Date is hidden when expected_ship_date is null.

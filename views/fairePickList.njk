@@ -1,0 +1,585 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+<style type="text/css" media="print">   
+    
+    /* Hide print button when printing */
+    .no-print {
+        display: none !important;
+    }
+    .pick-extra .pick-bin[data-pull="0"],
+    .set-default-loc,
+    .toggle-extra-locs,
+    .pull-qty-input,
+    .pull-mismatch {
+        display: none !important;
+    }
+    .pull-print {
+        display: inline !important;
+    }
+</style>
+<style type="text/css">
+    /* Ensure order-details table headers are always visible (DataTables/nested-table edge cases) */
+    .order-details table.order-details-table thead {
+        display: table-header-group;
+    }
+    .order-details table.order-details-table thead th {
+        display: table-cell;
+    }
+    .pick-bin {
+        margin-bottom: 4px;
+        padding: 2px 4px;
+        border-radius: 3px;
+        transition: background-color 0.4s ease;
+    }
+    .pick-bin.is-default .pick-loc-label {
+        font-weight: bold;
+    }
+    .pick-default-mark {
+        color: #2e7d32;
+        margin-left: 4px;
+        font-size: 13px;
+    }
+    .pick-bin:not(.is-default) .pick-default-mark {
+        display: none;
+    }
+    .pick-bin-changed {
+        background-color: #c8e6c9;
+    }
+    .pick-default-flash {
+        color: #2e7d32;
+        font-size: 12px;
+        margin-left: 6px;
+        font-weight: bold;
+    }
+    .pick-locs:not(.pick-locs-open) .pull-qty-input,
+    .pick-locs:not(.pick-locs-open) .set-default-loc,
+    .pick-bin.is-default .set-default-loc {
+        display: none !important;
+    }
+    .pull-qty-input {
+        width: 56px;
+        margin-left: 6px;
+        display: inline-block;
+    }
+    .pull-print {
+        display: none;
+        margin-left: 6px;
+        font-weight: bold;
+    }
+    .pull-mismatch {
+        color: #c00;
+        font-size: 12px;
+        margin-top: 4px;
+    }
+</style>
+
+<table class="table table-bordered table-condensed" id="orders" style="width:100%">
+    <tbody>
+        {% for order in orders %}
+        <tr style="border-bottom: 2px solid black; background-color: {{ order.bgColor }};">
+            <td>
+                <div class="order-info" data-faire-order-status="{{ e(order.order_status) }}" data-order-id="{{ e(order.order_id) }}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            Order ID: <span data-display-id="{{ order.display_id }}">{{ order.display_id }}</span><br/><br/>
+                            Faire Order Status: 
+                            {% if order.order_status == 'NEW' %}
+                                <span style="color: #228B22; font-weight: bold;">{{ order.order_status }}</span>
+                            {% else %}
+                                {{ order.order_status }}
+                            {% endif %}
+                            <br/>
+                       
+                            Customer: {{ order.address_name }} <br/>
+                            Order Date: {{ order.orderDate }}<br/>
+                            {% if order.showShip %}
+                            Ship Date: {{ order.shipDate }}<br/>
+                            {% endif %}
+                            Subtotal: <b>{{ order.qtySubtotal }}</b><br/>
+                        </div>
+                        <div style="text-align: right; margin-left: 20px;">
+                            <div style="margin-bottom: 10px;">
+                                <strong>Picker:</strong>
+                                <select class="form-select picker-field no-print" data-order-id="{{ order.display_id }}" onchange="updatePickerPacker('{{ order.display_id }}', 'picker', this)" style="width: auto; display: inline-block;">
+                                    <option value=""></option>
+                                    {% for name in ['Alec','Angela','Chris','Cris','Eda','Erica','Johnny','Kyle','Ray','Sophia'] %}
+                                        <option value="{{ name }}" {{ 'selected' if (order.picker or '') == name else '' }}>{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <strong>Packer:</strong>
+                                <select class="form-select packer-field no-print" data-order-id="{{ order.display_id }}" onchange="updatePickerPacker('{{ order.display_id }}', 'packer', this)" style="width: auto; display: inline-block;">
+                                    <option value=""></option>
+                                    {% for name in ['Alec','Angela','Chris','Cris','Eda','Erica','Johnny','Kyle','Ray','Sophia'] %}
+                                        <option value="{{ name }}" {{ 'selected' if (order.packer or '') == name else '' }}>{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        Warehouse Status: 
+                        <select onchange="updateWarehouseStatus('{{ order.display_id }}', this.value)" 
+                            class="form-select no-print warehouse-status" 
+                            style="width: auto; display: inline-block; margin-left: 10px;">
+                            <option ></option>
+                            <option value="picking" {{ 'selected' if order.warehouse_status == 'picking' else '' }}>Picking</option>
+                            <option value="ready-to-pack" {{ 'selected' if order.warehouse_status == 'ready-to-pack' else '' }}>Ready to Pack</option>
+                            <option value="ready-to-ship" {{ 'selected' if order.warehouse_status == 'ready-to-ship' else '' }}>Ready to Ship</option>
+                        </select>
+                        <br/>
+                        <button onclick="printOrder('{{ order.display_id }}')" class="no-print btn btn-primary">Print Order</button>
+                        <button onclick="toggleDetails(this)" class="no-print btn btn-secondary">Show Details</button>
+    </div>
+                    <div class="order-details" style="display: {{ order.detailsDisplay }};">
+                        <table class="table order-details-table">
+                            <thead>
+                                <tr>
+                                    <th>SKU</th>
+                                    <th>Image</th>
+                                    <th>Quantity</th>
+                                    <th>Location</th>
+                                    <th>Variant Name</th>
+                                    <th>Product Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in order.items %}
+                            {% set v = item.view %}
+                            <tr>
+                                <td>{{ v.itemSku }}</td>
+                                <td><img src="{{ v.image }}" style="width:100px;height:100px;"/></td>
+                                <td><b style="font-size: 16px;">{{ v.neededQty }}</b></td>
+                                <td class="pick-locs{{ ' pick-locs-open' if v.locsOpen else '' }}" data-sku="{{ e(v.itemSku) }}" data-needed="{{ v.neededQty }}" data-order-id="{{ e(order.order_id) }}" data-loc-count="{{ v.locCount }}">
+                                    {% for lq in v.visible %}
+                                    <div class="pick-bin{{ ' is-default' if lq.isDefault else '' }}" data-pull="{{ lq.pullQty }}" data-location="{{ e(lq.location) }}">
+                                        <span class="pick-loc-label">{{ lq.location }} -- {{ lq.quantity }}</span>
+                                        <span class="pick-default-mark no-print" title="Default pick location">★</span>
+                                        {% if lq.locId > 0 %}
+                                            <input type="{{ 'hidden' if v.hidePullInput else 'number' }}" min="0" class="pull-qty-input no-print" value="{{ lq.pullQty }}" {{ 'disabled' if order.processed else '' }} data-source="faire" data-order-id="{{ e(order.order_id) }}" data-sku="{{ e(v.itemSku) }}" data-location-id="{{ lq.locId }}" data-location="{{ e(lq.location) }}" />
+                                            {% if not v.hidePullInput %}
+                                                <span class="pull-print">{{ lq.pullQty }}</span>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% if v.itemSku !== '' and v.locCount > 1 %}
+                                            <button type="button" class="no-print btn btn-xs btn-default set-default-loc" data-sku="{{ e(v.itemSku) }}" data-location="{{ e(lq.location) }}">Set default</button>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                    {% if v.locCount > 1 %}
+                                        <button type="button" class="no-print btn btn-link btn-xs toggle-extra-locs">{{ 'Hide locations' if v.locsOpen else (('More locations (' ~ v.extra.length ~ ')') if v.extra.length > 0 else 'More locations') }}</button>
+                                        <div class="pick-extra" style="display:{{ 'block' if v.locsOpen else 'none' }};">
+                                            {% for lq in v.extra %}
+                                            <div class="pick-bin{{ ' is-default' if lq.isDefault else '' }}" data-pull="{{ lq.pullQty }}" data-location="{{ e(lq.location) }}">
+                                                <span class="pick-loc-label">{{ lq.location }} -- {{ lq.quantity }}</span>
+                                                <span class="pick-default-mark no-print" title="Default pick location">★</span>
+                                                {% if lq.locId > 0 %}
+                                                    <input type="number" min="0" class="pull-qty-input no-print" value="{{ lq.pullQty }}" {{ 'disabled' if order.processed else '' }} data-source="faire" data-order-id="{{ e(order.order_id) }}" data-sku="{{ e(v.itemSku) }}" data-location-id="{{ lq.locId }}" data-location="{{ e(lq.location) }}" />
+                                                    <span class="pull-print">{{ lq.pullQty }}</span>
+                                                {% endif %}
+                                                {% if v.itemSku !== '' %}
+                                                    <button type="button" class="no-print btn btn-xs btn-default set-default-loc" data-sku="{{ e(v.itemSku) }}" data-location="{{ e(lq.location) }}">Set default</button>
+                                                {% endif %}
+                                            </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="pull-mismatch no-print" {% if v.hidePullMismatch or v.pullSum === v.neededQty %}style="display:none;" {% endif %}>Pull {{ v.pullSum }} does not match order qty {{ v.neededQty }}</div>
+                                </td>
+                                <td>{{ item.variant_name if (isset(item.variant_name) and item.variant_name != 'default') else '' }}</td>
+                                <td>{{ item.product_name if isset(item.product_name) else '' }}</td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+        </div>
+            </td>
+
+            <td class="no-print" style="display: none;">
+                <span class="no-print">{{ order.shipDate }}</span>
+            </td>
+
+            <td class="no-print" style="display: none;">
+                <span class="no-print">{{ order.orderDate }}</span>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<script>
+    var ORDER_DETAILS_HEADERS = ['SKU', 'Image', 'Quantity', 'Location', 'Variant Name', 'Product Name'];
+
+    function ensureOrderDetailsHeaders() {
+        document.querySelectorAll('.order-details-table').forEach(function(tbl) {
+            var thead = tbl.querySelector('thead');
+            var headerRow = thead ? thead.querySelector('tr') : null;
+            var thCount = headerRow ? headerRow.querySelectorAll('th').length : 0;
+            if (thCount !== 6) {
+                if (thead && headerRow) {
+                    headerRow.innerHTML = ORDER_DETAILS_HEADERS.map(function(h) {
+                        return '<th>' + h + '</th>';
+                    }).join('');
+                } else if (!thead) {
+                    thead = document.createElement('thead');
+                    thead.innerHTML = '<tr>' + ORDER_DETAILS_HEADERS.map(function(h) {
+                        return '<th>' + h + '</th>';
+                    }).join('') + '</tr>';
+                    tbl.insertBefore(thead, tbl.firstChild);
+                }
+            }
+        });
+    }
+
+    function toggleDetails(button) {
+        const orderInfo = button.closest('.order-info');
+        const detailsDiv = orderInfo.querySelector('.order-details');
+        const isHidden = detailsDiv.style.display === 'none';
+        if (isHidden && orderInfo.dataset.faireOrderStatus === 'NEW') {
+            alert('This order has not been accepted on Faire');
+        }
+        detailsDiv.style.display = isHidden ? 'block' : 'none';
+        button.textContent = isHidden ? 'Hide Details' : 'Show Details';
+        if (isHidden) {
+            ensureOrderDetailsHeaders();
+        }
+    }
+
+    $(document).on('click', '.toggle-extra-locs', function() {
+        var $btn = $(this);
+        var $cell = $btn.closest('.pick-locs');
+        var $extra = $cell.children('.pick-extra');
+        var opening = !$cell.hasClass('pick-locs-open');
+        $cell.toggleClass('pick-locs-open', opening);
+        if ($extra.length) {
+            $extra.toggle(opening);
+        }
+        var extraCount = $extra.find('.pick-bin').length;
+        if (opening) {
+            $btn.text('Hide locations');
+        } else {
+            $btn.text(extraCount > 0 ? 'More locations (' + extraCount + ')' : 'More locations');
+        }
+    });
+
+    function skuPullTotal($cell) {
+        var total = 0;
+        $cell.find('.pull-qty-input').each(function() {
+            total += parseInt($(this).val(), 10) || 0;
+        });
+        return total;
+    }
+
+    function updateSkuPullMismatch($cell) {
+        var locCount = parseInt($cell.data('loc-count'), 10) || $cell.find('.pick-bin').length;
+        var $msg = $cell.find('.pull-mismatch');
+        if (locCount === 0) {
+            $msg.hide();
+            return true;
+        }
+        var needed = parseInt($cell.data('needed'), 10) || 0;
+        var total = skuPullTotal($cell);
+        if (total !== needed) {
+            $msg.text('Pull ' + total + ' does not match order qty ' + needed).show();
+            return false;
+        }
+        $msg.hide();
+        return true;
+    }
+
+    function orderPullMismatches($row) {
+        var mismatches = [];
+        $row.find('.pick-locs').each(function() {
+            var $cell = $(this);
+            if (!updateSkuPullMismatch($cell)) {
+                mismatches.push($cell.data('sku') || '');
+            }
+        });
+        return mismatches;
+    }
+
+    $(document).on('focus', '.warehouse-status', function() {
+        this.setAttribute('data-prev', this.value);
+    });
+
+    $(document).on('change', '.pull-qty-input', function() {
+        var input = this;
+        var $input = $(input);
+        var pullQty = parseInt($input.val(), 10);
+        if (isNaN(pullQty) || pullQty < 0) {
+            pullQty = 0;
+            $input.val(0);
+        }
+        $input.closest('.pick-bin').attr('data-pull', pullQty);
+        $input.siblings('.pull-print').text(pullQty);
+        var $cell = $input.closest('.pick-locs');
+        $.ajax({
+            url: '{{ route('saveOrderPickAllocation') }}',
+            type: 'POST',
+            data: {
+                source: $input.data('source'),
+                order_id: $input.data('order-id'),
+                sku: $input.data('sku'),
+                location_id: $input.data('location-id'),
+                location: $input.data('location'),
+                pull_qty: pullQty,
+                _token: '{{ csrf_token() }}'
+            },
+            error: function(xhr) {
+                var msg = 'Failed to save pull qty';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                alert(msg);
+            },
+            complete: function() {
+                updateSkuPullMismatch($cell);
+            }
+        });
+    });
+
+    function markDefaultLocation(sku, location) {
+        var locNorm = String(location || '').toUpperCase();
+        $('.pick-locs').each(function() {
+            var $cell = $(this);
+            if (String($cell.data('sku') || '') !== String(sku)) {
+                return;
+            }
+            $cell.find('.pick-bin').each(function() {
+                var $bin = $(this);
+                var binLoc = String($bin.data('location') || '').toUpperCase();
+                var isDefault = binLoc === locNorm;
+                $bin.toggleClass('is-default', isDefault);
+                $bin.removeClass('pick-bin-changed');
+                $bin.find('.pick-default-flash').remove();
+                if (isDefault) {
+                    $bin.addClass('pick-bin-changed');
+                    $bin.append('<span class="pick-default-flash no-print">Saved as default</span>');
+                    setTimeout(function() {
+                        $bin.removeClass('pick-bin-changed');
+                        $bin.find('.pick-default-flash').fadeOut(400, function() { $(this).remove(); });
+                    }, 1800);
+                }
+            });
+        });
+    }
+
+    $(document).on('click', '.set-default-loc', function() {
+        var btn = $(this);
+        var sku = btn.data('sku');
+        var loc = btn.data('location');
+        btn.prop('disabled', true);
+        $.ajax({
+            url: '{{ route('updateProductDefaultLocation') }}',
+            type: 'POST',
+            data: {
+                sku: sku,
+                location: loc,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function() {
+                markDefaultLocation(sku, loc);
+                btn.prop('disabled', false);
+            },
+            error: function(xhr) {
+                btn.prop('disabled', false);
+                var msg = 'Failed to set default location';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    msg = xhr.responseJSON.message;
+                }
+                alert(msg);
+            }
+        });
+    });
+    function updateWarehouseStatus(display_id, status, callback=null) {
+        var displayIdSpan = document.querySelector('span[data-display-id="' + display_id + '"]');
+        var clickedRow = displayIdSpan ? displayIdSpan.closest('tr') : null;
+        if (clickedRow && (status === 'ready-to-pack' || status === 'ready-to-ship')) {
+            var mismatches = orderPullMismatches($(clickedRow));
+            if (mismatches.length) {
+                var detailsDiv = clickedRow.querySelector('.order-details');
+                if (detailsDiv) {
+                    detailsDiv.style.display = 'block';
+                }
+            }
+        }
+
+        $.ajax({
+            url: '{{ route('updateFaireWarehouseStatus') }}',
+            type: 'POST',
+            data: {
+                display_id: display_id, // Assuming display_id is stored in a data attribute
+                warehouse_status: status
+            },
+            success: function(response) {
+                if (response.success) {
+                    if(callback){
+                        callback();
+                    }
+                    else{
+                        const displayIdSpan = document.querySelector(`span[data-display-id="${display_id}"]`);
+                        const clickedRow = displayIdSpan ? displayIdSpan.closest('tr') : null;
+                        const warehouseStatusCell = clickedRow.querySelector('.warehouse-status');
+                        if (warehouseStatusCell) {
+                            warehouseStatusCell.value = status;
+                        }
+                        const detailsDiv = clickedRow.querySelector('.order-details');
+                        if(status == 'picking'){
+                            clickedRow.style.backgroundColor = '#b0b0b0';
+                            detailsDiv.style.display = 'none';
+                        }
+                        else if(status == 'ready-to-pack'){
+                            clickedRow.style.backgroundColor = '#fff5c3';
+                            detailsDiv.style.display = 'none';
+                        }
+                        else if(status == 'ready-to-ship'){
+                            clickedRow.style.backgroundColor = '#90EE90';
+                            detailsDiv.style.display = 'none';
+                        }
+                    }
+                } else {
+                    alert('Failed to update status.');
+                }
+            },
+            error: function(xhr) {
+            }
+        });
+    }
+    function flashElement(el, color) {
+        var orig = el.style.backgroundColor;
+        el.style.backgroundColor = color;
+        setTimeout(function() { el.style.backgroundColor = orig; }, 600);
+    }
+
+    function updatePickerPacker(display_id, field, selectEl) {
+        $.ajax({
+            url: '{{ route('updateFairePickerPacker') }}',
+            type: 'POST',
+            data: {
+                display_id: display_id,
+                field: field,
+                value: selectEl.value
+            },
+            success: function() {
+                flashElement(selectEl, '#90EE90');
+            },
+            error: function() {
+                flashElement(selectEl, '#FF6B6B');
+            }
+        });
+    }
+
+    function printOrder(display_id) {
+        // // Store current scroll position
+        const scrollPosition = window.pageYOffset || document.documentElement.scrollTop;
+        const rows = document.querySelectorAll('#orders tbody tr');
+        const clickedRow = event.target.closest('tr');
+        const orderInfoEl = clickedRow.querySelector('.order-info');
+        if (orderInfoEl && orderInfoEl.dataset.faireOrderStatus === 'NEW') {
+            alert('This order has not been accepted on Faire');
+        }
+        const warehouseSelect = clickedRow.querySelector('.warehouse-status');
+        if (warehouseSelect && warehouseSelect.value) {
+            alert('Warning: This order already has been printed before. Printing will reset it to Picking.');
+        }
+
+        // Show details before printing
+        const detailsDiv = clickedRow.querySelector('.order-details');
+        detailsDiv.style.display = 'block';
+        const orderInfo = document.querySelector(`span[data-display-id="${display_id}"]`).closest('.order-info');
+        let orderInfoContent = orderInfo.innerHTML;
+        // Create a temporary div to manipulate the HTML without affecting the actual DOM
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = orderInfoContent;
+        const tempActionButtons = tempDiv.querySelector('.action-buttons');
+        if (tempActionButtons) {
+            tempActionButtons.remove();
+        }
+        orderInfoContent = tempDiv.innerHTML;
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write('<html><head><title>Order Details</title>');
+        printWindow.document.write('<link rel="stylesheet" type="text/css" href="{{ asset('css/app.css') }}">');
+        printWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">');
+        // The print window doesn't inherit this page's print styles, so hide the editing controls here too
+        printWindow.document.write('<style>.no-print, .pick-extra .pick-bin[data-pull="0"], .set-default-loc, .toggle-extra-locs, .pull-qty-input, .pull-mismatch { display: none !important; } .pull-print { display: inline !important; }</style>');
+        printWindow.document.write('</head><body>');
+        printWindow.document.write(orderInfoContent);
+        printWindow.document.write('</body></html>');
+        printWindow.document.close();
+        printWindow.print();
+        printWindow.close();
+        
+        
+        // // Hide details after printing
+        detailsDiv.style.display = 'none';
+        const toggleButton = clickedRow.querySelector('button[onclick="toggleDetails(this)"]');
+        toggleButton.textContent = 'Show Details';
+        updateWarehouseStatus(display_id, 'picking', function(){
+            // Update the row's warehouse status text
+            const warehouseStatusCell = clickedRow.querySelector('.warehouse-status');
+            if (warehouseStatusCell) {
+                warehouseStatusCell.value = 'picking';
+            }            
+            clickedRow.style.backgroundColor = '#b0b0b0';
+            // Return to scroll position after status update
+            window.scrollTo(0, scrollPosition);
+        });
+    }
+
+    var currentStore = 'FAIRE';
+    var store = 'FAIRE';
+    $(document).ready(function() {
+        $("#unshipped_faire").addClass("active");
+        $(".hidden-xs").hide();
+        oTable = $('#orders').DataTable({
+            "aoColumns": [{
+                "sWidth": "100%"
+            },{
+                "sWidth": "0px",
+                "visible": false
+            },{
+                "sWidth": "0px",
+                "visible": false
+            }],
+			"aaSorting": [
+				[1, "asc"],
+				[2, "asc"]
+			],
+            "sDom": "<'row-fluid'<'span6'l><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+            "bPaginate": false,
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records per page"
+            },
+            "fnRowCallback": function(nRow, aData) {
+                var days = aData[5]; // ID is returned by the server as part of the data
+                var $nRow = $(nRow); // cache the row wrapped up in jQuery
+                if (days > -1) {
+                    $nRow.css({
+                        //"color": "red"
+                    })
+                } else if (days > -2) {
+                    $nRow.css({
+                        "color": "orange"
+                    })
+                }
+                return nRow
+            },
+            "drawCallback": function() {
+                ensureOrderDetailsHeaders();
+            }
+        });
+
+        ensureOrderDetailsHeaders();        // Handle sort by selection change
+        $('#sortBy').on('change', function() {
+            var primaryColumn = $(this).val() === 'order-date' ? 2 : 1; // Column 2 for order date, column 1 for ship date
+            var secondaryColumn = $(this).val() === 'order-date' ? 1 : 2; // Secondary sort by the other column
+            oTable.order([[primaryColumn, 'asc'], [secondaryColumn, 'asc']]).draw();
+        });
+
+    });
+</script>
+
+{% endblock %}

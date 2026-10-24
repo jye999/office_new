@@ -869,8 +869,11 @@ export const prepareStore101 = (u: { company_id?: number } | null) => prepareGra
 // ------------------------------------------------------------------ U3: Faire
 
 // PHP strtotime() on the ISO-8601 ('2025-08-04T12:00:00.000Z') strings Faire stores; false -> 0.
-const isoTs = (s: unknown): number => {
-  const t = Date.parse(String(s ?? ''));
+export const isoTs = (s: unknown): number => {
+  const str = String(s ?? '');
+  // No zone designator (plain 'Y-m-d [H:i:s]'): PHP reads it in the app timezone.
+  if (!/(Z|[+-]\d\d:?\d\d)$/.test(str)) return strtotime(str);
+  const t = Date.parse(str);
   return Number.isNaN(t) ? 0 : Math.floor(t / 1000);
 };
 

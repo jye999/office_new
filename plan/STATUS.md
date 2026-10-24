@@ -450,3 +450,9 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - /unshipped90 and any /unshipped92 page with orders 500 on this dev DB because `hwc.products` does not exist — the old app fails identically (kept; production has the table). An item with an empty sku also 500s (`$hwc['']` undefined index) in both.
 - Shared fix: the global error handler (src/server.ts) rendered the 500 page with HTTP 200; it now sets 500 like Laravel.
 - Not exercised: label/print/tracking actions behind these pages (write/buy).
+
+## U4 — done
+- /fairePickList (+ views/fairePickList.njk), POST /updateFaireWarehouseStatus, /updateFairePickerPacker, /updateProductDefaultLocation, /saveOrderPickAllocation in src/modules/unshipped/faire.ts. Pick helpers (suggestedPulls/applySavedPulls/pickForQty) appended to src/lib/warehouseLocation.ts; PHP 7.4 sort in src/lib/phpSort.ts.
+- Verified: GET `hunks 0` on all 63 real PROCESSING/NEW orders, and with a temp multi-bin order (default bin, saved pulls). POST routes: same JSON + same resulting DB rows as the old app for a scripted sequence on a temp order/product (status seed, save pull qty, picker/packer, default location, 404s); validation responses identical. All temp rows removed.
+- test/u4.test.ts covers guards, validation, the temp-order lifecycle and phpUsort.
+- Not verified: concurrent edits; the inventory-deduction flow that sets os_faire_processed_orders (not part of U4).

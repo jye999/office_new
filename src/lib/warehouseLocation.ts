@@ -8,6 +8,7 @@
 import { db, sql } from '../db.js';
 import { nowDb } from '../db.js';
 import { strtotime } from '../view.js';
+import { phpUsort } from './phpSort.js';
 
 type Db = typeof db;
 
@@ -370,4 +371,84 @@ export function recommend(locations: ClusterRow[]): Recommendation | null {
     }
   }
   return { clusters: summaries, suggested_target: targetCode, suggested_moves: suggestedMoves };
+}
+
+// ---- pick-list helpers (U4: fairePickList / ensureFaireOrderAllocations) --------------------
+// Same PHP functions as sortStocked/level above, but over plain bin arrays
+// ({location, qty|quantity, location_id?}) instead of os_product_locations rows.
+
+export type Bin = { location: string; quantity: number; location_id?: number; pull_qty?: number };
+export type Picked = { visible: Bin[]; extra: Bin[] };
+
+const asciiUpper = (s: string): string => s.replace(/[a-z]/g, (c) => c.toUpperCase());
+const phpTrim = (v: unknown): string => String(v ?? '').replace(/^[ \t\n\r\0\x0B]+|[ \t\n\r\0\x0B]+$/g, '');
+
+function sortStockedBins(locations: Array<Record<string, unknown>>): Bin[] {
+  const filtered: Bin[] = [];
+  for (const row of locations) {
+    let qty = 0;
+    if (row['qty'] != null) qty = parseInt(String(row['qty']), 10) || 0;
+    else if (row['quantity'] != null) qty = parseInt(String(row['quantity']), 10) || 0;
+    const code = row['location'] != null ? phpTrim(row['location']) : '';
+    if (qty <= 0 || code === '') continue;
+    const entry: Bin = { location: code, quantity: qty };
+    if (row['location_id'] != null) entry.location_id = parseInt(String(row['location_id']), 10) || 0;
+    filtered.push(entry);
+  }
+  phpUsort(filtered, (a, b) => {
+    const la = level(a.location);
+    const lb = level(b.location);
+    if (la !== lb) return la < lb ? -1 : 1;
+    return strcasecmp(a.location, b.location);
+  });
+  return filtered;
+}
+
+// Default bin first (if still stocked), then lowest L, until qty covers the order.
+export function pickForQty(locations: Array<Record<string, unknown>>, neededQty: number, defaultLocation: unknown): Picked {
+  const sorted = sortStockedBins(locations);
+  const need = Math.trunc(Number(neededQty)) || 0;
+  const defaultNorm = asciiUpper(phpTrim(defaultLocation));
+  let defaultIndex: number | null = null;
+  if (defaultNorm !== '') {
+    for (let i = 0; i < sorted.length; i++) {
+      if (asciiUpper(sorted[i].location) === defaultNorm) {
+        defaultIndex = i;
+        break;
+      }
+    }
+  }
+  const ordered = defaultIndex !== null ? [sorted[defaultIndex], ...sorted.filter((_, i) => i !== defaultIndex)] : sorted;
+  const visible: Bin[] = [];
+  const extra: Bin[] = [];
+  let sum = 0;
+  for (const row of ordered) {
+    if (visible.length === 0 || sum < need) {
+      visible.push(row);
+      sum += row.quantity;
+    } else extra.push(row);
+  }
+  return { visible, extra };
+}
+
+// Same bins as pickForQty, with pull_qty filled until neededQty (extras 0).
+export function suggestedPulls(locations: Array<Record<string, unknown>>, neededQty: number, defaultLocation: unknown): Picked {
+  const picked = pickForQty(locations, neededQty, defaultLocation);
+  let remaining = Math.trunc(Number(neededQty)) || 0;
+  for (const row of picked.visible) {
+    const pull = remaining > 0 ? Math.min(remaining, row.quantity) : 0;
+    row.pull_qty = pull;
+    remaining -= pull;
+  }
+  for (const row of picked.extra) row.pull_qty = 0;
+  return picked;
+}
+
+// Overlay saved pull_qty by location_id. Missing ids become 0.
+export function applySavedPulls(picked: Picked, saved: Record<number, number> | null): Picked {
+  if (saved == null) return picked;
+  for (const key of ['visible', 'extra'] as const) {
+    for (const row of picked[key]) row.pull_qty = saved[row.location_id ?? 0] != null ? saved[row.location_id ?? 0] : 0;
+  }
+  return picked;
 }
