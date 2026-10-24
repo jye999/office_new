@@ -431,3 +431,5 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - Verified: typecheck, `test/t43.test.ts` (guards, datatables, page renders), `pnpm parity --task T43` (/products.shopify; bigint `id` coerced to number to match PDO).
 - Not verified: POST /products.shopify, ImportListing, ImportAmazonAsin, RemoveLink and Etsy/Amazon import execution (write to DB / call marketplaces). Manual checklist: run only with DRY_RUN=1 and mocked transports; compare os_shopify_variants_links rows after updateShopifyLink.
 - `scripts/parity.ts`: unifiedDiff now skips the LCS table for >4M cells (it OOM'd on large mismatching JSON).
+
+## U1 — partial
