@@ -39,6 +39,10 @@ import { registerSupplierRoutes } from './modules/supplier/routes.js';
 import { registerProductImageRoutes } from './modules/productimage/routes.js';
 import { registerFaireImportRoutes } from './modules/faireimport/routes.js';
 import { registerPdaRoutes } from './modules/pda/routes.js';
+import { registerStampsRoutes } from './modules/stamps/routes.js';
+import { registerFedexRoutes } from './modules/fedex/routes.js';
+import { registerUpsRoutes } from './modules/ups/routes.js';
+import { registerFrayunRoutes } from './modules/frayun/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 import { parseLaravelQuery } from './http.js';
@@ -93,6 +97,10 @@ registerSupplierRoutes(app);
 registerProductImageRoutes(app);
 registerFaireImportRoutes(app);
 registerPdaRoutes(app);
+registerStampsRoutes(app);
+registerFedexRoutes(app);
+registerUpsRoutes(app);
+registerFrayunRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

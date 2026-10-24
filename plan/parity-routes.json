@@ -99,8 +99,10 @@
   "T28": [
     "/products",
     "/products.data",
-    "/products.bulk",
-    "/products.viewbulk"
+    "/product",
+    "/product/create",
+    "/product/2706/edit",
+    "/product/2706/deleteMsg"
   ],
   "T30": [
     "/api/supplierproducts",
@@ -113,17 +115,7 @@
     "/SupplierProduct/5"
   ],
   "T40": [
-    "/getMultiCleanse",
-    "/getCleanse",
-    "/stampsAccount",
-    "/getStampsUrl",
-    "/checkCleanseAddress",
-    "/fedex.getOneRate",
-    "/fedex.getrate",
-    "/fedex.validate",
-    "/ups.getrate",
-    "/ups.validate",
-    "/frayunBalance"
+    "/getMultiCleanse"
   ],
   "T41": [
     "/Wayfair.packingSlip",
@@ -178,14 +170,5 @@
     "/etsyDesc",
     "/etsyListing",
     "/Houzz.ajax"
-  ],
-  "T27": [],
-  "T28": [
-    "/products",
-    "/products.data",
-    "/product",
-    "/product/create",
-    "/product/2706/edit",
-    "/product/2706/deleteMsg"
   ]
 }
