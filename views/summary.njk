@@ -1,0 +1,76 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+table {
+    font-size:14pt;
+}
+</style>
+<table id="summaryTable" class="table table-bordered table-condensed" >
+    <thead>
+        <tr>
+            <td>Store</td><td>Orders</td><td>20 Days Old Orders</td><td>Qty</td><td>Qty Made</td>
+        </tr>
+    </thead>
+    <tbody>
+        {% for o in summary %}
+            <tr>
+                <td>
+                {% set storeNames = {"TEMU":"101 - TEMU", "A":"1 - Amazon", "E":"7 - eBay - Retail", "R":"8 - eBay - Floral Supply", "S":"3 - Shopify", "T":"4 - Etsy - Retail 1", "H":"9 - Houzz", "W":"2 - Walmart", "D":"10 - Walmart Ddropship", "T2":"6 - Etsy - Floral Supply", "T3":"5 - Etsy - Retail 2", "WINDY":"90 - WINDY", "mermaid":"92 - MERMAID", "EF":"11 - Enfloral"} %}{{ storeNames[o.store] | safe }}
+                </td>
+                <td>{{ o.orders }}</td>
+                <td >{{ o.oldorders }}</td>
+                <td>{{ o.qty }}</td>
+                <td>{{ o.made }}</td>
+                </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td><strong>Total</strong></td>
+            <td><strong><span id="total"></span></strong></td>
+            <td><strong><span id="totalOld"></span></strong></td>
+            <td><strong><span id="totalQty"></span></strong></td>
+            <td><strong><span id="totalMade"></span></strong></td>
+        </tr>
+    </tfoot>
+</table>
+<div id="msgDiv" style="font-size:22pt; color:red">
+</div>
+<script>
+
+		oTable = $('#summaryTable').dataTable({
+			"aoColumns": [{
+				"sWidth": "75px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "75px"
+			}],
+			"aaSorting": [
+				[0, "asc"]
+			],
+			"bPaginate": false,
+            fnFooterCallback: function ( nRow, aaData, iStart, iEnd, aiDisplay ) {
+            var total=0;
+            var totalOld = 0;
+            var totalQty = 0;
+            var totalMade = 0;
+            for ( var i=0 ; i<aaData.length ; i++ ) {
+                total += parseFloat(aaData[i][1]);
+                totalOld += parseFloat(aaData[i][2]);
+                totalQty += parseFloat(aaData[i][3]);
+                totalMade += parseFloat(aaData[i][4]);
+            }
+            $("#total").text(total);
+            $("#totalOld").text(totalOld);
+            $("#totalQty").text(totalQty);
+            $("#totalMade").text(totalMade);
+        }
+		});
+
+</script>
+{% endblock %}

@@ -456,3 +456,10 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - Verified: GET `hunks 0` on all 63 real PROCESSING/NEW orders, and with a temp multi-bin order (default bin, saved pulls). POST routes: same JSON + same resulting DB rows as the old app for a scripted sequence on a temp order/product (status seed, save pull qty, picker/packer, default location, 404s); validation responses identical. All temp rows removed.
 - test/u4.test.ts covers guards, validation, the temp-order lifecycle and phpUsort.
 - Not verified: concurrent edits; the inventory-deduction flow that sets os_faire_processed_orders (not part of U4).
+
+## U5 — done
+- /summary /processed /allunshipped /PackingList /PendingShipment /searchOrder /createPacking /geturls in src/modules/unshipped/lists.ts; views summary, processed, allunshipped, packinglist, PendingShipment generated with plan/tools/blade2njk.py.
+- Verified `hunks 0` (pagecmp) for all five pages on real data (allunshipped 33 rows, PackingList 5, PendingShipment 5), plus temp seeded rows for the Walmart merge/image fallback in PackingList and for /processed (order + trackings); /searchOrder JSON identical for 4 search terms (200 orders w/ detail+tracking). Temp rows removed.
+- /geturls (UnshippedController@getUrls does not exist) and /createPacking (view `packing` missing) are 500 in the old app and here.
+- Shared: view.ts strtotime now understands relative `+/- N days|weekdays` and ISO-with-zone; new globals strlen, array_key_exists, cat, phpNull, num, ceil, time, sizeof; server error handler logs `[500] ...` to stderr.
+- Not verified: the per-row action buttons these pages render (they call other routes: U6-U10).

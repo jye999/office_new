@@ -1,0 +1,120 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+</style>
+
+    <div style="" >
+        Order Id : <input type="text" id="searchOrderId">
+        <button id="searchBtn">Search</button>
+        <div id="searchResult"></div>
+    </div>
+    <table class="table table-bordered table-condensed" id="orders" style="font-size:14px;">
+        <thead>
+            <tr>
+                <th>Store</th>
+                <th>Order Number</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Update Date</th>
+                <th>Tracking</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr  >
+
+            <td>{{ item['store'] }} 
+                    
+                    </td>
+                <td>{{ item['orderId'] }} 
+                    <br/><span>Buyer : {{ order['buyer'] }} {{ str_replace("@marketplace.amazon.com", "", order.email) }} </span>
+                    <br/><a href="#" class="searchBuyer" >{{ cat(order['address1'], ' ', order['address2'], ', ', order['state'], ' ', order['zip']) }}</a>
+                    
+                </td>
+                <td><p maxWidth="500px">{{ item['name'] }}</p> <br/>
+                <a class="gallery" href="{{ (item['asin'] if (isset(item['asin'])) else '') }}"><img src="{{ (item['image'] if (isset(item['image'])) else '') }}" class="itemImage"></a>
+                      </td>
+                <td>{{ item['qty'] }}</td>
+                <td>{{ order.updated_at }}</td>
+                <td>
+                {% if sizeof(order.tracking) > 0 %}
+                    {% for t in order.tracking %} 
+                        {{ t.tracking }}<br/>
+                    {% endfor %}
+                {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+    </table>
+	<script>
+    var cleanseAddress;
+	var target_row;
+    var oTable ;
+    var currentPos = 0;
+    var pendingToship = "";
+    var massPrinting = false;
+    var massPrintOrderArray = [];
+    var massPrintOrderUrlArray = [];
+
+	$(document).ready(function() {
+
+		oTable = $('#orders').dataTable({
+                         "aoColumns": [{
+                                "sWidth": "75px"
+                         }, {
+                                "sWidth": "150px"
+                         }, {
+                                "sWidth": "50px"
+                         }, {
+                                "sWidth": "500px"
+                         }, {
+                                "sWidth": "100px"
+                         }, {
+                                "sWidth": "50%"
+                         }],
+			"aaSorting": [
+				[4, "desc"]
+			],
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+
+    
+    $("#searchBtn").click(function(){
+        var orderId = $("#searchOrderId").val();
+        console.log(orderId);
+        $.ajax({
+        type : 'post',
+                dataType: 'json',
+                url : '{{ route('searchOrder') }}',
+                data :  {"orderId": orderId  },
+                success : function(r) {
+                    $("#searchResult").html('');
+                    var result="";
+                    if(r.length<1){
+                        $("#searchResult").html('<p style="color:red">no orders found</p>');
+                    }
+                    $.each(r, function(idx, t) {
+                        result += "Order : "+t.orderId +" - Tracking status "+t.trackingStatus.replace("|"," at ")+"<br/>";
+                    });
+
+                    $("#searchResult").append(result);
+                    $("#searchResult").append("<hr/>");
+                }
+        });
+    });
+    
+    
+    });
+	
+	</script>
+    <script src="{{ asset('assets/js/unshipped.js') }}"></script>
+{% endblock %}

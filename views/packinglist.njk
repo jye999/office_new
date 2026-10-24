@@ -1,0 +1,478 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+<style>
+
+.btnShowImage{
+  display:none;
+}
+a.gallery{
+    /*display:none;*/
+}
+</style>
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+        <tr class="no-print">
+        <th colspan="9">
+<button class="btn btn-primary" id="printListBtn">Print List</button></th></tr>
+            <tr>
+                <th class="no-print"><input type="checkbox" id="chkAll"></th>
+                <th>Store</th>
+                <th>Order Number</th>
+                <th>SKU</th>
+                <th>Location</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Image</th>
+                <th>ship date</th>
+                <th class="no-print">Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr  class='{{ (("made" if (isset(item.made) and item.made == "Y") else "")) }} {{ (("halfmade" if (isset(item.made) and item.made == "H") else "")) }} {{ (("priority" if ((isset(item['isPrime']) and item['isPrime'] == 'true') or (isset(order['priority']) and order['priority'] == true) or ceil((num(time()) - num(strtotime(item['promiseDate'])))/60/60/24) >= -1) else "")) }}' >
+                <td class="no-print"><input type="checkbox" class="action" value="{{ item['orderId'] }}" data-country="{{ order['country'] }}" data-multiorder="{{ sizeof(buyerStats[order.email]) }}">
+                
+                {% if order['country'] != 'US' %}
+                <i class="glyphicon glyphicon-globe"></i>{{ order['country'] }}
+                {% endif %}
+                <br/>
+                {{ (("MADE" if (isset(item.made) and item.made == "Y") else "")) }}<br/>
+                {{ (("HALFMADE" if (isset(item.made) and item.made == "H") else "")) }} 
+                </td>
+                <td><span class="store">{{ item['store'] }}</span> </td>
+                <td>{{ item['orderId'] }} 
+                    {% if isset(item['isPrime']) and item['isPrime'] == 'true' %} 
+                        <br/><img src="{{ url('/images/prime_small.png') }}" /></br>
+                    {% endif %}
+                    <span class="orderSpan" style="display:none">{{ item['orderId'] }}</span>
+                    <a class="anchor" id="{{ item['orderId'] }}">{{ item['orderId'] }} </a>
+                    <span class="no-print">
+                    <br/>
+                    {% set multi = buyerStats[cat(order.address1, order.zip)] %}{% if count(multi) > 1 %}<br> Multi-orders {% for b in multi %}<br><a href='#{{ b | safe }}'>{{ b | safe }}</a><br>{% endfor %}{% endif %}
+                    <br/>
+                    </span>
+                </td>
+                <td>
+                {% if phpNull(item.ProductMap) %}
+                    <span class="internalSku"></span>
+                {% else %}
+                  <a class="internalSku">{{ item.ProductMap['sku'] }}</a> 
+                {% endif %}
+                </td>
+                <td>
+                <span class="externalAsin">{% for l in item.ProductMap.Product.locations %}{{ cat(l.location, '-', l.qty, '<br/>') | safe }}{% endfor %}</span> <br/>
+                </td>
+                <td style="font-size: 13pt">
+                {% if item['store']=='E' or item['store']=='R' %}{% set itemID = explode("-", item['itemId']) %}<a class="desclink" href="ebayDesc?itemId={{ itemID[0] | safe }}" target="_blank">{{ item['name'] | safe }}</a>{% elif item['store']=='A' %}<a href="#" class="itemName" data-asin="{{ (item['asin'] if isset(item['asin']) else '') | safe }}">{{ item['name'] | safe }}</a>{% elif item['store']=='T' %}<a href="https://www.etsy.com/your/orders/sold?search_query={{ item['orderId'] | safe }}" target="_blank">{{ item['name'] | safe }}</a>{% elif item['store']=='S' %}{% set itemID = explode("-", item['itemId']) %}<a class="desclink" href="ShopifyDesc?product={{ itemID[1] | safe }}" target="_blank">{{ item['name'] | safe }}</a>{% else %}{{ item['name'] | safe }}{% endif %}
+                <br/>
+                {% set varvalue = explode("|", item.variation) %}{% set v = "" %}{% if count(varvalue) > 1 %}{% set v = varvalue[1] %}{% endif %}
+                <span style='color:black'> {{ str_replace("|", ":", item.variation) }} </span>
+				<span style='color:orange'> 
+					{{ (cat("<br/>Notes From Buyer : ", order.notesFromBuyer) if (strlen(order.notesFromBuyer) > 1) else "") }}
+					{{ (cat("<br/>Notes To Seller : ", order.selfNotes) if (strlen(order.selfNotes) > 1) else "") }}
+				</span>
+                    <br/>
+                    <textarea class="notes" >{% if isset(item['notes']) %}{{ item['notes'] | safe }}{% endif %}</textarea><br/>
+                    <span class="no-print">
+                    <br/><span>Buyer : {{ order['buyer'] }} {{ str_replace("@marketplace.amazon.com", "", order.email) }} </span>
+                    <br/><a href="#" class="searchBuyer" >{{ cat(order['address1'], ' ', order['address2'], ', ', order['state'], ' ', order['zip']) }}</a>
+                    </span>
+                </td>
+                <td ><span style="font-weight:bold;font-size:20pt">{{ item['qty'] }}</span><br/> 
+                Total: {{ itemStats[item.ProductMap['sku']] }}
+                </td>
+                <td  class="no-print">
+                {% if item.store == 'H' %}
+                <a class="gallery" href="{{ (cat(url('/storage/product_images_icon/'), "/", item['image']) if (isset(item['image'])) else cat(url('/storage/product_images_icon/'), "/", item.ProductMap['sku'])) }}">
+                <img src="{{ (cat(url('/storage/product_images_full/'), "/", item['image']) if (isset(item['image'])) else cat(url('/storage/product_images_full/'), "/", item.ProductMap['sku'])) }}" style="width:300px" class="itemImage">
+                        <span class="orderIdvalue" style="display:none">{{ item['orderId'] }}</span>
+						
+						</a>
+                {% else %}
+                <a class="gallery" href="{{ (item['asin'] if (isset(item['asin'])) else '') }}">
+                    <img src="{{ (item['image'] if (isset(item['image'])) else '') }}" style="width:300px" class="itemImage"></a></td>
+                {% endif %}
+                <!--<td>{{ num(item['days-past-promise']) + num(2) }} </td>-->
+
+                <td>
+                {% if item.store=='E' or item.store=='R' %}{{ date('Y-m-d', strtotime(cat(order.paymentDate, ' + ', (0 if item.handling == none else item.handling), ' days'))) }}{% elif item.store=='W' or item.store=='H' %}{{ date('Y-m-d', strtotime(cat(order.paymentDate, ' + ', ((0 if item.handling == none else item.handling) + 3), ' days'))) }}{% elif item.store=='T' %}{% set handling = 0 %}{% if item.handling != none %}{% set handling = int(item.handling) %}{% if handling < 3 %}{% set handling = 2 %}{% else %}{% set handling = handling - 2 %}{% endif %}{% endif %}{{ date('Y-m-d', strtotime(cat(order.purchaseDate, ' + ', handling, ' weekdays'))) }}{% else %}{{ date('Y-m-d', strtotime(cat(item.promiseDate, ' - 2 days'))) }}{% endif %}
+                        
+                   <!--  <br/><br/> -->
+                   <!-- {{ item['promiseDate'] }} -->
+                    </td>
+
+                <td  class="no-print">
+
+                {% if hasRole(['user', 'admin']) %}
+                    {% if item.store != 'D' %}
+                        {% if item['shipLevel'] != 'SecondDay' and item['shipLevel'] != 'SameDay' %}
+                        <button class="btn btn-primary btn-lg labelBtn" value="{{ item['orderId'] }}">
+                            Print
+                            {{ (('Priority' if item['shipLevel'] == 'Standard' else item['shipLevel'])) | safe }}
+                        </button>
+                        {% else %}
+                        <button class="btn btn-primary amzPrint actionBtn" value="{{ item['orderId'] }}">
+                            Amz Print
+                        </button> 
+                        {% endif %}
+                        {% if order['country'] == 'US' or order['country'] == 'USA' %}
+                        <button class="btn btn-primary fedexPrint actionBtn" value="{{ item['orderId'] }}">
+                            Fedex
+                        </button>
+                        <button class="btn btn-primary upsPrint actionBtn" value="{{ item['orderId'] }}">
+                            UPS
+                        </button>
+                        {% endif %}
+                    {% else %}
+                        {% if item['shipLevel'] == '31' or item['shipLevel'] == '30' %}
+                            <button class="btn btn-primary labelBtn actionBtn" value="{{ item['orderId'] }}">USPS Priority</button>
+                        {% endif %}
+                        {% if item['shipLevel'] == '67' %}
+                            <button class="btn btn-primary fedexPrint actionBtn" value="{{ item['orderId'] }}">Fedex Home</button>
+                        {% endif %}
+                        {% if item['shipLevel'] == '68' or item['shipLevel'] == '20' %}
+                            <button class="btn btn-primary fedexPrint actionBtn" value="{{ item['orderId'] }}">Fedex Ground</button>
+                        {% endif %}
+                        
+                        {% if item['shipLevel'] == '501' %}
+                            <button class="btn btn-primary upsPrint actionBtn" value="{{ item['orderId'] }}">UPS Ground</button>
+                        {% endif %}
+                    {% endif %}
+
+                    <br/><br/>
+                    {% if item['shipLevel'] != 'SecondDay' and item['shipLevel'] != 'SameDay' %}
+                    <button class="btn btn-primary addTrackBtn" value="{{ item['orderId'] }}">
+                        Add Tracking
+                    </button><br/><br/>
+                    <button class="btn btn-primary madeBtn" value="{{ item['itemId'] }}">
+                     {{ (("Unmade" if (isset(item.made) and item.made == "Y") else "Made")) }}
+                    </button>
+                    <br/><br/>
+                    {% endif %}
+                    <button class="btn btn-primary doneBtn" value="{{ item['orderId'] }}">
+                        Done
+                    </button>
+                    
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot class="no-print">
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    <div class="modal fade" id="selectMatchModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <span id="matchTitle"></span>
+                </div>
+                <div class="modal-body" >
+
+                    <table class="table table-bordered table-condensed" id="skuTable">
+                    <thead>
+                      <tr>
+                      <td></td><td>SKU</td><td>NAME</td><td>CHINESE</td><td>Image</td>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        
+                    </tbody>
+                    </table>
+                </div>
+              </div>
+            </div>
+      </div>
+
+
+      <div class="modal fade" id="skuModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <span id="skuTitle"></span>
+                </div>
+                <div class="modal-body" >
+                 SKU: <span id="skuText"></span><br/>
+                  <div id="skuLocation"></div>
+                  <div id="skuImages"></div>
+                </div>
+              </div>
+            </div>
+      </div>
+
+
+<script>
+    var currentStore='A';
+    var itemName = '';
+    var externalSku = '';
+    var externalAsin = '';
+    var store = '';
+    var productDataLoaded = false;
+    function loadProducts(){
+        if(productDataLoaded==false){
+        $.ajax({
+            type:'get',
+            datatype: 'json',
+            url: '/api/products', 
+            success: function(r) {
+                console.dir(r);
+                for(var i=0;i<r.products.length;i++){
+                    $("#skuTable tbody").append('<tr><td><button class="btn btn-sm btn-primary btnSelectMatch" value="'+r.products[i].sku+'">Select</button></td><td>'+r.products[i].sku+'</td><td>'+r.products[i].name+'</td><td>'+r.products[i].chinese+'</td><td><img src="'+((r.products[i].images!=null && r.products[i].images.length>0)?'/storage/product_images_icon/'+r.products[i].images[0].filename:'')+'"></td></tr>');
+                }
+                $("#skuTable").dataTable();
+                productDataLoaded = true;
+            },
+            error: function(err){
+                console.dir(err);
+            }
+        });
+        }
+    }
+    $(document).ready(function(){
+		$("#packing").addClass("active");
+		oTable = $('#orders').dataTable({
+			"aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "50px"
+			},{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "120px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			},{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}],
+			"aaSorting": [
+				[8, "asc"]
+			],
+            "sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+				var days = aData[5]; // ID is returned by the server as part of the data
+				var $nRow = $(nRow); // cache the row wrapped up in jQuery
+				if (days > -1) {
+					$nRow.css({
+						//"color": "red"
+					})
+				} else if (days > -2) {
+					$nRow.css({
+						"color": "orange"
+					})
+				}
+				return nRow
+			}
+		});
+
+    // $('a.gallery').hide();
+    $(".btnShowImage").click(function(e){
+        console.log('click');
+        $(this).parent().find('a.gallery').toggle();
+    });
+    $("#printListBtn").click(function(e){
+        window.print();
+    })
+	 $('a.gallery').click(function(e){
+		  e.preventDefault();
+			var id = $(this).attr('href');
+			if(id==''){
+				alert('no image');
+				return;
+			}
+      $.ajax({
+            type:'get',
+            datatype: 'json',
+            url: '{{ route('getAmzImage') }}', 
+            data: {'asin': id}, 
+            success: function(r) {
+                      $("#picHolder").html('');
+                      console.dir(r);
+                      if(r!=''){
+                          addImageToGallery(r.image);
+                          addImageToGallery(r.image_1);
+                          addImageToGallery(r.image_2);
+                          addImageToGallery(r.image_3);
+                          addImageToGallery(r.image_4);
+                          addImageToGallery(r.image_5);
+                          addImageToGallery(r.image_6);
+                          addImageToGallery(r.image_7);
+                          addImageToGallery(r.image_8);
+                          addImageToGallery(r.image_9);
+                          addImageToGallery(r.image_10);
+                      }
+                      $(".group1").colorbox({rel:'group1',open:true});
+            },
+            error: function(err){
+                console.dir(err);
+            }
+      });
+	});
+  $(document).on('click','.internalSku',function(e){
+
+    e.preventDefault();
+    var sku = $(this).text();
+
+    $("#skuTitle").text('Loading');
+    $("#skuText").text('');
+    $("#skuLocation").html('');
+    $("#skuImages").html('');
+
+    $("#skuModal").modal('show');
+    $.ajax({
+        type: 'get',
+        url: '{{ route('product.sku') }}', // in here you should put your query 
+        data: {'sku':sku}, // here you pass your id via ajax .
+        // in php you should use $_POST['post_id'] to get this value 
+        success: function(result) {
+            console.dir(result);
+            $("#skuTitle").text(result.name);
+            $("#skuText").text(result.sku);
+            
+            var locationHtml="";
+            for(var i=0;i<result.locations.length;i++){
+              locationHtml += "location: "+result.locations[i].location+" - qty :"+result.locations[i].qty+"<br/>";
+            }
+            var imageHtml="";
+            for(var i=0;i<result.images.length;i++){
+              imageHtml += "<a href='/storage/product_images_full/"+result.images[i].filename+"' target='_blank'><img src='/storage/product_images_icon/"+result.images[i].filename+"'></a>";
+            }
+            $("#skuLocation").html(locationHtml);
+            $("#skuImages").html(imageHtml);
+        },
+        error: function(xhr, textStatus, errorThrown) {
+            alert('request failed');
+            $("#skuTitle").text('failed to load');
+        }
+    });
+    
+  });
+    $(document).on('click','.itemName',function(e){
+        
+        e.preventDefault();
+            var id = $(this).attr('data-asin');
+            if(id==''){
+                return;
+            }
+        $.ajax({
+            type:'get',
+            datatype: 'json',
+            url: '{{ route('getAmzImage') }}', 
+            data: {'asin': id}, 
+            success: function(r) {
+                if(r!=''){
+                    var htmlToAdd = '<div style="width:500px"><h3><ul>';
+                    if(r.bullet_point_1!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_1+'</li>';
+                    }
+                    if(r.bullet_point_2!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_2+'</li>';
+                    }
+                    if(r.bullet_point_3!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_3+'</li>';
+                    }
+                    if(r.bullet_point_4!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_4+'</li>';
+                    }
+                    if(r.bullet_point_5!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_5+'</li>';
+                    }
+                    htmlToAdd += '</ul></h3></div>';
+                    $.colorbox({html:htmlToAdd});
+                }
+            },
+            error: function(err){
+                console.dir(err);
+            }
+        });
+    });
+
+        $(".confirmBtn").click(function() {
+            pendingToship ="1";
+            $("#shipLevel").val('');
+            $("#fullname").val('');
+            $("#address1").val('');
+            $("#address2").val('');
+            $("#city").val('');
+            $("#state").val('');
+            $("#zipcode").val('');
+            $("#postalcode").val('');
+            $("#country").val('');
+            $("#phone").val('');
+            $("#product-items").html('');
+            $("#order-id").val('');
+            $("#signature").prop( "checked", false );
+            $("#insurance").val('');
+
+
+            target_row = $(this).closest("tr").get(0);
+            var orderId = $(this).val();
+            //alert($('#printModal'));
+            $.ajax({
+                type: 'post',
+                url: '{{ route('getOrder') }}', // in here you should put your query 
+                data: 'orderId=' + orderId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success: function(order) {
+                    $("#product-items").html('');
+                    $('#printModal').modal({
+                        backdrop: 'static'
+                    });
+                    $("#fullname").val(order['recipientName']);
+                    $("#address1").val(order['address1']);
+                    $("#address2").val(order['address2'] );
+                    $("#city").val(order['city']);
+                    $("#state").val(String(order['state']).toUpperCase());
+                    $("#zipcode").val(order['zip']);
+                    $("#postalcode").val(order['zip']);
+                    $("#country").val(order['country']);
+                    $("#phone").val(order['phone']);
+                    $.each(order.detail, function(idx, item) {
+                        if(item['shipLevel']=='Standard'){
+                            $("#shipLevel").val('Standard');
+                        }
+                        $("#product-items").html($("#product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                    });
+                    $("#order-id").val(order['orderId']);
+                    
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert('request failed');
+                }
+            });
+        });
+
+$(".prioritySearch").html("<button id='prioritySearchBtn' class='pull-left'>Print Priority</button>");
+      $(document).on('click','#prioritySearchBtn',function(e){
+          e.preventDefault();
+          var searchText ='Print Priority';
+          $('#orders_filter label input').val(searchText);
+          oTable.search(searchText).draw();
+      });
+    });
+</script>
+
+{% endblock %}

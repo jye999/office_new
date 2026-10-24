@@ -112,7 +112,7 @@ export function in_array(needle: unknown, arr: unknown[], strict = false): boole
 }
 
 export function explode(delimiter: string, value: string): string[] {
-  return delimiter === '' ? [] : value.split(delimiter);
+  return delimiter === '' ? [] : String(value ?? '').split(delimiter);
 }
 
 export function implode(glue: string, arr: unknown[]): string {
@@ -213,7 +213,7 @@ export function nl2br(value: string): string {
 // PHP strtotime() for the 'Y-m-d [H:i[:s]]' datetime/date strings the DB
 // returns (dateStrings). Interpreted in the app timezone, like PHP. Returns
 // epoch seconds.
-export function strtotime(s: string | Date | null | undefined): number {
+function strtotimeAbs(s: string | Date | null | undefined): number {
   const str = s instanceof Date ? s.toISOString() : String(s ?? '').trim();
   const m = /^(\d{4})-(\d{1,2})-(\d{1,2})(?:[ T](\d{1,2}):?(\d{1,2})(?::?(\d{1,2}))?)?/.exec(str);
   if (!m) return 0; // PHP strtotime() failure = false; date() then renders epoch 0
@@ -243,6 +243,48 @@ export function strtotime(s: string | Date | null | undefined): number {
   // second iteration, fine for civil tz offsets <= 14h).
   return Math.round((u + (u - rendered)) / 1000);
 }
+
+// PHP strtotime() superset used by the views: 'Y-m-d [H:i[:s]]', ISO-8601 with a zone ('...Z'), and a
+// trailing relative part ('+ 3 days', '- 2 days', '+ 4 weekdays'). A relative-only string is relative to now.
+export function strtotime(s: string | Date | null | undefined): number {
+  const str = s instanceof Date ? s.toISOString() : String(s ?? '').trim();
+  const rel = /^(.*?)\s*([+-])\s*(\d+)\s*(?:day|days|weekday|weekdays)\s*$/i.exec(str);
+  if (rel) {
+    const weekdays = /weekday/i.test(str);
+    const baseStr = rel[1].trim();
+    const baseTs = baseStr === '' ? Math.floor(Date.now() / 1000) : strtotime(baseStr);
+    if (baseStr !== '' && baseTs === 0) return 0; // unparseable base: strtotime() === false
+    const sign = rel[2] === '-' ? -1 : 1;
+    let n = Number(rel[3]);
+    // Walk calendar days on the app-timezone wall clock (PHP keeps the time of day across DST).
+    let wall = new Date(Date.UTC(1970, 0, 1) + (baseTs + tzOffsetSeconds(baseTs)) * 1000);
+    while (n > 0) {
+      wall = new Date(wall.getTime() + sign * 86400000);
+      if (!weekdays || (wall.getUTCDay() !== 0 && wall.getUTCDay() !== 6)) n--;
+    }
+    return strtotimeAbs(wall.toISOString().slice(0, 19).replace('T', ' '));
+  }
+  if (/T[\d:.]+(Z|[+-]\d\d:?\d\d)$/.test(str)) {
+    const t = Date.parse(str);
+    return Number.isNaN(t) ? 0 : Math.floor(t / 1000);
+  }
+  return strtotimeAbs(str);
+}
+
+// Offset (seconds) of the app timezone from UTC at the given epoch second.
+function tzOffsetSeconds(ts: number): number {
+  const p = new Intl.DateTimeFormat('en-GB', { timeZone: appConfig.APP_TIMEZONE, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }).formatToParts(new Date(ts * 1000));
+  const g = (t: string) => Number(p.find((x) => x.type === t)?.value);
+  return Math.round((Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute'), g('second')) - ts * 1000) / 1000);
+}
+
+// PHP strlen / array_key_exists / null-safe string concatenation (`.`) for converted Blade expressions.
+export const strlen = (v: unknown): number => String(v ?? '').length;
+export const array_key_exists = (k: unknown, o: unknown): boolean => o != null && typeof o === 'object' && Object.prototype.hasOwnProperty.call(o, String(k));
+// PHP loose `== null` (null, '', 0, false, []) and numeric coercion of null operands (null + 2 === 2).
+export const phpNull = (v: unknown): boolean => v === null || v === undefined || v === '' || v === 0 || v === false || (Array.isArray(v) && v.length === 0);
+export const num = (v: unknown): number => (v == null || v === '' ? 0 : Number(v) || 0);
+export const cat = (...parts: unknown[]): string => parts.map((p) => (p == null ? '' : String(p))).join('');
 
 // PHP date() format chars, in the app timezone.
 export function date(format: string, ts?: number | Date): string {
@@ -766,6 +808,14 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     nl2br,
     date,
     strtotime,
+    strlen,
+    array_key_exists,
+    cat,
+    phpNull,
+    num,
+    sizeof: count,
+    ceil: Math.ceil,
+    time: () => Math.floor(Date.now() / 1000),
     env,
     randomOf,
     config,

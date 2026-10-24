@@ -1,0 +1,584 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+{% set fullStoreName = {"A":"Amazon","T":"Etsy Retail 1","T2":"Etsy Corsage Boutonniere","T3":"Etsy Floral Supply","E":"eBay Retail","W":"Walmart","En":"Enfloral","S":"Shopify","WINDY":"Windy","TEMU":"Temu"} %}
+
+<span style="margin-left:20px">
+ Store <select class="select" id="storeFilter">
+<option value=""></option>
+<option value="A">Amazon</option>
+<option value="W">Walmart</option>
+<option value="T">Etsy Retail 1</option>
+<option value="T3">Etsy Corsage Boutonniere</option>
+<option value="T2">Etsy Floral Supply</option>
+<option value="S">Shopify</option>
+<option value="W">Walmart</option>
+</select>
+</span>
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="chkAll"></th>
+                <th>Store</th>
+                <th>Order Number</th>
+                <th>SKU</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Product Picture</th>
+                <th>Total Qty</th>
+                <th>ship date</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+                    <tr class='orderTr {{ ('urgent' if isset(order['priority']) and order['priority'] == 2 else '') }} {{ ('made' if isset(item.made) and item.made == 'Y' else '') }} {{ ('inprogress' if isset(item.made) and item.made == 'P' else '') }} {{ ('halfmade' if isset(item.made) and item.made == 'H' else '') }} {{ ('priority' if (isset(item['isPrime']) and item['isPrime'] == 'true') or (isset(order['priority']) and order['priority'] == 1) or ceil((num(time()) - num(strtotime(item['promiseDate']))) / 60 / 60 / 24) >= -1 else '') }}
+                '
+                data-store="{{ item['store'] }}"
+                >
+                        <td>
+                        <input type="checkbox" class="action" value="{{ item['orderId'] }}"
+                                data-country="{{ order['country'] }}"
+                                data-multiorder="{{ sizeof(buyerStats[order.email]) }}">
+
+                            {% if order['country'] != 'US' %}
+                                <i class="glyphicon glyphicon-globe"></i>{{ order['country'] }}
+                            {% endif %}
+                            <br />
+                        </td>
+
+                        <td><span style="display:none">|{{ item['store'] }}|</span><span class="storename">
+                        {{ (fullStoreName[item['store']] if array_key_exists(item['store'], fullStoreName) else "") }}
+                        </span> </td>
+                        <td>
+                        
+                        {% if item['store'] == 'A' %}
+                            <a href="https://sellercentral.amazon.com/orders-v3/order/{{ item['orderId'] }}"
+                                target="_blank">{{ item['orderId'] }} </a>
+                        {% elif item['store'] == 'E' or item['store'] == 'R' %}
+                            {% set transItem = explode("-", item['itemId']) %}   
+                            {{ item['orderId'] }}
+                        {% elif item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                            <a class="btn btn-primary " target="_blank"
+                            href="https://www.etsy.com/your/orders/sold?order_id={{ item['orderId'] }}">
+                                Store
+                            </a>
+                        {% else %}
+                        {{ item['orderId'] }} 
+                        {% endif %}
+
+                            {% if isset(item['isPrime']) and item['isPrime'] == 'true' %}
+                                <br /><img src="{{ url('/images/prime_small.png') }}" /></br>
+                            {% endif %}
+                        <span style="display:none" class="store">{{ item['store'] }}</span>    
+                            <span class="orderSpan" style="display:none">{{ item['orderId'] }}</span>
+                            <a class="anchor" id="{{ item['orderId'] }}">{{ item['orderId'] }} </a>
+                            <br />
+                            {% set multi = buyerStats[cat(order.address1, order.zip)] %}{% if count(multi) > 1 %}<br> Multi-orders {% for b in multi %}<br><a href='#{{ b | safe }}'>{{ b | safe }}</a><br>{% endfor %}{% endif %}
+                            <br />
+                            <button class="btn btn-primary btn-lg prioritizeBtn" value="{{ item['orderId'] }}">
+                                {% if isset(order['priority']) %}{% if order['priority'] == 1 %}Urgent{% elif order['priority'] == 2 %}UnPrioritize{% else %}Prioritize{% endif %}{% else %}Prioritize{% endif %}
+                            </button>
+                            <br />
+                        </td>
+                        <td>
+                            {% if item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                            <span class="externalSku" style="display:none">{{ item['sku'] }}</span> <br />
+                            <span class="externalAsin">{{ item['sku'] }}</span> <br />
+                            {% else %}
+                            <span class="externalSku" style="display:none">{{ item['asin'] }}</span> <br />
+                            <span class="externalAsin">{{ item['asin'] }}</span> <br />
+                            {% endif %}
+                            {% if item['store'] == 'A' or item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                                {% if phpNull(item.ProductMap) %}
+                                    <button class="btn btn-sm btn-primary btnFindMatch">Find Match</button>
+                                    <span class="internalSku"></span>
+                                {% else %}
+                                    <a class="internalSku">{{ item.ProductMap['sku'] }}
+                                        {{ ('' if phpNull(item.ProductMap['qty']) else cat(' x ', item.ProductMap['qty'])) }}</a>
+                                    <button class="btn btn-sm btn-primary btnFindMatch">Update Match</button>
+                                {% endif %}
+
+                            {% endif %}
+                            <div class="skuLocation"><br />Location <br />
+                                {% if item.ProductMap != none and item.ProductMap.Product != none %}{% for l in item.ProductMap.Product.locations %}{{ cat(l.location, '-', l.qty, '<br />') | safe }}{% endfor %}{% endif %}
+                            </div>
+                        </td>
+                        <td style="font-size: 13pt">
+                        {% if item['store'] == 'A' %}
+                            <a href="#" class="itemName" data-asin="{{ (item['asin'] if isset(item['asin']) else '') }}">{{ item['name'] }} </a>
+                          <br />
+                            <textarea class="notes">{% if isset(item['notes']) %}{{ item['notes'] | safe }}{% endif %}</textarea><br />
+                        
+                            <button class="saveNote" value="{{ item['id'] }}">Save</button>
+                            <br /><span>Buyer : {{ order['buyer'] }}
+                                {{ str_replace('@marketplace.amazon.com', '', order.email) }} </span>
+                            <br /><a href="#"
+                                class="searchBuyer">{{ cat(order['address1'], ' ', order['address2'], ', ', order['state'], ' ', order['zip']) }}</a>
+                        {% endif %}
+
+                        {% if item['store'] == 'E' or item['store'] == 'R' %}
+                            {% set itemID = explode("-", item.itemId) %}<a class="desclink" href="ebayDesc?itemId={{ itemID[0] | safe }}" target="_blank">
+                                {{ item.name }}</a><br/>
+                                {% set varvalue = explode("|", item.variation) %}{% set v = "" %}{% if count(varvalue) > 1 %}{% set v = varvalue[1] %}{% endif %}
+                        <span style='color:black'> {{ str_replace("|", ":", item.variation) }} </span>
+                        <span style='color:orange'> 
+                            {{ (cat("<br/>Notes From Buyer : ", order.notesFromBuyer) if (strlen(order.notesFromBuyer) > 1) else "") }}
+                            {{ (cat("<br/>Notes To Seller : ", order.selfNotes) if (strlen(order.selfNotes) > 1) else "") }}
+                        </span>
+                            <br/>
+                            <textarea class="notes" >{% if isset(item['notes']) %}{{ item['notes'] | safe }}{% endif %}</textarea><br/>
+                            <button class="saveNote" value="{{ item['itemId'] }}">Save</button>
+                            <br/><span>Buyer : <a href="#" class="searchBuyer">{{ order['buyer'] }}</a></span>
+                        {% endif %}
+
+                        {% if item['store'] == 'W' %}
+                            {% set itemID = explode("-", item.itemId) %}<a class="desclink" href="ebayDesc?itemId={{ itemID[0] | safe }}" target="_blank">
+                            {{ item.name }}</a><br/>
+                            {% set varvalue = explode("|", item.variation) %}{% set v = "" %}{% if count(varvalue) > 1 %}{% set v = varvalue[1] %}{% endif %}
+                            <span style='color:black'> {{ str_replace("|", ":", item.variation) }} </span>
+                            <span style='color:orange'> 
+                                {{ (cat("<br/>Notes From Buyer : ", order.notesFromBuyer) if (strlen(order.notesFromBuyer) > 1) else "") }}
+                                {{ (cat("<br/>Notes To Seller : ", order.selfNotes) if (strlen(order.selfNotes) > 1) else "") }}
+                            </span>
+                            <br/>
+                        {% endif %}
+
+                        {% if item['store'] == 'S' %}
+                            {% set itemID = explode("-", item.itemId) %}<a class="desclink" href="ShopifyDesc?product={{ itemID[1] | safe }}" target="_blank">
+                            {{ item.name }}</a><br/>
+                            {% set varvalue = explode("|", item.variation) %}{% set v = "" %}{% if count(varvalue) > 1 %}{% set v = varvalue[1] %}{% endif %}
+                            <span style='color:black'> {{ str_replace("|", ":", item.variation) }} </span>
+                            <span style='color:orange'> 
+                                {{ (cat("<br/>Notes From Buyer : ", order.notesFromBuyer) if (strlen(order.notesFromBuyer) > 1) else "") }}
+                                {{ (cat("<br/>Notes To Seller : ", order.selfNotes) if (strlen(order.selfNotes) > 1) else "") }}
+                            </span>
+                                <br/>
+                                <textarea class="notes" >{% if isset(item['notes']) %}{{ item['notes'] | safe }}{% endif %}</textarea><br/>
+                                <button class="saveNote" value="{{ item['subOrderId'] }}">Save</button>
+                                <br/><span>Buyer : <a href="#" class="searchBuyer">{{ order['buyer'] }}</a></span>
+                        {% endif %}
+                        {% if item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                        
+                            <a href="https://www.etsy.com/your/orders/sold?search_query={{ item['orderId'] }}" target="_blank">
+                            {{ item['name'] }} 
+                            </a>
+                                <br/>
+                                <textarea class="notes" >{% if isset(item['notes']) %}{{ item['notes'] | safe }}{% endif %}</textarea><br/>
+                                <button class="saveNote" value="{{ item['itemId'] }}">Save</button>
+                                <br/><span>Buyer : <a href="#" class="searchBuyer" >{{ order['buyer'] }} </a></span>
+                        {% endif %}
+                        </td>
+                        <td style="font-weight:bold;font-size:20pt;">{{ item['qty'] }}</td>
+                        <td>
+                            {% if item['store'] == 'A' or item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                            <a class="gallery" href="{{ (item['asin'] if isset(item['asin']) else '') }}">
+                            <img src="{{ (item['image'] if isset(item['image']) else '') }}"  width="250px" class="itemImage"></a>
+                            {% endif %}
+                            {% if item['store'] == 'E' or item['store'] == 'R' %}
+                                <a class="gallery" href="{{ (item['image'] if (isset(item['image'])) else '') }}"><img src="{{ (str_replace('http:', '', item['image']) if (isset(item['image'])) else '') }}" style="width:300px" class="itemImage">
+                                <span class="orderIdvalue" style="display:none">{{ item['orderId'] }}</span>
+                                <span class="variantvalue" style="display:none">{{ v }}</span>
+                                <span class="itemIdvalue" style="display:none">{{ itemID[0] }}</span>
+                                </a>
+                            {% endif %}
+                            
+                            {% if item['store'] == 'W' %}
+                                <img width="320px" src="{{ (item['image'] if (isset(item['image'])) else '') }}" class="itemImage">
+                            {% endif %}
+                                    </td>
+                        <td><a href="#" data-title="{{ item['name'] }}"
+                                class="sameProduct">{{ itemStats[cat(item['asin'], item['sku'])] }}</a></td>
+                        <td>
+
+                        {% if item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                                                
+                            {% set handling = 0 %}{% if item.handling != none %}{% set handling = int(item.handling) %}{% if handling < 3 %}{% set handling = 2 %}{% else %}{% set handling = handling - 2 %}{% endif %}{% endif %}{{ date('Y-m-d', strtotime(cat(order.purchaseDate, ' + ', handling, ' weekdays'))) }}</span><br/>
+                            {{ item['shipLevel'] }}
+                        {% else %}
+                            {{ date('Y-m-d', strtotime(cat(item.promiseDate, ' - 2 days'))) }}
+                            
+                        {% endif %}
+                        </td>
+
+                        <td>
+                            {% if item['store'] == 'A' %}
+                                {% if hasRole(['user', 'admin']) %}
+                                <table style="background-color: inherit;width:200px">
+                                    <tr style="background-color: inherit ">
+                                        <td style="vertical-align: top;">
+
+
+                                            <button
+                                                class="btn btn-primary progressBtn {{ ('invisible' if isset(item.made) and item.made == 'Y' else '') }}"
+                                                value="{{ item['itemId'] }}">
+                                                {{ ('In Progress' if isset(item.made) and item.made == 'P' else 'Start Process') }}
+                                            </button>
+
+
+                                            <button class="btn btn-primary madeBtn" value="{{ item['itemId'] }}">
+                                                {{ ('Unmade' if isset(item.made) and item.made == 'Y' else 'Made') }}
+                                            </button>
+
+                                            {% if hasRole(['packing', 'admin']) %}
+                                            <button class="btn btn-primary doneBtn actionBtn"
+                                                value="{{ order['id'] }}">
+                                                Done
+                                            </button>
+
+
+                                            {% if item['shipLevel'] != 'SecondDay' and item['shipLevel'] != 'SameDay' %}
+                                                <button class="btn btn-primary addTrackBtn actionBtn"
+                                                    value="{{ item['orderId'] }}">
+                                                    Add Tracking
+                                                </button>
+                                            {% endif %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if item['store'] == 'E' or item['store'] == 'R' %}
+
+                                {% if hasRole(['user', 'admin']) %}
+
+                                <table style="background-color: inherit;width:200px">
+                                    <tr style="background-color: inherit ">
+                                        <td style="vertical-align: top;">
+                                            <button class="btn btn-primary actionBtn"
+                                                value="{{ item['itemId'] }}">
+                                                Store
+                                            </button>
+
+                                            <button
+                                                class="btn btn-primary progressBtn {{ ('invisible' if isset(item.made) and item.made == 'Y' else '') }}"
+                                                value="{{ item['itemId'] }}">
+                                                {{ ('In Progress' if isset(item.made) and item.made == 'P' else 'Start Process') }}
+                                            </button>
+                                            <button class="btn btn-primary madeBtn actionBtn"
+                                                value="{{ item['itemId'] }}">
+                                                {{ ('Unmade' if isset(item['made']) and item['made'] == true else 'Made') }}
+                                            </button>
+
+
+                                            {% if hasRole(['user', 'admin']) %}
+                                            <button class="btn btn-primary doneBtn actionBtn"
+                                                value="{{ order['id'] }}">
+                                                Done
+                                            </button>
+                                            <button class="btn btn-primary addTrackBtn actionBtn"
+                                                value="{{ item['itemId'] }}">
+                                                Tracking
+                                            </button>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                </table>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if item['store'] == 'T' or item['store'] == 'T2' or item['store'] == 'T3' %}
+                                
+                                {% if hasRole(['user', 'admin']) %}
+                                    <button class="btn btn-primary progressBtn {{ (('invisible' if (isset(item.made) and item.made == 'Y') else '')) }}"  value="{{ item['itemId'] }}">
+                                        {{ (("In Progress" if (isset(item.made) and item.made == "P") else "Start Process")) }}
+                                        </button>
+                                        
+                                        
+                                        <button class="btn btn-primary madeBtn"  value="{{ item['itemId'] }}">
+                                        {{ (("Unmade" if (isset(item.made) and item.made == "Y") else "Made")) }}
+                                        </button>
+                                        {% if hasRole(['packing', 'admin']) %}
+                                        <button class="btn btn-primary doneBtn actionBtn" value="{{ order['id'] }}">
+                                            Done
+                                        </button>
+
+                                        <button class="btn btn-primary addTrackBtn actionBtn" value="{{ item['orderId'] }}">
+                                            Add Tracking
+                                        </button>
+                                        {% endif %}
+                                    {% endif %}
+                                    
+                            {% endif %}
+
+                            {% if item['store'] == 'W' %}
+                                    {% if hasRole(['user', 'admin']) %}
+                                    <table style="background-color: inherit;width:200px">
+                                    <tr style="background-color: inherit ">
+                                    <td style="vertical-align: top;">
+                                        <button class="btn btn-primary progressBtn {{ (('invisible' if (isset(item.made) and item.made == 'Y') else '')) }}"  value="{{ item['itemId'] }}">
+                                        {{ (("In Progress" if (isset(item.made) and item.made == "P") else "Start Process")) }}
+                                        </button>
+                                        <button class="btn btn-primary madeBtn actionBtn" value="{{ item['itemId'] }}">
+                                            {{ (("Unmade" if (isset(item['made']) and item['made'] == true) else "Made")) }}
+                                        </button>
+
+                                        {% if hasRole(['packing', 'admin']) %}
+                                        <button class="btn btn-primary doneBtn actionBtn" value="{{ order['id'] }}">
+                                            Done
+                                        </button>
+                                        <button class="btn btn-primary addTrackBtn actionBtn" value="{{ item['itemId'] }}">
+                                            Add Tracking
+                                    </button>
+                                    {% endif %}
+                                    </td>
+                                    </tr>
+                                    </table>
+                                    {% endif %}
+                                    </td>
+                            {% endif %}
+                            
+                            {% if item['store'] == 'S' %}
+                               {{ item['shipLevel'] }}
+                                {% if hasRole(['user', 'admin']) %}
+
+                                <button class="btn btn-primary progressBtn {{ (('invisible' if (isset(item.made) and item.made == 'Y') else '')) }}"  value="{{ item['itemId'] }}">
+                                    {{ (("In Progress" if (isset(item.made) and item.made == "P") else "Start Process")) }}
+                                    </button>
+
+                                    <button class="btn btn-primary madeBtn actionBtn" value="{{ item['itemId'] }}">
+                                        {{ (("Unmade" if (isset(item['made']) and item['made'] == true) else "Made")) }}
+                                    </button>
+
+                                    {% if hasRole(['packing', 'admin']) %}
+                                    <button class="btn btn-primary doneBtn actionBtn" value="{{ order['id'] }}">
+                                        Done
+                                    </button>
+
+                                    <button class="btn btn-primary addTrackBtn actionBtn" value="{{ item['orderId'] }}">
+                                        Tracking
+                                    </button>
+                                    {% endif %}
+                                    {% endif %}
+                            {% endif %}
+                            </td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+
+
+    <script>
+        var currentStore = 'A';
+        var store = 'A';
+        var oTable;
+        $(document).ready(function() {
+            $("#btnAmzMassPrint").hide();
+            $("#allunshipped").addClass("active");
+
+            oTable = $('#orders').DataTable({
+                "aoColumns": [{
+                    "sWidth": "50px"
+                }, {
+                    "sWidth": "50px"
+                }, {
+                    "sWidth": "75px"
+                }, {
+                    "sWidth": "75px"
+                }, {
+                    "sWidth": "150px"
+                }, {
+                    "sWidth": "50px"
+                }, {
+                    "sWidth": "50%"
+                }, {
+                    "sWidth": "50px"
+                }, {
+                    "sWidth": "50px"
+                }, {
+                    "sWidth": "50px"
+                }],
+                "aaSorting": [
+                    [8, "asc"]
+                ],
+                "sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+                "bPaginate": false,
+                "oLanguage": {
+                    "sLengthMenu": "_MENU_ records per page"
+                },
+                "fnRowCallback": function(nRow, aData) {
+                    var days = aData[5]; // ID is returned by the server as part of the data
+                    var $nRow = $(nRow); // cache the row wrapped up in jQuery
+                    if (days > -1) {
+                        $nRow.css({
+                            //"color": "red"
+                        })
+                    } else if (days > -2) {
+                        $nRow.css({
+                            "color": "orange"
+                        })
+                    }
+                    return nRow
+                }
+            });
+
+$("#btnAmzMassPrint").hide();
+$(document).on('change','#storeFilter',function(e){
+    e.preventDefault();
+    //let selectedStore = $(this).val();
+    oTable.search( '|'+$(this).val()+'|', 1).draw();
+});
+
+            $('a.gallery').click(function(e) {
+                e.preventDefault();
+                var id = $(this).attr('href');
+                if (id == '') {
+                    alert('no image');
+                    return;
+                }
+                $.ajax({
+                    type: 'get',
+                    datatype: 'json',
+                    url: '{{ route('getAmzImage') }}',
+                    data: {
+                        'asin': id
+                    },
+                    success: function(r) {
+                        $("#picHolder").html('');
+                        console.dir(r);
+                        if (r != '') {
+                            addImageToGallery(r.image);
+                            addImageToGallery(r.image_1);
+                            addImageToGallery(r.image_2);
+                            addImageToGallery(r.image_3);
+                            addImageToGallery(r.image_4);
+                            addImageToGallery(r.image_5);
+                            addImageToGallery(r.image_6);
+                            addImageToGallery(r.image_7);
+                            addImageToGallery(r.image_8);
+                            addImageToGallery(r.image_9);
+                            addImageToGallery(r.image_10);
+                        }
+                        $(".group1").colorbox({
+                            rel: 'group1',
+                            open: true
+                        });
+                    },
+                    error: function(err) {
+                        console.dir(err);
+                    }
+                });
+            });
+
+            $(document).on('click', '.itemName', function(e) {
+
+                e.preventDefault();
+                var id = $(this).attr('data-asin');
+                if (id == '') {
+                    return;
+                }
+                $.ajax({
+                    type: 'get',
+                    datatype: 'json',
+                    url: '{{ route('getAmzImage') }}',
+                    data: {
+                        'asin': id
+                    },
+                    success: function(r) {
+                        if (r != '') {
+                            var htmlToAdd = '<div style="width:500px"><h3><ul>';
+                            if (r.bullet_point_1 != null) {
+                                htmlToAdd += '<li>' + r.bullet_point_1 + '</li>';
+                            }
+                            if (r.bullet_point_2 != null) {
+                                htmlToAdd += '<li>' + r.bullet_point_2 + '</li>';
+                            }
+                            if (r.bullet_point_3 != null) {
+                                htmlToAdd += '<li>' + r.bullet_point_3 + '</li>';
+                            }
+                            if (r.bullet_point_4 != null) {
+                                htmlToAdd += '<li>' + r.bullet_point_4 + '</li>';
+                            }
+                            if (r.bullet_point_5 != null) {
+                                htmlToAdd += '<li>' + r.bullet_point_5 + '</li>';
+                            }
+                            htmlToAdd += '</ul></h3></div>';
+                            $.colorbox({
+                                html: htmlToAdd
+                            });
+                        }
+                    },
+                    error: function(err) {
+                        console.dir(err);
+                    }
+                });
+            });
+
+            $(".confirmBtn").click(function() {
+                pendingToship = "1";
+                $("#shipLevel").val('');
+                $("#fullname").val('');
+                $("#address1").val('');
+                $("#address2").val('');
+                $("#city").val('');
+                $("#state").val('');
+                $("#zipcode").val('');
+                $("#postalcode").val('');
+                $("#country").val('');
+                $("#phone").val('');
+                $("#product-items").html('');
+                $("#order-id").val('');
+                $("#signature").prop("checked", false);
+                $("#insurance").val('');
+
+
+                target_row = $(this).closest("tr").get(0);
+                var orderId = $(this).val();
+                //alert($('#printModal'));
+                $.ajax({
+                    type: 'post',
+                    url: '{{ route('getOrder') }}', // in here you should put your query 
+                    data: 'orderId=' + orderId, // here you pass your id via ajax .
+                    // in php you should use $_POST['post_id'] to get this value 
+                    success: function(order) {
+                        $("#product-items").html('');
+                        $('#printModal').modal({
+                            backdrop: 'static'
+                        });
+                        $("#fullname").val(order['recipientName']);
+                        $("#address1").val(order['address1']);
+                        $("#address2").val(order['address2']);
+                        $("#city").val(order['city']);
+                        $("#state").val(String(order['state']).toUpperCase());
+                        $("#zipcode").val(order['zip']);
+                        $("#postalcode").val(order['zip']);
+                        $("#country").val(order['country']);
+                        $("#phone").val(order['phone']);
+                        $.each(order.detail, function(idx, item) {
+                            if (item['shipLevel'] == 'Standard') {
+                                $("#shipLevel").val('Standard');
+                            }
+                            $("#product-items").html($("#product-items").html() + item[
+                                'qty'] + ' x ' + item['name'] + "<br/>");
+                        });
+                        $("#order-id").val(order['orderId']);
+
+                    },
+                    error: function(xhr, textStatus, errorThrown) {
+                        alert('request failed');
+                    }
+                });
+            });
+
+            $(".prioritySearch").html("<button id='prioritySearchBtn' class='pull-left'>Print Priority</button>");
+            $(document).on('click', '#prioritySearchBtn', function(e) {
+                e.preventDefault();
+                var searchText = 'Print Priority';
+                $('#orders_filter label input').val(searchText);
+                oTable.search(searchText).draw();
+            });
+
+        });
+    </script>
+
+{% endblock %}

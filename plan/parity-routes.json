@@ -155,9 +155,11 @@
     "/fairePickList"
   ],
   "U5": [
+    "/summary",
     "/processed",
+    "/allunshipped",
     "/PackingList",
-    "/createPacking"
+    "/PendingShipment"
   ],
   "U6": [
     "/submittedOrder",

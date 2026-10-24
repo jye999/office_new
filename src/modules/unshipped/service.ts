@@ -112,6 +112,7 @@ export async function attachProductMaps(details: Row[]): Promise<void> {
       map['Product'] = product;
       if (product != null) {
         map['locations'] = await db.selectFrom('os_product_locations').selectAll().where('product_id', '=', String(product.id) as never).execute();
+        (product as Row)['locations'] = map['locations']; // Product->locations (hasMany), read by converted views
       }
     }
     // The views echo $l->location."-".$l->qty."<br/>" in a raw-PHP block.
@@ -409,7 +410,7 @@ function flagWeekdays(o: Row, i: Row): string {
 
 // store9/10 merge: fold each detail row into the previous row when itemId,
 // variation and name all match (consecutive scan, like the PHP for loop).
-function mergeConsecutiveDetail(details: Row[]): Row[] {
+export function mergeConsecutiveDetail(details: Row[]): Row[] {
   for (let oi = 1; oi < details.length; oi++) {
     const item = details[oi];
     const prev = details[oi - 1];

@@ -1,0 +1,252 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+    <table class="table table-bordered table-condensed" id="orders" >
+        <thead>
+            <tr>
+                <th></th>
+                <th>Order Number</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Product Picture</th>
+                <th>Total Qty</th>
+                <th>days-past</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr  class='{{ (("made" if (isset(item.made) and item.made == "Y") else "")) }}  {{ (("halfmade" if (isset(item.made) and item.made == "H") else "")) }}  {{ (("priority" if ((isset(order['priority']) and order['priority'] == true)) else "")) }}'
+                >
+
+                
+                <td><input type="checkbox" class="action" value="{{ item['orderId'] }}"> 
+                {% if order['country'] != 'US' %}
+                <i class="glyphicon glyphicon-globe"></i>{{ order['country'] }}
+                {% endif %}
+                <br/>
+                {{ (("MADE" if (isset(item.made) and item.made == "Y") else "")) }}<br/>
+                {{ (("HALFMADE" if (isset(item.made) and item.made == "H") else "")) }} 
+                </td>
+                <td>{{ substr(item['orderId'], -7) }} 
+                    <span class="orderSpan" style="display:none">{{ item['orderId'] }}</span>
+                    <a class="anchor" id="{{ substr(item['orderId'], -7) }}">{{ substr(item['orderId'], -7) }} </a>
+                    <br/>
+                    {% set multi = buyerStats[order.email] %}{% if count(multi) > 1 %}<br> Multi-orders {% for b in multi %}<br><a href='#{{ substr(b, -7) | safe }}'>{{ substr(b, -7) | safe }}</a><br>{% endfor %}{% endif %}
+                    <br/>
+                    <button class="btn btn-primary btn-lg prioritizeBtn" value="{{ item['orderId'] }}">
+                        {{ (("UnPrioritize" if (isset(order['priority']) and order['priority'] == 1) else "Prioritize")) }}
+                    </button>
+                    
+                </td>
+                <td>{{ item['name'] }} 
+                
+                    <br/>
+                    <textarea class="notes" >{% if isset(item['notes']) %}{{ item['notes'] | safe }}{% endif %}</textarea><br/>
+                    <button class="saveNote" value="{{ item['itemId'] }}">Save</button>
+                    <br/><span>Buyer : {{ order['buyer'] }}</span>
+                </td>
+                <td style="font-weight:bold;font-size:16pt">{{ item['qty'] }}</td>
+                <td><a class="gallery" href="{{ (item['asin'] if (isset(item['asin'])) else '') }}"><img src="{{ (item['image'] if (isset(item['image'])) else '') }}" class="itemImage"></a></td>
+                <td>{{ itemStats[item['asin']] }}</td>
+                <!--<td>{{ num(item['days-past-promise']) + num(2) }} </td>-->
+
+                <td>
+                {{ date('Y-m-d', strtotime(cat(item.promiseDate, ' - 1 days'))) | safe }}
+                        
+                   <!--  <br/><br/> -->
+                   <!-- {{ item['promiseDate'] }} -->
+                    </td>
+
+                <td>
+                
+                {% if hasRole(['user', 'admin']) %}
+                <button class="btn btn-primary btn-lg showlabelBtn" value="{{ item['orderId'] }}">
+                        Print Label
+                    </button><br/><br/>
+                    <button class="btn btn-primary packBtn" value="{{ item['orderId'] }}">
+                        Packing
+                    </button><br/>
+                    <button class="btn btn-primary  madeBtn" value="{{ item['itemId'] }}">
+                        {{ (("Unmade" if (isset(item['made']) and item['made'] == true) else "Made")) }}
+                    </button><br/><br/>
+                    <button class="btn btn-primary halfmadeBtn" value="{{ item['itemId'] }}">
+                     {{ (("Un-HalfMade" if (isset(item.made) and item.made == "H") else "Half Made")) }}
+                    </button>
+                    <br/><br/>
+                    <button class="btn btn-primary finishBtn" value="{{ item['orderId'] }}">
+                        Finish
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+    
+	<script>
+
+    var currentStore='Confirmed';
+    function printOrderLabel(orderId){
+
+        $("#printDiv").html('');
+        $('#printModal-step3').modal({
+            backdrop: 'static'
+        });
+        $("#print-body3").html('');
+        $('<iframe />').remove();
+        $('<iframe/>'); 
+        $('<iframe />', {
+            name: 'labelFrame',
+                id: 'labelFrame',
+                scrolling: 'no',
+                frameborder: '0',
+                style:"width: 3.812in; height: 5.718in; border: 1px dashed black;"
+        }).appendTo('#print-body3');
+                
+        $('#labelFrame').contents().find('body').html('');
+        $.ajax({
+                type: 'HEAD',
+                url: "{{ route('getOrderLabel') }}?orderId="+orderId,
+                complete: function(xhr) {
+                    var contentType = xhr.getResponseHeader('Content-Type');
+                    console.log(contentType);
+                    if(contentType=='image/png'){
+                        $('#labelFrame').contents().find('body').append("<img src='{{ route('getOrderLabel') }}?orderId="+orderId+"' id='labelImage' style='width: 3.812in;height: 5.718in;'  onload=window.print()>");                        
+                    }
+                    else{
+                        $('#labelFrame').contents().find('body').append("<a href='{{ route('getOrderLabel') }}?orderId="+orderId+"' target='_blank'>Download Label</a>");
+                    }
+                }
+        });
+        
+        // $.ajax({
+        //         type: 'post',
+        //         url: '{{ route('GetLabel') }}', // in here you should put your query 
+        //         data: 'orderId=' + orderId, // here you pass your id via ajax .
+        //         // in php you should use $_POST['post_id'] to get this value 
+        //         success: function(order) {
+        //             $('#printModal-step3').modal({
+        //                     backdrop: 'static'
+        //                 });
+        //                 $("#print-body3").html('');
+        //                 $('<iframe />').remove();
+        //                 $('<iframe />'); // Create an iframe element
+        //                 $('<iframe />', {
+        //                     name: 'labelFrame',
+        //                     id: 'labelFrame',
+        //                     scrolling: 'no',
+        //                     frameborder: '0',
+        //                     style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+        //                 }).appendTo('#print-body3');
+        //                 $('#labelFrame').contents().find('body').html('');
+        //                 console.log(order.localUrl);
+        //                 if(order.localUrl!=''){
+        //                     $('#labelFrame').contents().find('body').append("<img src='" + order.localUrl + "' id='labelImage' style='width: 3.812in;height: 5.718in;'>");
+        //                     $('#print-body3').append("<a href='" + order.localUrl + "' target=_blank>Get Label here</a>");
+        //                 }
+        //                 else{
+        //                     $('#labelFrame').contents().find('body').append("<img src='" + order.Url + "' id='labelImage' style='width: 3.812in;height: 5.718in;'>");
+        //                     $('#print-body3').append("<a href='" + order.Url + "' target=_blank>Get Label here</a>");
+        //                 }
+                        
+        //         },
+        //         error: function(xhr, textStatus, errorThrown) {
+        //             alert('request failed');
+        //         }
+        //     });
+    }
+
+	$(document).ready(function() {
+		$("#PendingShipment").addClass("active");
+        
+		var oTable = $('#orders').dataTable({
+			"aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "150px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50%"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}],
+			"aaSorting": [
+				[5, "asc"]
+			],
+			"sDom": "<'row-fluid'<'span6'l><'span6'f>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+				var days = aData[5]; // ID is returned by the server as part of the data
+				var $nRow = $(nRow); // cache the row wrapped up in jQuery
+				if (days > -1) {
+					$nRow.css({
+						//"color": "red"
+					})
+				} else if (days > -2) {
+					$nRow.css({
+						"color": "orange"
+					})
+				}
+				return nRow
+			}
+		});
+
+		//$('a.gallery').colorbox();
+		//oTable.rowGrouping({iGroupingColumnIndex:0, sGroupBy: "order", bHideGroupingColumn: true});
+
+		$(".finishBtn").click(function(){
+            var orderId = $(this).val();
+            if (confirm('Do you want to print label before close this order?')) {
+                printOrderLabel(orderId);
+            } 
+            if (confirm('Are you sure you want to close this order?')) {
+                    
+                $.ajax({
+                        type: 'post',
+                        url: '{{ route('doneOrder') }}', // in here you should put your query 
+                        data: 'orderId=' + orderId, // here you pass your id via ajax .
+                        // in php you should use $_POST['post_id'] to get this value 
+                        success: function(order) {
+                            removeRowByOrderId(orderId);
+
+                        },
+                        error: function(xhr, textStatus, errorThrown) {
+                            alert('request failed');
+                        }
+                    });
+            } 
+        });
+
+		$(".showlabelBtn").click(function(e) {
+            e.preventDefault();
+			var orderId = $(this).val();
+            console.log(orderId);
+			printOrderLabel(orderId);
+		});
+
+		
+	});
+	
+	</script>
+    <script src="{{ asset('assets/js/unshipped.js') }}"></script>
+{% endblock %}
