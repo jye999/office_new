@@ -175,17 +175,21 @@ describe('T12 exec / queuejob / price (fastify inject)', () => {
     await app.close();
   });
 
-  it('POST /exec.refreshAmz: no asin -> 302 refreshAmzImg; unknown sync action succeeds silently', async () => {
+  it('POST /exec.refreshAmz: no asin -> 302 refreshAmzImg; J2 image sync is dry-run safe', async () => {
     const admin = await userWithRole(['admin']);
     if (!admin) throw new Error('no admin user in DB');
     const app = buildApp(admin);
     let out = await app.inject({ method: 'POST', url: '/exec.refreshAmz' });
     expect(out.statusCode).toBe(302);
     expect(out.headers['location']).toBe('http://localhost:80/refreshAmzImg');
-    // Runner.php has no final else, so an unported action is a successful no-op.
-    out = await app.inject({ method: 'POST', url: '/exec.refreshAmz', payload: { asin: 'B0TEST123' } });
-    expect(out.statusCode).toBe(302);
-    expect(out.headers['location']).toBe('http://localhost:80/refreshAmzImg');
-    await app.close();
+    process.env.DRY_RUN = '1';
+    try {
+      out = await app.inject({ method: 'POST', url: '/exec.refreshAmz', payload: { asin: 'B0TEST123' } });
+      expect(out.statusCode).toBe(302);
+      expect(out.headers['location']).toBe('http://localhost:80/refreshAmzImg');
+    } finally {
+      delete process.env.DRY_RUN;
+      await app.close();
+    }
   });
 });

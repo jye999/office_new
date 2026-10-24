@@ -1,5 +1,6 @@
 import type { Job } from 'bullmq';
 import { db, nowDb } from '../db.js';
+import { runSyncAction } from './actions.js';
 import type { OfficeJobData, OfficeJobName } from './queue.js';
 
 function timestamp(): Date {
@@ -52,7 +53,7 @@ export async function processOfficeJob(job: Job<OfficeJobData, void, OfficeJobNa
     case 'QueuePing':
       return queuePing();
     case 'sync':
-      // Sync jobs are installed by J2–J6; J1 deliberately has no handler.
+      await runSyncAction(String(job.data.action ?? ''), typeof job.data.arg1 === 'string' ? job.data.arg1 : undefined);
       return;
   }
 }
