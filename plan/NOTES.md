@@ -195,3 +195,11 @@
 - PHP quirk (Wayfair): `RegisterOrder` reads `$graphQLResponse['data'][...]['consolidatedShippingLabel']` for logging before the `isset` check (notice only). `GetPackingSlip` returns the PDF body; the controller discards it.
 - fetch drops the Authorization header on a cross-origin redirect (file_get_contents resent it); only matters if the label URL redirects to another host.
 - The old .env has a commented-out second set of Wayfair credentials (sandbox/test app); only the active ones were copied.
+
+## T41 — Wayfair + Tongtool controllers (src/modules/wayfair, src/modules/tongtool)
+- PHP quirk (Wayfair store()): `$regdates[$date]['sku'][$sku]['qty']` is a string on first sight and becomes a number on repeat (`qty = qty + line`, PHP numeric-string addition). The ported JSON carries the same string-then-number quirk (first SKU qty is a string, an accumulated SKU qty is a number).
+- PHP quirk (Wayfair store()): the unused `$data['done']`/`$item`/`$pos`/`$itemlist` locals and the `Debugbar::info()` calls are dropped (no effect on output).
+- `/Wayfair.registerOrder` and `/Wayfair.packingSlip` call the Wayfair API (token fetch / label register / packing slip) and registerOrder writes os_grant_order + os_trackings. They are NOT on the safe-GET parity list and are never called in tests (no external calls / no writes); verified by code review only.
+- `/Wayfair.packingSlip` was removed from parity-routes.json (auto-detected) because it calls the external API via getTokenFromDB + GetPackingSlip.
+- Cosmetic: `Form::file('report', ['multiple'=>false])` renders `<input  name="report" type="file">` in the old app (a false boolean attribute keeps an empty element -> double space) but the shared `form.file` helper drops the false attribute -> single space. Both pages are not on the parity list and the parity harness's whitespace normalizer collapses the difference, so ad-hoc parity of /Wayfair and /Tongtool still passes.
+- Quirk: Wayfair index page has no `web` middleware in the old group (only `role:admin,user,remote`); the controller's `auth` middleware is subsumed by the role guard (anon -> /login, logged-in-without-role -> 403).

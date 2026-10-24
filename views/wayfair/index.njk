@@ -1,0 +1,199 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.finished{
+    text-decoration: line-through;
+}
+</style>
+<br/><br/>
+<div style="font-size:13pt">
+      <form enctype="multipart/form-data" id="upload_form" role="form" method="POST" class="form-horizontal" action="" >
+<fieldset>
+
+{{ form.file('report', {multiple: false}) | safe }}
+
+<button type="button" id="saveNewButton" class="btn btn-primary">Upload</button>
+<button type="button" id="saveNewButton2" class="btn btn-primary">Upload new format</button>
+</fieldset>
+</form>
+<input type="checkbox" id="chk-img">Show Image
+<div id="result">
+
+</div>
+</div>
+<script>
+
+$(document).ready(function() {
+    $("#chk-img").click(function(){
+        if($("#chk-img").is(":checked")){
+            $(".product-img").show();
+        }
+        else{
+            $(".product-img").hide();
+        }
+    });
+$("#saveNewButton").click(function(e){
+    e.preventDefault();
+    var done = 0;
+        $.ajax({
+            type : 'post',
+            dataType:'json',
+            url : '{{ url('Wayfair.store')}}', // in here you should put your query
+            data:new FormData($("#upload_form")[0]),
+            processData:false,//need this to process form
+            contentType: false,
+            // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+            success : function(data)
+            {
+                //location.reload();
+                console.dir(data);
+                maxImage = 2;
+                var resultHtml="";
+                data.forEach(function(r,regIdx){
+                    var html ="<div>Reg date: <b>"+r[0].reg+"</b></div>"
+                    html += "<table border='1' class='pickTable' style='width:1050px'><thead><tr><td>sku</td><td>qty</td><td>name</td><td>AI name</td><td>location</td><td class='product-img'>image</td></tr></thead><tbody>";
+                    r.forEach(function(item,index){
+                        html +="<tr>";
+                        html +="<td>"+item.sku+"</td>";
+                        html +="<td>"+item.qty+"</td>";
+                        html +="<td>"
+                        if(item.product!=null){
+                            html +=item.product.name;
+                        }
+                        html +="</td>";
+                        html +="<td>"+item.name+"</td>";
+
+                        html +="<td>"
+                        if(item.product!=null){
+                            item.product.locations.forEach(function(loc,loc_idx){
+                                html +=loc.location +" | ";
+                            });
+                        }
+                        html +="</td>";
+
+                        html +="<td>"
+                        if(item.product!=null){
+                            imgcount = 0;
+                        item.product.images.forEach(function(img,img_idx){
+                            if(imgcount<maxImage){
+                                html +="<img  class='product-img' src='/storage/product_images_icon/"+img.filename +"'> ";
+                                imgcount++;
+                            }
+                        });
+                        }
+                        html +="</td>";
+                        html +="</tr>";
+                    });
+                    html += "</tbody></table><p></p>";
+                    resultHtml += html;
+
+
+                });
+                    $("#result").html(resultHtml);
+
+                    $("#chk-img").prop('checked',false);
+                    $(".product-img").hide();
+                    $(".pickTable").dataTable({
+                        "paging": false,
+                        "order": [[ 4, "asc" ]],
+                        columnDefs: [
+                            { width: 50, targets: 0 },
+                            { width: 50, targets: 1 },
+                            { width: 300, targets: 2 },
+                            { width: 300, targets: 3 },
+                            { width: 150, targets: 4 },
+                            { width: 150, targets: 5 }
+                        ],
+                    });
+
+            },
+            error: function(e){
+                console.dir(e);
+            }
+        });
+});
+
+$("#saveNewButton2").click(function(e){
+    e.preventDefault();
+    var done = 0;
+        $.ajax({
+            type : 'post',
+            dataType:'json',
+            url : '{{ url('Wayfair.picklist')}}', // in here you should put your query
+            data:new FormData($("#upload_form")[0]),
+            processData:false,//need this to process form
+            contentType: false,
+            // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+            success : function(data)
+            {
+                //location.reload();
+                console.dir(data);
+                maxImage = 2;
+                var html =  "<table border='1' class='pickTable' style='width:1050px'><thead><tr><td>PO</td><td>sku</td><td>qty</td><td>Wayfair name</td><td>AI name</td><td>location</td><td class='product-img'>image</td></tr></thead><tbody>";
+
+                data.forEach(function(r,regIdx){
+
+                        html +="<tr>";
+                        html +="<td>"+r.po_number+"</td>";
+                        html +="<td>"+r.item_number+"</td>";
+                        html +="<td>"+r.quantity+"</td>";
+                        html +="<td>"+r.item_name+"</td>";
+                        html +="<td>"
+                        if(r.product!=null){
+                            html +=r.product.name;
+                        }
+                        html +="</td>";
+
+                        html +="<td>"
+                        if(r.product!=null){
+                            r.product.locations.forEach(function(loc,loc_idx){
+                                html +=loc.location +" | ";
+                            });
+                        }
+                        html +="</td>";
+
+                        html +="<td>"
+                        if(r.product!=null){
+                            imgcount = 0;
+                            r.product.images.forEach(function(img,img_idx){
+                            if(imgcount<maxImage){
+                                html +="<img  class='product-img' src='/storage/product_images_icon/"+img.filename +"'> ";
+                                imgcount++;
+                            }
+                        });
+                        }
+                        html +="</td>";
+                        html +="</tr>";
+
+
+                });
+                    html += "</tbody></table><p></p>";
+                    $("#result").html(html);
+
+                    $("#chk-img").prop('checked',false);
+                    $(".product-img").hide();
+                    $(".pickTable").dataTable({
+                        "paging": false,
+                        "order": [[ 1, "asc" ]],
+                        columnDefs: [
+                            { width: 50, targets: 0 },
+                            { width: 50, targets: 0 },
+                            { width: 50, targets: 1 },
+                            { width: 100, targets: 2 },
+                            { width: 300, targets: 3 },
+                            { width: 150, targets: 4 },
+                            { width: 150, targets: 5 }
+                        ],
+                    });
+
+            },
+            error: function(e){
+                console.dir(e);
+            }
+        });
+});
+
+
+});
+</script>
+{% endblock %}

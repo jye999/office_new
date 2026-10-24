@@ -1,0 +1,96 @@
+{% extends "layout.njk" %}
+{% block content %}
+<style>
+.finished{
+    text-decoration: line-through;
+}
+</style>
+<br/><br/>
+<div style="font-size:13pt">
+      <form enctype="multipart/form-data" id="upload_form" role="form" method="POST" class="form-horizontal" action="" >
+<fieldset>
+
+{{ form.file('report', {multiple: false}) | safe }}
+
+<button type="button" id="saveNewButton" class="btn btn-primary">Upload</button>
+</fieldset>
+</form>
+<div id="result">
+
+</div>
+</div>
+<script>
+
+$(document).ready(function() {
+    $("#chk-img").click(function(){
+        if($("#chk-img").is(":checked")){
+            $(".product-img").show();
+        }
+        else{
+            $(".product-img").hide();
+        }
+    });
+$("#saveNewButton").click(function(e){
+    e.preventDefault();
+    var done = 0;
+        $.ajax({
+            type : 'post',
+            dataType:'json',
+            url : '{{ url('Tongtool.picklist')}}', // in here you should put your query
+            data:new FormData($("#upload_form")[0]),
+            processData:false,//need this to process form
+            contentType: false,
+            // data :  'orderId=' + $("#orderId").val() + "&cs_user="+$("#cs_user").val() + "&followup_date="+$("#followup_date").val()+ "&assignTo="+$("#assignTo").val()+"&notes="+encodeURIComponent($("#notes").val())+"&done="+done, // here you pass your id via ajax .
+            success : function(data)
+            {
+                //location.reload();
+                console.dir(data);
+                maxImage = 2;
+                var resultHtml="";
+                var html =""
+                html += "<table border='1' class='pickTable' style='width:1050px'><thead><tr><td>sku</td><td>qty</td><td>name</td><td>location</td></tr></thead><tbody>";
+
+                data.forEach(function(item,regIdx){
+                        html +="<tr>";
+                        html +="<td>"+item[1]+"</td>";
+                        html +="<td>"+item[4]+"</td>";
+                        html +="<td>"+item[2]+"</td>";
+                        html +="<td>"
+                        if(item.product!=null){
+                            item.product.locations.forEach(function(loc,loc_idx){
+                                html +=loc.location +" | ";
+                            });
+                        }
+                        html +="</td>";
+                        html +="</tr>";
+                    });
+
+                    html += "</tbody></table><p></p>";
+                    resultHtml += html;
+                    $("#result").html(resultHtml);
+
+                    $("#chk-img").prop('checked',false);
+                    $(".product-img").hide();
+                    $(".pickTable").dataTable({
+                        "paging": false,
+                        "order": [[ 0, "asc" ]],
+                        columnDefs: [
+                            { width: 50, targets: 0 },
+                            { width: 50, targets: 1 },
+                            { width: 300, targets: 2 },
+                            { width: 300, targets: 3 }
+                        ],
+                    });
+
+            },
+            error: function(e){
+                console.dir(e);
+            }
+        });
+});
+
+
+
+});
+</script>
+{% endblock %}

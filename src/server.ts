@@ -43,6 +43,8 @@ import { registerStampsRoutes } from './modules/stamps/routes.js';
 import { registerFedexRoutes } from './modules/fedex/routes.js';
 import { registerUpsRoutes } from './modules/ups/routes.js';
 import { registerFrayunRoutes } from './modules/frayun/routes.js';
+import { registerWayfairRoutes } from './modules/wayfair/routes.js';
+import { registerTongtoolRoutes } from './modules/tongtool/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 import { parseLaravelQuery } from './http.js';
@@ -101,6 +103,8 @@ registerStampsRoutes(app);
 registerFedexRoutes(app);
 registerUpsRoutes(app);
 registerFrayunRoutes(app);
+registerWayfairRoutes(app);
+registerTongtoolRoutes(app);
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {
