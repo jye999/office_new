@@ -218,3 +218,12 @@
 - The old app runs PHP 7.4 (docker `office`): `usort` is NOT stable (hybrid insertion/quick sort). `src/lib/phpSort.ts` ports zend_sort; `plan/tools/phpsort-fuzz.ts` checks it against the container's PHP (300 random cases, 0 mismatches). Use `phpUsort` for any other usort whose ties are visible.
 - GET /fairePickList is not read-only in the old app: it merges duplicate bin rows (os_product_locations) and seeds os_order_pick_allocations for every listed order. Ported as is.
 - `strtotime(null)` is false in PHP; `false > strtotime('1700-01-01')` is a boolean compare => Ship Date is hidden when expected_ship_date is null.
+
+## J3 — eBay sync actions
+
+- Scope (per J3.md rule): only the Runner /ebay|raystore/ actions scheduled (uncommented) in Kernel.php are ported: upload-ebay-tracking, upload-ray-ebay-tracking, update-ebay-handling. The other branches (ebay, raystore, ebay-orders, ebay-item, ebay-token, get-ebay-listing, get-ebay-listing-desc) are commented out in Kernel and no route/page invokes the action names (grep: the only 'raystore' hits are `new eBay(Api)('raystore')` store-name arguments, not sync calls), so they stay unregistered and fall through to Runner's silent unknown-action no-op.
+- PHP 7.4 loose compares copied as helpers in src/jobs/actions/ebay.ts: `$t->tracking != null` is false for null/''/'0'; `$tracking != ''` is false for ''/'0'; `handling == null` is also true for 0/'0' (so a detail with handling=0 is re-fetched).
+- Quirk (upload-ebay-tracking): `UploadShipping`'s result is never inspected — the order is marked Done whenever it has details and a non-empty tracking number, even on API error.
+- Quirk (upload-ebay-tracking): the legacy recomputes the tracking per detail row; the effective value is always the last non-null os_trackings row of the order (insertion order, no ORDER BY — as Eloquent hasMany).
+- Quirk (upload-ray-ebay-tracking): `explode('-', itemId)` with no dash makes the TransactionID empty (`<TransactionID></TransactionID>`), and the legacy `print_r($result)`/Log noise is not reproduced (L05 precedent).
+- emailErrorMessage (EmailHelper.php) is ported inline in the action: same from/to/subject, emails.log template body; src/mail.ts keeps it a logged no-op unless MAIL_ENABLED=1.

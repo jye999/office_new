@@ -1,8 +1,12 @@
 import { amazonActions } from './actions/amazon.js';
+import { ebayActions } from './actions/ebay.js';
 
 export type SyncAction = (arg1?: string) => Promise<number>;
 
-export const actions = new Map<string, SyncAction>(Object.entries(amazonActions));
+export const actions = new Map<string, SyncAction>([
+  ...Object.entries(amazonActions),
+  ...Object.entries(ebayActions),
+]);
 
 export function registerSyncAction(name: string, action: SyncAction): void {
   actions.set(name, action);
