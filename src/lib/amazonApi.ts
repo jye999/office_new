@@ -3,7 +3,9 @@
 //   getShippingRates / createShipment (MerchantFulfillmentV0), requestReport / getReportRequestList /
 //   getReportDocument (ReportsV20210630, with a restricted data token for restricted report types),
 //   getListing / patchListing (ListingsV20210801), uncompress, getPriorDays, getFormattedTimestamp.
-// App\Libraries\Amazon (MWS + Product Advertising API) is dead and not ported; see plan/STATUS.md (L04).
+// Plus the PA-API ItemLookUp (T43, ProductController@ImportAmazonAsin): port of App\Libraries\Amazon::ItemLookUp
+// (SigV2-signed GET to webservices.amazon.com; that host speaks plain http in the old app, so it alone is
+// allowed off https). The L04 "dead" verdict predates T43 — the MWS parts remain unported.
 //
 // Every outbound HTTP call (LWA, STS, SP-API) goes through request(). Write calls (createShipment buys a
 // label; patchListing edits the listing) are logged and NOT sent when DRY_RUN=1.
@@ -30,11 +32,13 @@ export interface AmazonResponse {
 type Transport = (req: AmazonRequest) => Promise<AmazonResponse>;
 
 // Host is derived from the URL by fetch; it stays in AmazonRequest.headers because the PHP signs and sends it.
-const ALLOWED_HOSTS = new Set(['api.amazon.com', 'sellingpartnerapi-na.amazon.com', 'sts.us-east-1.amazonaws.com']);
+const ALLOWED_HOSTS = new Set(['api.amazon.com', 'sellingpartnerapi-na.amazon.com', 'sts.us-east-1.amazonaws.com', 'webservices.amazon.com']);
 
 const fetchTransport: Transport = async (req) => {
   const url = new URL(req.url);
-  if (url.protocol !== 'https:' || !ALLOWED_HOSTS.has(url.host)) throw new Error(`Amazon: refusing request to ${url.host}`);
+  if (!ALLOWED_HOSTS.has(url.host)) throw new Error(`Amazon: refusing request to ${url.host}`);
+  // webservices.amazon.com (legacy PA-API) is http:// in the old app; the SP-API hosts stay https-only.
+  if (url.protocol !== 'https:' && url.host !== 'webservices.amazon.com') throw new Error(`Amazon: refusing request to ${url.host}`);
   const { Host: _host, ...headers } = req.headers;
   const res = await fetch(url, { method: req.method, headers, body: req.body });
   return { status: res.status, body: await res.text() };
@@ -448,4 +452,33 @@ export class AmazonApi {
       }),
     );
   }
+}
+
+// ---- App\Libraries\Amazon::ItemLookUp (PA-API, SigV2) ----
+
+// GET ItemLookup; returns the raw XML body (the PHP explodes off the header block, which the
+// transport seam already strips). The 0.5 s PHP usleep is a timing quirk and is not ported.
+export async function itemLookUp(asin: string, timestamp = getFormattedTimestamp()): Promise<string> {
+  const params: Record<string, string> = {
+    Service: 'AWSECommerceService',
+    Operation: 'ItemLookup',
+    AWSAccessKeyId: env('AMAZON_ADVERTISING_KEY'),
+    AssociateTag: env('AMAZON_ADVERTISING_TAG'),
+    ItemId: asin,
+    ResponseGroup: 'ItemAttributes,OfferSummary,SalesRank,Images,VariationImages,VariationSummary',
+    Timestamp: timestamp,
+  };
+  // ksort() (byte order = JS sort for these fixed ASCII keys), rawurlencode both sides.
+  const canonicalQuery = Object.keys(params)
+    .sort()
+    .map((k) => `${rawurlencode(k)}=${rawurlencode(params[k])}`)
+    .join('&');
+  const stringToSign = `GET\nwebservices.amazon.com\n/onca/xml\n${canonicalQuery}`;
+  const signature = createHmac('sha256', env('AMAZON_ADVERTISING_SECRET')).update(stringToSign).digest('base64');
+  const res = await request({
+    method: 'GET',
+    url: `http://webservices.amazon.com/onca/xml?${canonicalQuery}&Signature=${rawurlencode(signature)}`,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8', 'User-Agent': 'Chrome' },
+  });
+  return res.body;
 }

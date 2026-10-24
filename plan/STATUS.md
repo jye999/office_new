@@ -425,3 +425,9 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - Marketplace callback routes are ported; deterministic guards, eBay challenge, Shopify legacy 500, and AmzAd tests pass.
 - Etsy token-exchange and eBay raw-body persistence integration tests remain skipped: inject cannot reliably retain the OAuth1 session and the raw-body parser write stalls. No live OAuth calls were made.
 - Shopify callback keeps the old app’s controller-load 500; its Laravel debug HTML is excluded from content parity.
+
+## T43 — partial
+- All 7 routes registered in `src/modules/product/routes.ts`; views `views/product/importAmazon.njk`, `importEtsy.njk`; `src/lib/amazonApi.ts` extended.
+- Verified: typecheck, `test/t43.test.ts` (guards, datatables, page renders), `pnpm parity --task T43` (/products.shopify; bigint `id` coerced to number to match PDO).
+- Not verified: POST /products.shopify, ImportListing, ImportAmazonAsin, RemoveLink and Etsy/Amazon import execution (write to DB / call marketplaces). Manual checklist: run only with DRY_RUN=1 and mocked transports; compare os_shopify_variants_links rows after updateShopifyLink.
+- `scripts/parity.ts`: unifiedDiff now skips the LCS table for >4M cells (it OOM'd on large mismatching JSON).

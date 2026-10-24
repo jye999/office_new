@@ -1,0 +1,160 @@
+{% extends "layout.njk" %}
+{% block content %}
+<section class="content">
+    <h4>
+        Import From Amazon - Data Last Refresh {{ lastRefresh }}
+    </h4>
+    <br>
+
+    <div class="row">
+      <div class="col-md-3">
+          <input type="text" id="asin" placeholder="ASIN">
+          <button class="btn btn-primary btnSingleImport">Import Now</button>
+          <div id="importResult"></div>
+      </div>
+      <div class="col-md-3">
+      <a class="btn btn-primary" href="products">Back to Products</a>
+      </div>
+    </div>
+    <hr/>
+    <br>
+    <table id="productTable" class = "table table-striped table-bordered table-hover" style = 'background:#fff'>
+        <thead>
+            <th>Main Image</th>
+            <th>Asin</th>
+            <th>Title</th>
+            <th>Shopify</th>
+        </thead>
+        <tbody>
+            {% for listing in listings %}
+            <tr>
+              <td><img src="{{ listing.image }}" width="150px"></td>
+              <td><a href="https://www.amazon.com/dp/{{ listing.asin1 }}" target="_blank">{{ listing.asin1 }}</a></td>
+              <td>{{ listing['item-name'] }}</td>
+              <td>
+              {% if listing.shopify_id is none or listing.shopify_id == '' %}
+              <button class="btn btn-primary btnImport" value="{{ listing.asin1 }}">import</button>
+              {% else %}
+                <a href="https://angel-isabella.myshopify.com/admin/products/{{ listing.shopify_id }}" target="_blank">{{ listing.shopify_id }} </a>
+                <br/>
+                <button class="btn btn-danger btnRemove" value="{{ listing.asin1 }}">Remove Link</button>
+              {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class = 'AjaxisModal'>
+            </div>
+        </div>
+
+</section>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.3.5/js/app.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/2.3.5/js/demo.js"></script>
+        <script> var baseURL = "{{ url('/') }}"</script>
+        <script src = "{{ asset('js/AjaxisBootstrap.js') }}"></script>
+
+
+<script>
+var currentRow  = null;
+var currentRowIdx  = 0;
+$(document).ready(function(){
+
+    var pTable = $('#productTable').DataTable({
+      dom: '<"top"flip>rt<"bottom"flp><"clear">',
+      iDisplayLength: 50
+    });
+  var currentTr = null;
+    $(document).on('click','.btnImport',function(e){
+      e.preventDefault();
+      var $this = $(this);
+      $this.text('Processing');
+      $this.prop('disabled',true);
+      $(".btnImport").prop('disabled',true);
+      currentTr = $(this).parent();
+      console.log($(this).val());
+      var data = {
+        "id":$(this).val()
+      };
+      console.dir(data);
+        $.ajax({
+            type: 'post',
+            url: '{{ route('products.ImportAmazonAsin') }}', // in here you should put your query 
+            data: data,
+            success: function(p) {
+              console.dir(p);
+              var sId = p.id
+              $(currentTr).html('<a href="https://angel-isabella.myshopify.com/admin/products/'+sId+'" target="_blank">'+sId+'</a>');
+              $(".btnImport").prop('disabled',false);
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              alert('request failed');
+              console.dir(xhr);
+              console.dir(textStatus);
+              console.dir(errorThrown);
+              $(".btnImport").prop('disabled',false);
+            }
+          });
+    });
+
+    $(document).on('click','.btnSingleImport',function(e){
+      e.preventDefault();
+      var $this = $(this);
+      $this.text('Processing');
+      $this.prop('disabled',true);
+      var data = {
+        "id":$("#asin").val()
+      };
+      console.dir(data);
+        $.ajax({
+            type: 'post',
+            url: '{{ route('products.ImportAmazonAsin') }}', // in here you should put your query 
+            data: data,
+            // in php you should use $_POST['post_id'] to get this value 
+            success: function(p) {
+              console.dir(p);
+              var sId = p.id
+              $("#importResult").html($("#asin").val()+' is imported to Shopify as <a href="https://angel-isabella.myshopify.com/admin/products/'+sId+'" target="_blank">'+sId+'</a>');
+              $(".btnImport").prop('disabled',false);
+              $this.prop('disabled',false);
+              $this.text('Import Now');
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              alert('request failed');
+              console.dir(xhr);
+              console.dir(textStatus);
+              console.dir(errorThrown);
+              $(".btnImport").prop('disabled',false);
+            }
+          });
+    });
+
+    $(document).on('click','.btnRemove', function(e){
+      e.preventDefault();
+      var asin = $(this).val();
+      var $this = $(this);
+      var data = {
+        "store": "Amazon",
+        "asin":asin
+      };
+      $.ajax({
+            type: 'post',
+            url: '{{ route('products.RemoveLink') }}', // in here you should put your query 
+            data: data,
+            // in php you should use $_POST['post_id'] to get this value 
+            success: function(p) {
+              $this.parent().html('<button class="btn btn-primary btnImport" value="'+asin+'">import</button>');
+            },
+            error: function(xhr, textStatus, errorThrown) {
+              alert('request failed');
+              $(".btnImport").prop('disabled',false);
+            }
+          });
+    });
+
+});
+
+</script>
+{% endblock %}

@@ -33,6 +33,9 @@ import { datatables } from '../../datatables.js';
 import { allInput, input, lredirect, redirectBack } from '../../http.js';
 import { image } from '../../images.js';
 import { btDeleting } from '../../lib/ajaxis.js';
+import { itemLookUp } from '../../lib/amazonApi.js';
+import { EtsyClient } from '../../lib/etsy.js';
+import { Shopify } from '../../lib/shopify.js';
 import { mergeDuplicateLocations, ensureDefaultStillStocked } from '../../lib/warehouseLocation.js';
 import { disk } from '../../storage.js';
 import { any, notFoundPage, registerFallback, registerRoute, resource, route } from '../../router.js';
@@ -633,6 +636,300 @@ async function productEdit(req: FastifyRequest, reply: FastifyReply): Promise<vo
 
 // Product@update (web.php:359): name required|max:300, upc required|max:20;
 // every listed field is assigned UNCONDITIONALLY (missing -> NULL, kept quirk).
+// ---------------------------------------------------------------- route actions (T43)
+
+// Product@shopify (web.php:344): Datatables::of(ShopifyProductView::query())->make(true).
+// The view model has no $hidden/$appends, so the raw row passes through.
+async function shopifyData(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const result = await datatables(db.selectFrom('os_vwShopifyProducts').selectAll()).make(allInput(req));
+  // The view's bigint id arrives as a string from mysql2; PHP/PDO emits an int (< 2^53 here).
+  const data = (result as { data?: Row[] }).data;
+  if (Array.isArray(data)) for (const r of data) if (typeof r['id'] === 'string') r['id'] = Number(r['id']);
+  reply.send(result);
+}
+
+// Eloquent timestamps on ShopifyVariantLink: save() on a new model stamps both.
+async function insertVariantLink(values: { id: string; product_id: string; asin?: string | null; etsy?: string | null }): Promise<void> {
+  const ts = nowDb();
+  // SAFETY: os_shopify_variants_links column set + timestamps; unset columns take DB defaults as in PHP.
+  await db
+    .insertInto('os_shopify_variants_links')
+    .values({ id: values.id, product_Id: values.product_id, asin: values.asin ?? null, etsy: values.etsy ?? null, created_at: ts, updated_at: ts } as never)
+    .execute();
+}
+
+// Product@updateShopifyLink (web.php:345): upsert os_shopify_variants_links by id; each
+// marketplace field is assigned only when `!= null` (PHP 7 loose: '0'/''/0 skip the assign),
+// then the row is re-fetched (DB column case: product_Id) and returned as JSON.
+async function updateShopifyLink(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const all = allInput(req);
+  const id = all['id'];
+  // SAFETY: full os_shopify_variants_links rows -> Record.
+  let product = (await eqWhere(db.selectFrom('os_shopify_variants_links').selectAll(), 'id', id).executeTakeFirst()) as unknown as Row | undefined;
+  const sets: Row = {};
+  for (const k of ['asin', 'ebay', 'walmart', 'houzz', 'etsy']) {
+    if (!php7LooseNull(all[k])) sets[k] = all[k];
+  }
+  if (product) {
+    const ts = nowDb();
+    // SAFETY: os_shopify_variants_links columns + timestamp; runtime values mirror the attribute set.
+    await db.updateTable('os_shopify_variants_links').set({ ...sets, updated_at: ts } as never).where('id', '=', String(id)).execute();
+  } else {
+    await insertVariantLink({ id: String(id), product_id: String(all['product_id'] ?? ''), ...sets });
+  }
+  // SAFETY: full os_shopify_variants_links row -> Record (DB column case: product_Id).
+  const fresh = (await eqWhere(db.selectFrom('os_shopify_variants_links').selectAll(), 'id', id).executeTakeFirst()) as unknown as Row;
+  reply.send(fresh);
+}
+
+// Product@ImportEtsy (web.php:346): the distinct listing+link join, the 'etsyrefresh'
+// ReportTime, and the page.
+async function importEtsyView(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  // The join query is raw because Kysely cannot mix a star ref with an aliased column in one
+  // select(); the SQL is exactly what Laravel's query builder generates (os_ prefix applied).
+  // SAFETY: free-form join row -> Record for the view.
+  // SAFETY: raw star+alias select list (Kysely 0.29 cannot mix a star ref with an aliased
+  // column in one select()); the SQL mirrors Laravel's builder output and rows are free-form.
+  const listings = (await db
+    .selectFrom('os_etsy_listings')
+    .leftJoin('os_shopify_variants_links', 'os_etsy_listings.id', 'os_shopify_variants_links.etsy')
+    .select(sql`os_etsy_listings.*, os_shopify_variants_links.product_Id as shopify_id` as unknown as never)
+    .distinct()
+    .execute()) as unknown as Row[];
+  const reportTime = await db.selectFrom('os_report_time').select(['updated_at']).where('reportName', '=', 'etsyrefresh').executeTakeFirst();
+  const lastRefresh = reportTime ? String(reportTime.updated_at ?? '') : '';
+  await render(req, reply, 'product/importEtsy', { lastRefresh, listings });
+}
+
+// Product@ImportAmazon (web.php:348): same shape over MERCHANT_LISTING + grant_inventory.
+async function importAmazonView(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  // Raw for the same Kysely limitation as importEtsyView; SQL mirrors Laravel's builder output.
+  // SAFETY: free-form join row -> Record for the view.
+  // SAFETY: same raw star+alias select as importEtsyView; SQL mirrors Laravel's builder output.
+  const listings = (await db
+    .selectFrom('os_MERCHANT_LISTING')
+    .leftJoin('os_grant_inventory', 'os_grant_inventory.asin', 'os_MERCHANT_LISTING.asin1')
+    .leftJoin('os_shopify_variants_links', 'os_MERCHANT_LISTING.asin1', 'os_shopify_variants_links.asin')
+    .select(sql`os_MERCHANT_LISTING.*, os_shopify_variants_links.product_Id as shopify_id, os_grant_inventory.image` as unknown as never)
+    .distinct()
+    .execute()) as unknown as Row[];
+  const reportTime = await db.selectFrom('os_report_time').select(['updated_at']).where('reportName', '=', '_GET_MERCHANT_LISTINGS_ALL_DATA_').executeTakeFirst();
+  const lastRefresh = reportTime ? String(reportTime.updated_at ?? '') : '';
+  await render(req, reply, 'product/importAmazon', { lastRefresh, listings });
+}
+
+// Product@ImportListing (web.php:347): GetListingById (the angelisabella webhook, not the Etsy
+// API), then a Shopify product POST + one os_shopify_variants_links row per returned variant.
+// count == 0 (or a failed webhook) returns PHP's implicit null -> an empty 200.
+async function importListing(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const listing_id = input(req, 'id');
+  // PHP interpolates $request->id (null -> '') into the webhook URL.
+  const results = await new EtsyClient().getListingById(listing_id === null || listing_id === undefined ? '' : String(listing_id));
+  if (results && results['count'] > 0) {
+    const listing = results['results'][0];
+    // SAFETY: the webhook reply is free-form JSON; the fields below mirror the PHP reads.
+    const L = listing as Record<string, unknown>;
+    const tags = (Array.isArray(L['tags']) ? L['tags'] : []).join(',');
+    const imgArray = (Array.isArray(L['Images']) ? L['Images'] : []).map((li) => ({ src: li['url_fullxfull'] }));
+    let item_weight_unit = 'oz';
+    if (!php7LooseNull(L['item_weight_unit'])) item_weight_unit = String(L['item_weight_unit']);
+    const newProduct: Row = {
+      published: false,
+      title: L['title'],
+      body_html: L['description'],
+      images: imgArray,
+      tags,
+      metafields: [
+        { key: 'source_store', value: 'etsy', value_type: 'string', namespace: 'global' },
+        { key: 'source_store_id', value: listing_id, value_type: 'string', namespace: 'global' },
+      ],
+    };
+    const variants: Row[] = [];
+    const variations = Array.isArray(L['Variations']) ? L['Variations'] : [];
+    if (variations.length > 0) {
+      for (const la of variations) {
+        for (const ao of Array.isArray(la['options']) ? la['options'] : []) {
+          variants.push({ option1: ao['value'], price: ao['price'], inventory_management: 'shopify', weight: L['item_weight'], weight_unit: item_weight_unit });
+        }
+      }
+    } else {
+      variants.push({ option1: 'Default', price: L['price'], inventory_management: 'shopify', weight: L['item_weight'], weight_unit: item_weight_unit });
+    }
+    newProduct['variants'] = variants;
+    const prd = await new Shopify().call('POST', 'admin/products.json', { product: newProduct });
+    const prd_id = prd['id'];
+    for (const v of Array.isArray(prd['variants']) ? prd['variants'] : []) {
+      await insertVariantLink({ id: String(v['id']), product_id: String(prd_id), etsy: String(listing_id) });
+    }
+    return reply.send(prd);
+  }
+}
+
+// PA-API responses: a minimal SimpleXML-shaped reader for the exact navigation the controller does.
+// shortcut: PA-API replies are well-formed with no attributes/PIs needed here, so the parser
+// skips attribute values and PIs; (string)$el is the element's own text (only leaf fields are read).
+interface Sx { children: Record<string, Sx[]>; text: string }
+const sxKids = (n: Sx | null | undefined, name: string): Sx[] => n?.children[name] ?? [];
+const sxChild = (n: Sx | null | undefined, name: string): Sx | undefined => sxKids(n, name)[0];
+const sxText = (n: Sx | null | undefined): string => n?.text ?? '';
+
+const XML_NAMED_ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", nbsp: '\u00a0' };
+function decodeXml(s: string): string {
+  return s.replace(/&(#x[0-9a-fA-F]+|#\d+|[a-zA-Z][a-zA-Z0-9]*);/g, (m, ent: string) => {
+    if (ent[0] === '#') {
+      const cp = ent[1] === 'x' || ent[1] === 'X' ? parseInt(ent.slice(2), 16) : parseInt(ent.slice(1), 10);
+      return Number.isNaN(cp) ? m : String.fromCodePoint(cp);
+    }
+    return XML_NAMED_ENTITIES[ent] ?? m;
+  });
+}
+
+function parseSimpleXml(src: string): Sx | null {
+  let i = 0;
+  const parseElement = (_name: string): Sx => {
+    const node: Sx = { children: {}, text: '' };
+    while (i < src.length) {
+      if (src.startsWith('</', i)) {
+        i = src.indexOf('>', i) + 1;
+        return node;
+      }
+      if (src.startsWith('<!--', i)) {
+        i = src.indexOf('-->', i) + 3;
+        continue;
+      }
+      if (src.startsWith('<', i)) {
+        const end = src.indexOf('>', i);
+        const tag = src.slice(i + 1, end).trim();
+        i = end + 1;
+        if (tag.startsWith('?') || tag.startsWith('!') || tag.startsWith('/')) continue;
+        const childName = tag.split(/\s+/)[0];
+        if (!tag.endsWith('/>')) node.children[childName] = [...(node.children[childName] ?? []), parseElement(childName)];
+        continue;
+      }
+      const end = src.indexOf('<', i);
+      const chunk = end < 0 ? src.slice(i) : src.slice(i, end);
+      i = end < 0 ? src.length : end;
+      node.text += decodeXml(chunk);
+    }
+    return node;
+  };
+  while (i < src.length) {
+    const end = src.indexOf('>', i);
+    const tag = src.slice(i + 1, end).trim();
+    if (tag.startsWith('?') || tag.startsWith('!')) {
+      i = end + 1;
+      continue;
+    }
+    if (tag.startsWith('/')) return null;
+    return parseElement(tag.split(/\s+/)[0]);
+  }
+  return null;
+}
+
+// htmlspecialchars($s, ENT_QUOTES) (PHP's replacement order: & first, then < > " ').
+function htmlSpecialChars(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+}
+
+// Product@ImportAmazonAsin (web.php:349): PA-API ItemLookup, then a Shopify product POST + one
+// link row per returned variant. Kept quirks: the variations' image "dedupe" never fires (PHP
+// in_array() of a string against an array of arrays is always false), the top-level weight_unit
+// is the LAST variation's value (or null with no variations — an undefined PHP variable), and the
+// per-variant 2 s sleep() is timing only. No Items->Item in the reply -> PHP's implicit null (200, empty).
+async function importAmazonAsin(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const asin = String(input(req, 'id') ?? '');
+  const result = parseSimpleXml(await itemLookUp(asin));
+  const item = sxChild(sxChild(result, 'Items'), 'Item');
+  if (!item) return;
+  const imgArray: { src: string }[] = [];
+  for (const iSet of sxKids(sxChild(item, 'ImageSets'), 'ImageSet')) {
+    imgArray.push({ src: sxText(sxChild(sxChild(iSet, 'LargeImage'), 'URL')) });
+  }
+  const item_attributes = sxChild(item, 'ItemAttributes');
+  const item_upc = sxText(sxChild(item_attributes, 'UPC'));
+  let features = '';
+  for (const f of sxKids(item_attributes, 'Feature')) features += htmlSpecialChars(sxText(f)) + '<br/>';
+  const item_amount = Number(sxText(sxChild(sxChild(sxChild(item, 'OfferSummary'), 'LowestNewPrice'), 'Amount'))) / 100.0;
+  let item_weight: string | number = '';
+  const dimWeight = sxText(sxChild(sxChild(item_attributes, 'ItemDimensions'), 'Weight'));
+  if (dimWeight !== '') item_weight = Number(dimWeight) / 100.0;
+  const pkgWeight = sxText(sxChild(sxChild(item_attributes, 'PackageDimensions'), 'Weight'));
+  if (pkgWeight !== '') item_weight = Number(pkgWeight) / 100.0;
+  const item_model = sxText(sxChild(sxChild(item_attributes, 'ItemDimensions'), 'Model'));
+  const barcodes: Record<string, string> = { [item_upc]: asin };
+  const product_variants: Row[] = [];
+  let lastVariationWeightUnit: string | null = null;
+  const variations = sxChild(item, 'Variations'); // isset($item->Variations)
+  if (variations) {
+    for (const v of sxKids(variations, 'Item')) {
+      const vItem = sxChild(sxChild(parseSimpleXml(await itemLookUp(sxText(sxChild(v, 'ASIN')))), 'Items'), 'Item');
+      for (const iSet of sxKids(sxChild(vItem, 'ImageSets'), 'ImageSet')) {
+        imgArray.push({ src: sxText(sxChild(sxChild(iSet, 'LargeImage'), 'URL')) });
+      }
+      const vAttrs = sxChild(vItem, 'ItemAttributes');
+      const title = sxText(sxChild(vAttrs, 'Title'));
+      const upc = sxText(sxChild(vAttrs, 'UPC'));
+      const amount = Number(sxText(sxChild(sxChild(sxChild(vItem, 'OfferSummary'), 'LowestNewPrice'), 'Amount'))) / 100.0;
+      const rawWeight = sxText(sxChild(sxChild(vAttrs, 'ItemDimensions'), 'Weight'));
+      const weight = rawWeight !== '' ? rawWeight : '';
+      let weight_unit = 'oz';
+      if (Number(weight) <= 2) weight_unit = 'lb';
+      lastVariationWeightUnit = weight_unit;
+      barcodes[upc] = sxText(sxChild(v, 'ASIN'));
+      const vv: Row = { option1: title, barcode: upc, price: amount, inventory_management: 'shopify', weight, weight_unit };
+      const model = sxText(sxChild(vAttrs, 'Model'));
+      if (model !== '') vv['sku'] = model;
+      product_variants.push(vv);
+    }
+  }
+  const newProduct: Row = {
+    published: false,
+    title: htmlSpecialChars(sxText(sxChild(item_attributes, 'Title'))),
+    body_html: features,
+    images: imgArray,
+    barcode: item_upc,
+    price: item_amount,
+    weight: item_weight,
+    weight_unit: lastVariationWeightUnit, // undefined PHP variable -> null in the payload
+    inventory_management: 'shopify',
+    metafields: [
+      { key: 'source_store', value: 'amazon', value_type: 'string', namespace: 'global' },
+      { key: 'source_store_id', value: asin, value_type: 'string', namespace: 'global' },
+    ],
+  };
+  if (product_variants.length > 0) {
+    newProduct['variants'] = product_variants;
+  } else {
+    product_variants.push({ title: 'Default Title', barcode: item_upc, price: item_amount, inventory_management: 'shopify', weight: item_weight, weight_unit: 'oz', sku: item_model });
+    newProduct['variants'] = product_variants;
+  }
+  const prd = await new Shopify().call('POST', 'admin/products.json', { product: newProduct });
+  const prd_id = prd['id'];
+  for (const v of Array.isArray(prd['variants']) ? prd['variants'] : []) {
+    await insertVariantLink({ id: String(v['id']), product_id: String(prd_id), asin: barcodes[v['barcode']] ?? null });
+  }
+  reply.send(prd);
+}
+
+// Product@RemoveLink (web.php:350): null out the first matching link's asin/etsy.
+async function removeLink(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const store = input(req, 'store');
+  if (store === 'Amazon') {
+    const sv = await eqWhere(db.selectFrom('os_shopify_variants_links').select('id'), 'asin', input(req, 'asin')).executeTakeFirst();
+    if (sv) {
+      // SAFETY: PK reference + timestamp; values mirror the Eloquent attribute set.
+      await db.updateTable('os_shopify_variants_links').set({ asin: null, updated_at: nowDb() } as never).where('id', '=', sv.id).execute();
+    }
+  } else if (store === 'Etsy') {
+    const sv = await eqWhere(db.selectFrom('os_shopify_variants_links').select('id'), 'etsy', input(req, 'listing_id')).executeTakeFirst();
+    if (sv) {
+      // SAFETY: PK reference + timestamp; values mirror the Eloquent attribute set.
+      await db.updateTable('os_shopify_variants_links').set({ etsy: null, updated_at: nowDb() } as never).where('id', '=', sv.id).execute();
+    }
+  }
+  jsonStr(reply, 'OK');
+}
+
 async function productUpdate(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const all = allInput(req);
   const id = reqId(req);
@@ -1032,6 +1329,14 @@ export function registerProductRoutes(app: FastifyInstance): void {
   // already recorded by T26 as /api/products).
   route(app, { verb: 'any', path: '/products', roles: ROLES, handler: productsIndex });
   route(app, { verb: 'any', path: '/products.data', name: 'products.data', roles: ROLES, handler: anyData });
+  // web.php:344-350 — marketplace links/imports (T43).
+  route(app, { verb: 'get', path: '/products.shopify', name: 'products.shopify', roles: ROLES, handler: shopifyData });
+  route(app, { verb: 'post', path: '/products.shopify', name: 'products.shopify', roles: ROLES, handler: updateShopifyLink });
+  route(app, { verb: 'get', path: '/products.importEtsy', name: 'products.importEtsy', roles: ROLES, handler: importEtsyView });
+  any(app, { path: '/products.ImportListing', name: 'products.ImportListing', roles: ROLES, handler: importListing });
+  route(app, { verb: 'get', path: '/products.ImportAmazon', name: 'products.ImportAmazon', roles: ROLES, handler: importAmazonView });
+  route(app, { verb: 'post', path: '/products.ImportAmazonAsin', name: 'products.ImportAmazonAsin', roles: ROLES, handler: importAmazonAsin });
+  route(app, { verb: 'post', path: '/products.RemoveLink', name: 'products.RemoveLink', roles: ROLES, handler: removeLink });
   // web.php:351-354 — bulk production images (S3 bucket 'bulk-production').
   route(app, { verb: 'get', path: '/products.bulk', name: 'products.bulk', roles: ROLES, handler: bulkProduction });
   route(app, { verb: 'get', path: '/products.viewbulk', name: 'products.viewbulk', roles: ROLES, handler: viewBulkProduction });

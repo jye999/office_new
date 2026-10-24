@@ -151,6 +151,7 @@ function unifiedDiff(a: string, b: string, nameA: string, nameB: string): string
   const bl = b.split('\n');
   const n = al.length;
   const m = bl.length;
+  if (n * m > 4_000_000) return `(diff skipped: ${n} x ${m} lines is too large for the LCS table)`;
   // LCS table (fine for page-sized inputs).
   const dp: number[][] = Array.from({ length: n + 1 }, () => new Array<number>(m + 1).fill(0));
   for (let i = n - 1; i >= 0; i--) {
