@@ -4,7 +4,7 @@ const results = [];
 for (const id of args.ids) {
   const r = await runs.run(id, {
     agent: "worker",
-    model: "D:\\models\\Swift-Qwen3.8-27B-Q5_K_M.gguf:medium",
+    model: "claude-bridge/claude-sonnet-5-5",
     cwd: "/home/johnny/code/office_new",
     timeoutMs: 7200000,
     task: `You are porting a PHP Laravel app to TypeScript. Your task id is ${id}.
