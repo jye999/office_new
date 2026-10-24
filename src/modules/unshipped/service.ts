@@ -8,7 +8,12 @@
 // on these routes. Debugbar::info calls dropped.
 
 import { Kysely } from 'kysely';
-import { db, hwc } from '../../db.js';
+import { existsSync, statSync, writeFileSync, chmodSync } from 'node:fs';
+import path from 'node:path';
+import { config } from '../../config.js';
+import { db, hwc, nowDb } from '../../db.js';
+import { cacheGet, cacheHas } from '../../lib/cache.js';
+import { AmazonApi } from '../../lib/amazonApi.js';
 import { date, strtotime } from '../../view.js';
 
 export type Row = Record<string, unknown>;
@@ -866,6 +871,167 @@ export const prepareStore90 = (u: { company_id?: number } | null) => prepareGran
 export const prepareStore92 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'mermaid', 'hwc8');
 export const prepareStore91 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'FOUR', 'plain');
 export const prepareStore101 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'TEMU', 'temu');
+
+// ------------------------------------------------------------------ U10 Amazon report helpers
+// MWS is retired. These preserve the controller's report parsing through the
+// existing SP-API Reports client; report document downloads have a seam so no
+// U10 test reaches Amazon or its pre-signed storage URL.
+type U10Fetch = (url: string) => Promise<string>;
+const liveU10Fetch: U10Fetch = async (url) => {
+  const response = await fetch(url);
+  return response.text();
+};
+let u10Fetch: U10Fetch = liveU10Fetch;
+export function setU10FetchForTests(fn: U10Fetch | null): void {
+  u10Fetch = fn ?? liveU10Fetch;
+}
+export function fetchU10Url(url: string): Promise<string> {
+  return u10Fetch(url);
+}
+
+export function parseAmzReport(report: string): Row[] {
+  const lines = report.split(/\r?\n|\r/);
+  const fields: string[] = [];
+  const rows: Row[] = [];
+  for (const line of lines) {
+    if (fields.length === 0) fields.push(...line.split('\t'));
+    else {
+      const values = line.split('\t');
+      if (values.length > 1) rows.push(Object.fromEntries(fields.slice(0, 18).map((field, i) => [field, values[i]])));
+    }
+  }
+  return rows;
+}
+
+async function amazonReport(api: AmazonApi, reportType: string): Promise<string> {
+  const reports = await api.getReportRequestList(reportType, 'DONE', '1');
+  const documentId = reports.reports?.[0]?.report_document_id;
+  const document = await api.getReportDocument(documentId, reportType);
+  return u10Fetch(document.url);
+}
+
+async function reloadAmzInventory(): Promise<void> {
+  await db.deleteFrom('os_grant_inventory').where('site', '=', 'A').execute();
+  const report = await amazonReport(new AmazonApi(), 'GET_FLAT_FILE_OPEN_LISTINGS_DATA');
+  const lines = report.split(/\r?\n|\r/);
+  const fields = lines.shift()?.split('\t') ?? [];
+  const products: Row[] = [];
+  for (const line of lines) {
+    const values = line.split('\t');
+    if (values.length === fields.length) products.push(Object.fromEntries(fields.map((field, i) => [field, values[i]])));
+  }
+  if (products.length > 0) {
+    const now = nowDb();
+    await db.insertInto('os_grant_inventory').values(products.map((p) => ({
+      site: 'A', sku: String(p.sku ?? ''), asin: String(p.asin ?? ''), qty: Number(p.quantity ?? 0), created_at: now, updated_at: now,
+    })) as never).execute();
+  }
+}
+
+async function ensureAmzInventory(): Promise<void> {
+  const inventory = await db.selectFrom('os_grant_inventory').select('created_at').where('site', '=', 'A').executeTakeFirst();
+  if (inventory == null) return reloadAmzInventory();
+  const elapsed = Math.abs(Math.floor(Date.now() / 1000) - strtotime(String(inventory.created_at)));
+  if (Math.floor(elapsed / 86_400) > 1 || Math.floor(elapsed / 3_600) % 24 > 8) await reloadAmzInventory();
+}
+
+async function amzItemImage(asin: string): Promise<string | undefined> {
+  const html = await u10Fetch(`http://www.amazon.com/gp/product/${asin}`);
+  const match = /<img[^>]*\bid=["']main-image["'][^>]*\bsrc=["']([^"']*)/i.exec(html) ?? /<img[^>]*\bsrc=["']([^"']*)[^>]*\bid=["']main-image["']/i.exec(html);
+  return match?.[1]?.replace(/^https?:/, '');
+}
+
+// getAmzUnshippedItems(): report rows plus the cached inventory ASIN/image URL.
+async function amzUnshippedItems(): Promise<Row[]> {
+  await ensureAmzInventory();
+  const report = await amazonReport(new AmazonApi(), 'GET_FLAT_FILE_ACTIONABLE_ORDER_DATA_SHIPPING');
+  const lines = report.split(/\r?\n|\r/);
+  const fields = lines.shift()?.split('\t') ?? [];
+  const items: Row[] = [];
+  for (const line of lines) {
+    const values = line.split('\t');
+    if (values.length === fields.length) items.push(Object.fromEntries(fields.map((field, i) => [field, values[i]])));
+  }
+  for (const item of items) {
+    const inv = await db.selectFrom('os_grant_inventory').select('asin').where('sku', '=', String(item.sku ?? '')).executeTakeFirst();
+    if (inv != null) {
+      item.ASIN = inv.asin;
+      const asin = String(inv.asin ?? '');
+      const image = path.join(config.PUBLIC_DIR, 'images', `${asin}.jpg`);
+      if (!existsSync(image) || Date.now() - statSync(image).mtimeMs >= 86_400_000) {
+        // PHP calls getItemImage twice; retain that duplicate scrape before caching the image.
+        await amzItemImage(asin);
+        const imageUrl = await amzItemImage(asin);
+        if (imageUrl?.length) {
+          writeFileSync(image, await u10Fetch(imageUrl));
+          chmodSync(image, 0o666);
+        }
+      }
+      item.pic = `${config.APP_URL.replace(/^https?:/, '')}/images/${asin}.jpg`;
+    }
+  }
+  return items;
+}
+
+export async function loadAmzOrderIntoDb(): Promise<string> {
+  if (await cacheHas('ebayRequestTime')) {
+    const cached = await cacheGet('ebayRequestTime');
+    const seconds = Math.abs(Math.floor(Date.now() / 1000) - strtotime(String(cached)));
+    if (Math.floor(seconds / 60) % 60 < 15) return 'OK';
+  }
+  const items = await amzUnshippedItems();
+  const orderIds = items.map((item) => String(item['order-id'] ?? ''));
+  const existing = await db.selectFrom('os_grant_order').selectAll().where('store', '=', 'A').execute();
+  for (const order of existing) {
+    if (!orderIds.includes(order.orderId)) await db.updateTable('os_grant_order').set({ status: 'Done', updated_at: nowDb() } as never).where('id', '=', order.id).execute();
+  }
+  const orders: Array<Record<string, unknown>> = [];
+  const details: Array<Record<string, unknown>> = [];
+  for (const item of items) {
+    const orderId = String(item['order-id'] ?? '');
+    const order = await db.selectFrom('os_grant_order').select('id').where('orderId', '=', orderId).executeTakeFirst();
+    if (order == null) {
+      const row = {
+        orderId, store: 'A', purchaseDate: dbDate(item['purchase-date']), paymentDate: dbDate(item['payments-date']), buyer: String(item['buyer-name'] ?? ''),
+        email: String(item['buyer-email'] ?? ''), phone: String(item['buyer-phone-number'] ?? ''), recipientName: String(item['recipient-name'] ?? ''),
+        address1: String(item['ship-address-1'] ?? ''), address2: `${item['ship-address-2'] ?? ''} ${item['ship-address-3'] ?? ''}`,
+        city: String(item['ship-city'] ?? ''), state: String(item['ship-state'] ?? ''), zip: String(item['ship-postal-code'] ?? ''), country: String(item['ship-country'] ?? ''),
+      };
+      if (!orders.some((candidate) => JSON.stringify(candidate) === JSON.stringify(row))) orders.push(row);
+      const detail = await db.selectFrom('os_grant_orderdetail').select('id').where('orderId', '=', orderId).where('itemId', '=', String(item['order-item-id'] ?? '')).executeTakeFirst();
+      if (detail == null) {
+        const detailRow = { orderId, store: 'A', itemId: String(item['order-item-id'] ?? ''), name: String(item['product-name'] ?? ''), qty: Number(item['quantity-purchased'] ?? 0), image: String(item.pic ?? ''), asin: String(item.ASIN ?? ''), promiseDate: dbDate(item['promise-date']) };
+        // PHP incorrectly checks $co here, so every detail row survives unless it equals an order row.
+        if (!details.some((candidate) => JSON.stringify(candidate) === JSON.stringify(row))) details.push(detailRow);
+      }
+    }
+  }
+  if (orders.length) await db.insertInto('os_grant_order').values(orders as never).execute();
+  if (details.length) await db.insertInto('os_grant_orderdetail').values(details as never).execute();
+  const unshipped = await db.selectFrom('os_grant_order').selectAll().where('store', '=', 'A').where('status', 'is', null).execute();
+  for (const order of unshipped) {
+    if (!orderIds.includes(order.orderId)) await db.updateTable('os_grant_order').set({ status: 'Done', updated_at: nowDb() } as never).where('id', '=', order.id).execute();
+  }
+  return 'OK';
+}
+
+function dbDate(value: unknown): string {
+  const t = Date.parse(String(value ?? ''));
+  return Number.isNaN(t) ? '1970-01-01 00:00:00' : nowDb(new Date(t));
+}
+
+export async function requestAmzOrderReport(): Promise<any> {
+  const api = new AmazonApi();
+  return api.requestReport('GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE', api.getPriorDays(2), api.getFormattedTimestamp());
+}
+
+export async function getAmzOrderReport(): Promise<Row[]> {
+  return parseAmzReport(await amazonReport(new AmazonApi(), 'GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE'));
+}
+
+export async function getAmzItemPage(asin: string): Promise<string> {
+  return u10Fetch(`http://www.amazon.com/gp/product/${asin}`);
+}
 
 // ------------------------------------------------------------------ U3: Faire
 

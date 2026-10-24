@@ -174,13 +174,6 @@
   ],
   "U9": [],
   "U10": [
-    "/ShopifyDesc",
-    "/getAmzImage",
-    "/GetAmzOrderReport",
-    "/TestAmzApi",
-    "/ebayDesc",
-    "/etsyDesc",
-    "/etsyListing",
-    "/Houzz.ajax"
+    "/getAmzImage"
   ]
 }

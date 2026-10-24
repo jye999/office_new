@@ -1,0 +1,13 @@
+<html>
+<body>
+<h3>{{ product.title }}</h3>
+<div>
+{{ product.body_html | safe }}
+</div>
+
+{% for img in product.images %}
+<img src='{{ img.src }}' style='width:600px;'><br/>
+{% endfor %}
+
+</body>
+</html>
