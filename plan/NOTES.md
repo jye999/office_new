@@ -163,3 +163,11 @@
 - `GetListingById` is not an Etsy call: it GETs an n8n webhook on flow.angelisabella.com (`T` for store 1, `T<store>` otherwise).
 - `PostTracking`: carrier `'USP'` (sic, not USPS) for tracking numbers starting with `1Z`; `USPS` if longer than 12 bytes; else `Fedex`.
 - `StreamClient` failure text for non-2xx replies is reproduced from PHP 7.4's `file_get_contents` warning format; not verified against a live failure.
+
+## L07 — Shopify client (src/lib/shopify.ts)
+- PHP quirk: write payloads are `stripslashes(json_encode($params))`. json_encode escapes `/`, non-ASCII (`\u00e9`) and `"` inside strings; stripslashes then removes every backslash, so non-ASCII text is sent as literal `u00e9` and an embedded `"` breaks the JSON (Shopify answers 422/400). Reproduced exactly (descriptions with accents or quotes are corrupted/rejected in the old app too).
+- PHP quirk: `call()` never throws on API errors — it logs the reply (`errors` key or status >= 400) and returns `array_shift($response)` (the first value of the reply: `{"errors":..}` -> the errors value, `{}` -> `[]`, non-JSON -> null). Callers must check the shape. Ported the same.
+- PHP quirk: `curlAppendQuery` appends `?` + params even if the path already contains `?`; Runner passes `array()` with an inline query, so nothing is appended. Same in the port.
+- Auth: curl turned `https://key:password@domain.myshopify.com` into Basic auth; fetch rejects credentials in URLs, so `Authorization: Basic base64(key:password)` is sent and `shopDomain` has no userinfo. Shopify retired private-app basic-auth (API key/password) access in favour of `X-Shopify-Access-Token` — the old calls probably fail in production already; ported as-is.
+- Not reproduced: curl's `CURLOPT_MAXREDIRS 3` (fetch follows up to 20), the `Expect:` header (fetch never sends it), HTTP/2 status line (PHP's `http_status_message` would be unset; fetch gives `statusText`), duplicate response headers (fetch joins with `, `, PHP kept the last one). `Cannot be called before an API call.` exception only existed in the skipped callsMade/callLimit helpers.
+- Every non-GET call is a "write" for DRY_RUN=1 (POST/PUT/DELETE); it throws `ShopifyDryRunError`.
