@@ -433,3 +433,8 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - `scripts/parity.ts`: unifiedDiff now skips the LCS table for >4M cells (it OOM'd on large mismatching JSON).
 
 ## U1 — partial
+
+## U1 — done (supervisor fixes after Qwen port)
+- Verified token-identical to the old app (ignoring debugbar/CSRF): /enfloral /unshipped1 /unshipped2 /unshipped4 /unshipped5 (now in parity-routes.json). /unshipped3 hits a live feed and is not parity-tested; refreshNotes (eBay + DB writes) is only tested with a stub.
+- Fixes: restored commented `drawCallback` blocks (enfloral, unshipped5); store2 now attaches ProductMap; store2/store4 multi-orders use full ids and `<br>`; prioritize text read from the order; notes echoed raw (`| safe`); qty `0 == null` loose check; `days-past-promise` null+2.
+- Local env: PUSHER_APP_ID/KEY/SECRET copied from the old .env into the gitignored .env (the page embeds the key).

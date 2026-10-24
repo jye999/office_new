@@ -41,7 +41,7 @@
                     {{ item.multiOrdersHtml | safe }}
                     <br/>
                     <button class="btn btn-primary btn-lg prioritizeBtn" value="{{ item.orderId }}">
-                        {{ item.prioritizeBtnText }}
+                        {{ order.prioritizeBtnText }}
                     </button>
                     <br/>
                 </td>
@@ -52,7 +52,7 @@
                     <button class="btn btn-sm btn-primary btnFindMatch">Find Match</button>
                     <span class="internalSku">{{ item.sku }}</span>
                 {% else %}
-                  <a class="internalSku">{{ item.ProductMap.sku }} {{ "" if item.ProductMap.qty is none else " x " + item.ProductMap.qty }}</a> 
+                  <a class="internalSku">{{ item.ProductMap.sku }} {{ "" if (item.ProductMap.qty is none or item.ProductMap.qty === 0 or item.ProductMap.qty === "") else " x " + item.ProductMap.qty }}</a> 
                     <button class="btn btn-sm btn-primary btnFindMatch">Update Match</button>
                 {% endif %}
 
@@ -71,7 +71,7 @@
                 <td  class="hidden-xs" style="font-weight:bold;font-size:16pt;{{ 'color:#046ed6' if item.qty>1 else '' }}">{{ item.qty }}</td>
                 <td class="hidden-xs" ><a class="gallery" href="{{ item.asin if isset(item.asin) else '' }}"><img src="{{ item.image if isset(item.image) else '' }}" class="itemImage"></a></td>
                 <td class="hidden-xs"><a href="#" data-title="{{ item.name }}" class="sameProduct">{{ itemStats[item.asin] }}</a></td>
-                <!--<td>{{ item['days-past-promise']+2 }} </td>-->
+                <!--<td>{{ (item['days-past-promise'] or 0)+2 }} </td>-->
 
                 <td class="hidden-xs">
                         {{ item.shipDate }}
@@ -162,7 +162,7 @@ Ship Date: {{ item.shipDate }}<br/>
                     <button class="btn btn-sm btn-primary btnFindMatch">Find Match</button>
                     <span class="internalSku"></span>
                 {% else %}
-                  <a class="internalSku">{{ item.ProductMap.sku }} {{ "" if item.ProductMap.qty is none else " x " + item.ProductMap.qty }}</a> 
+                  <a class="internalSku">{{ item.ProductMap.sku }} {{ "" if (item.ProductMap.qty is none or item.ProductMap.qty === 0 or item.ProductMap.qty === "") else " x " + item.ProductMap.qty }}</a> 
                     <button class="btn btn-sm btn-primary btnFindMatch">Update Match</button>
                 {% endif %}
 

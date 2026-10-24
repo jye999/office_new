@@ -162,10 +162,10 @@ export const shortId = (s: unknown) => String(s ?? '').slice(-7);
 
 // `<br> Multi-orders` block echoed by raw PHP in the views; suffix is '<br/>'
 // in the desktop loop, '' in the mobile loop.
-export function multiOrdersHtml(orderIds: string[], suffix: string): string {
+export function multiOrdersHtml(orderIds: string[], suffix: string, short = true): string {
   if (orderIds.length <= 1) return '';
   let html = '<br> Multi-orders ';
-  for (const b of orderIds) html += `<br><a href='#${shortId(b)}'>${shortId(b)}</a>${suffix}`;
+  for (const b of orderIds) html += `<br><a href='#${short ? shortId(b) : b}'>${short ? shortId(b) : b}</a>${suffix}`;
   return html;
 }
 
@@ -223,12 +223,14 @@ export async function prepareStore1(user: { company_id?: number } | null): Promi
         selfNotesHtml: String(o.selfNotes ?? '').length > 1 ? `<br/>Notes To Seller : ${o.selfNotes}` : '',
       };
     });
-    const ids = detail.map(() => o.orderId as string);
+    const ids = buyerStats[key] ?? [];
+    // store4 echoes the full order id (no shortId) and a '<br>' after each link.
+    const multi = ids.length > 1 ? `<br> Multi-orders ${ids.map((b) => `<br><a href='#${b}'>${b}</a><br>`).join('')}` : '';
     return {
       ...o,
       detail,
       buyerKey: key,
-      multiOrdersHtml: multiOrdersHtml(ids, '<br>'),
+      multiOrdersHtml: multi,
       multiOrderCount: ids.length,
       prioritizeBtnText: prioritizeText(o.priority),
       urgentFlag: looseEq(o.priority, 2),
@@ -249,6 +251,7 @@ export async function prepareStore2(user: { company_id?: number } | null, showDe
   showDesktop: boolean;
 }> {
   const raw = await grantOrdersWithDetail('A');
+  for (const o of raw) await attachProductMaps(o.detail);
   const { buyerStats: addrStats } = buildStats(raw, (o) => String(o.address1 ?? '') + String(o.zip ?? ''), (i) => i.asin);
   const { buyerStats: emailStats, itemStats } = buildStats(raw, (o) => o.email, (i) => i.asin);
   const orders = raw.map((o) => {
@@ -260,8 +263,8 @@ export async function prepareStore2(user: { company_id?: number } | null, showDe
         daysPast(strtotime(String(i.promiseDate ?? ''))) >= -1
           ? 'priority'
           : '',
-      multiOrdersHtml: multiOrdersHtml(addrStats[String(o.address1 ?? '') + String(o.zip ?? '')] ?? [], '<br/>'),
-      mobileMultiOrdersHtml: multiOrdersHtml(addrStats[String(o.address1 ?? '') + String(o.zip ?? '')] ?? [], ''),
+      multiOrdersHtml: multiOrdersHtml(addrStats[String(o.address1 ?? '') + String(o.zip ?? '')] ?? [], '<br>', false),
+      mobileMultiOrdersHtml: multiOrdersHtml(addrStats[String(o.address1 ?? '') + String(o.zip ?? '')] ?? [], '', false),
       shipDate: ymd(minusDays(i.promiseDate, 2)),
       notesFromBuyerHtml: '',
       selfNotesHtml: '',
@@ -310,12 +313,14 @@ export async function prepareStore4(user: { company_id?: number } | null, showDe
         selfNotesHtml: '',
       };
     });
-    const ids = detail.map(() => o.orderId as string);
+    const ids = buyerStats[key] ?? [];
+    // store4 echoes the full order id (no shortId) and a '<br>' after each link.
+    const multi = ids.length > 1 ? `<br> Multi-orders ${ids.map((b) => `<br><a href='#${b}'>${b}</a><br>`).join('')}` : '';
     return {
       ...o,
       detail,
       buyerKey: key,
-      multiOrdersHtml: multiOrdersHtml(ids, '<br>'),
+      multiOrdersHtml: multi,
       multiOrderCount: ids.length,
       prioritizeBtnText: prioritizeText(o.priority),
       urgentFlag: looseEq(o.priority, 2),
