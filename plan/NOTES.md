@@ -104,3 +104,12 @@
 - (T30) SupplierProduct@store: assigns `supplier = $request->supplier` unconditionally on update (missing -> NULL), writes only dirty attributes and stamps updated_at only when something changed (verified live: identical re-POST leaves updated_at untouched). Create response key order: name, supplier, [status], entry_by, updated_at, created_at, id.
 - (T30) deleteImage removes only the full-size file (icon orphaned), same as Product. `createAllThumbnail` in the Supplier controller has no route — not ported.
 - (T30) FaireImageImporter: the old config token `PRODUCT_IMAGE_IMPORT_TOKEN` is EMPTY in the old .env, so `/api/products/import-faire-images` always answers 401 `{"error":"Unauthorized"}` (verified live). Ported with the same check; the inventory's security change (session role admin,user,remote) is added on top. PHP 7.4 `usort` of image sequences is unstable for >16 items; the port uses JS's stable sort. `os_faire_products` JSON columns arrive already decoded from mysql2 (PHP got strings); decodeJson accepts both.
+
+## L01 — Stamps (src/lib/stamps.ts)
+- PHP `SoapClient` in WSDL mode drops request keys the schema does not know and maps a list onto a type's single repeating element; node-soap serialises unknown keys verbatim. `pruneToSchema()` reproduces the PHP behaviour using `client.describe()`. Consequence (ported faithfully): getRatesNoCleanse/getRatesOnlyNoCleanse/getUpsRates send add-ons under the wrong key `AddOn` (WSDL: `AddOnV20`), so the insurance add-on is silently NOT sent — only `InsuredValue` is. buyLabel's `AddOns` list does reach `AddOnV20`.
+- `printScanForm` calls `CreateScanForm`, which is not an operation in `swsimv135` (config/stamps.*.xml): the PHP always got SoapFault "Function ("CreateScanForm") is not a valid method for this service" -> `success=false`. Same here. `Runner::CreateScanForm` therefore always prints "oops".
+- `cancelLabel()` builds its request but the `CancelIndicium` call is commented out in PHP: no-op.
+- `getRatesNoCleanse`: if CleanseAddress faults, PHP still calls GetRates and then dies with an ErrorException (undefined index `response`). Ported as a thrown Error.
+- `buyLabel` `$needSignature=='true'` is a loose compare, so boolean `true` also enables signature add-ons.
+- `getRatesOnlyNoCleanse` returns the raw response on success but the failure array on a fault (Runner reads `->Rates->Rate` and would fatal on the array). Kept.
+- `getRates()` (no caller, reads undefined `$toAddress`), `getAuthenicator`, `saveAuthenticatorToDB` not ported.
