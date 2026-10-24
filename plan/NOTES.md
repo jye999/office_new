@@ -184,3 +184,14 @@
 - PHP quirk: token reply parsing (`$xml->accessToken`) on an unparseable body is a notice->ErrorException in Laravel; the port throws `WalmartError`.
 - Not reproduced: `CURLOPT_SSL_VERIFYPEER/VERIFYHOST = false` (fetch verifies certificates), the `usleep(500000)` after every call IS kept, PHP `print`/`print_r` debug output.
 - Walmart has been moving integrators from this XML v3 API to JSON; the old calls may already fail in production (not checked). Ported as-is.
+
+## L09 — Houzz + Wayfair clients (src/lib/houzz.ts, src/lib/wayfair.ts)
+- PHP quirk (Houzz): the URL is `api?format=json&method=X&` + `&` + query, so it always contains `&&`. Kept. `updateOrder` with `Action=Ship` (shipOrder) is a GET; DRY_RUN=1 treats it as a write and blocks it.
+- PHP quirk (Houzz): every call sleeps 0.5 s after the reply (`usleep(500000)`); kept in the real transport only. Failure -> `curl_exec` false (callers `json_decode(false)` = null); port returns `false` and logs. `CURLOPT_SSL_VERIFYPEER/HOST = false` is not reproduced (fetch verifies certificates); the real transport only talks to https://api.houzz.com.
+- PHP quirk (Wayfair): GraphQL payloads are string-concatenated with no escaping of PO numbers/SKUs; the whole JSON is flattened by deleting \r \n \t. Reproduced byte-for-byte (checked against the PHP, see test/fixtures/l09-wayfair-php-golden.json).
+- PHP quirk (Wayfair): `fetchToken()` (bare, not `$this->`) in updateFullInventory/updateInventory/RegisterOrder/GetPackingSlip is an undefined function (fatal) when no token was passed to the constructor. All callers (Runner, WayfairController) pass a token or fetch one first, so it never ran; the port calls `this.fetchToken()` instead.
+- PHP quirk (Wayfair): errors in sendGraphQLRequest/fetchToken `echo` a message and `exit(1)` (kills the Runner command / web request). Port throws `WayfairError`. The PHP also `echo`ed the access token and `print_r`ed orders/inventory replies; not reproduced.
+- PHP quirk (Wayfair): `WAYFAIR_AUDIENCE` in .env ends with `/`, so packing slips are fetched from `https://api.wayfair.com//v1/packing_slip/<po>` (double slash). Kept. `RegisterOrder` registers with the hard-coded warehouse/supplier id 49188 (also used in inventory feeds).
+- PHP quirk (Wayfair): `RegisterOrder` reads `$graphQLResponse['data'][...]['consolidatedShippingLabel']` for logging before the `isset` check (notice only). `GetPackingSlip` returns the PDF body; the controller discards it.
+- fetch drops the Authorization header on a cross-origin redirect (file_get_contents resent it); only matters if the label URL redirects to another host.
+- The old .env has a commented-out second set of Wayfair credentials (sandbox/test app); only the active ones were copied.

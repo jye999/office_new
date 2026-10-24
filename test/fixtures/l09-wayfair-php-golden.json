@@ -1,0 +1,153 @@
+{
+    "fetchToken": {
+        "ret": "TOK",
+        "log": [
+            {
+                "method": "POST",
+                "url": "https://sso.auth.wayfair.com/oauth/token",
+                "headers": [
+                    "Content-Type: application/json",
+                    "Cache-Control: no-cache"
+                ],
+                "body": "\n              {\n                \"grant_type\": \"client_credentials\",\n                \"client_id\": \"cid\",\n                \"client_secret\": \"sec\",\n                \"audience\": \"https://api.wayfair.test\"\n              }\n    "
+            }
+        ]
+    },
+    "getOrders": [
+        {
+            "method": "POST",
+            "url": "https://api.wayfair.test/v1/graphql",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": "{\"query\": \"query getDropshipPurchaseOrders {getDropshipPurchaseOrders (limit:100,hasResponse: false,fromDate: \\\"2026-10-24\\\") {poNumber,poDate,estimatedShipDate,customerName,packingSlipUrl,shippingInfo {  shipSpeed,  carrierCode}warehouse {  id,  name,  address {    name,    address1,    address2,    address3,    city,    state,    country,    postalCode  }},products {  partNumber,  quantity,  price,  name,  estShipDate,  event {    id,    type,    name,    startDate,    endDate  }},shipTo {  name,  address1,  address2,  address3,  city,  state,  country,  postalCode,  phoneNumber}}}\", \"variables\": null}"
+        }
+    ],
+    "getInventory": [
+        {
+            "method": "POST",
+            "url": "https://api.wayfair.test/v1/graphql",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": "{\"query\": \"query inventory { inventory(limit: 10) {  supplierPartNumber,  quantityOnHand,  quantityBackordered,  quantityOnOrder, discontinued,          itemNextAvailabilityDate  }  } \", \"variables\": null}"
+        }
+    ],
+    "acceptOrder": [
+        {
+            "method": "POST",
+            "url": "https://api.wayfair.test/v1/graphql",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": "{\"query\": \"mutation accept {            purchaseOrders {              accept (                poNumber: \\\"CS123\\\",                shipSpeed: GROUND,                lineItems: [                   {                      partNumber: \\\"SKU-1\\\",                      quantity: 2,                      unitPrice: 10.50,                      estimatedShipDate: \\\"2024-05-06\\\"                      } , {                      partNumber: \\\"SKU-2\\\",                      quantity: 1,                      unitPrice: 5,                      estimatedShipDate: \\\"2024-05-07\\\"                      }                 ]              ) {                id,                handle,                status,                submittedAt,                completedAt,                errors {                  key,                  message                }              }            }          }\", \"variables\": null}"
+        }
+    ],
+    "acceptOrderEmpty": {
+        "ret": "",
+        "log": []
+    },
+    "rejectOrder": [
+        {
+            "method": "POST",
+            "url": "https://api.wayfair.test/v1/graphql",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": "{\"query\": \"mutation reject {      purchaseOrders {        reject (          poNumber: \\\"CS123\\\",          lineItems: [             {                partNumber: \\\"SKU-1\\\",                quantity: 2                } , {                partNumber: \\\"SKU-2\\\",                quantity: 1                }           ]        ) {          id,          handle,          status,          submittedAt,          completedAt,          errors {            key,            message          }        }      }    }\", \"variables\": null}"
+        }
+    ],
+    "updateFullInventory": [
+        {
+            "method": "POST",
+            "url": "https://api.wayfair.test/v1/graphql",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": "{\"query\": \"mutation save (      $inventory: [inventoryInput]!    ) {      inventory {        save (          inventory: $inventory,          feedKind: TRUE_UP        ) {          id,          handle,          status,          submittedAt,          completedAt,          errors {            key,            message          }        }      }    }\", \"variables\":  {      \"inventory\": [       {          \"supplierId\": 49188,          \"supplierPartNumber\": \"A-1\",          \"quantityOnHand\": 5          } , {          \"supplierId\": 49188,          \"supplierPartNumber\": \"B-2\",          \"quantityOnHand\": 0          }     ]}}"
+        }
+    ],
+    "updateInventory": [
+        {
+            "method": "POST",
+            "url": "https://api.wayfair.test/v1/graphql",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": "{\"query\": \"mutation save (      $inventory: [inventoryInput]!    ) {      inventory {        save (          inventory: $inventory,          feedKind: DIFFERENTIAL        ) {          id,          handle,          status,          submittedAt,          completedAt,          errors {            key,            message          }        }      }    }\", \"variables\":  {      \"inventory\": [       {          \"supplierId\": 49188,          \"supplierPartNumber\": \"A-1\",          \"quantityOnHand\": 5          } , {          \"supplierId\": 49188,          \"supplierPartNumber\": \"B-2\",          \"quantityOnHand\": 0          }     ]}}"
+        }
+    ],
+    "registerNoLabel": {
+        "ret": {
+            "data": {
+                "purchaseOrders": {
+                    "register": {
+                        "consolidatedShippingLabel": null
+                    }
+                }
+            }
+        },
+        "log": [
+            {
+                "method": "POST",
+                "url": "https://api.wayfair.test/v1/graphql",
+                "headers": [
+                    "Content-Type: application/json",
+                    "Cache-Control: no-cache",
+                    "Authorization: Bearer TOK"
+                ],
+                "body": "{\"query\": \"mutation register {        purchaseOrders {          register (            registrationInput: {              poNumber: \\\"CS123\\\",              warehouseId: 49188            }          ) {            id,            consolidatedShippingLabel {              url            }          }        }      }\", \"variables\": null}"
+            }
+        ]
+    },
+    "registerLabel": {
+        "ret": "CS123",
+        "log": [
+            {
+                "method": "POST",
+                "url": "https://api.wayfair.test/v1/graphql",
+                "headers": [
+                    "Content-Type: application/json",
+                    "Cache-Control: no-cache",
+                    "Authorization: Bearer TOK"
+                ],
+                "body": "{\"query\": \"mutation register {        purchaseOrders {          register (            registrationInput: {              poNumber: \\\"CS123\\\",              warehouseId: 49188            }          ) {            id,            consolidatedShippingLabel {              url            }          }        }      }\", \"variables\": null}"
+            },
+            {
+                "method": "GET",
+                "url": "https://label.test/x.pdf",
+                "headers": [
+                    "Content-Type: application/json",
+                    "Cache-Control: no-cache",
+                    "Authorization: Bearer TOK"
+                ],
+                "body": ""
+            }
+        ],
+        "file": "%PDF-fake"
+    },
+    "packingSlip": [
+        {
+            "method": "GET",
+            "url": "https://api.wayfair.test/v1/packing_slip/CS123",
+            "headers": [
+                "Content-Type: application/json",
+                "Cache-Control: no-cache",
+                "Authorization: Bearer TOK"
+            ],
+            "body": ""
+        }
+    ]
+}
