@@ -48,6 +48,7 @@ import { registerEtsyRoutes } from './modules/etsy/routes.js';
 import { registerEbayRoutes } from './modules/ebay/routes.js';
 import { registerShopifyRoutes } from './modules/shopify/routes.js';
 import { registerAmzadRoutes } from './modules/amzad/routes.js';
+import { registerUnshippedRoutes } from './modules/unshipped/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 import { parseLaravelQuery } from './http.js';
@@ -120,6 +121,7 @@ registerEtsyRoutes(app);
 registerEbayRoutes(app);
 registerShopifyRoutes(app);
 registerAmzadRoutes(app);
+registerUnshippedRoutes(app);
 
 // Laravel renders uncaught exceptions through the app's own error view (old app
 // ships resources/views/error/500.blade.php) — same as sendServer500.
