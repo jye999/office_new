@@ -1,12 +1,11 @@
 import fastifyStatic from '@fastify/static';
-import formbody from '@fastify/formbody';
 import fp from 'fastify-plugin';
 import multipart from '@fastify/multipart';
 import Fastify from 'fastify';
 import { config } from './config.js';
 import { db, sql } from './db.js';
 import { registerViewPlugins, render } from './view.js';
-import { lredirect, registerHttpHelpers } from './http.js';
+import { registerHttpHelpers } from './http.js';
 import { registerAuthRoutes } from './modules/auth/routes.js';
 import { registerApiAuthRoutes } from './modules/api/routes.js';
 import { registerHomeRoutes } from './modules/home/routes.js';
@@ -45,6 +44,10 @@ import { registerUpsRoutes } from './modules/ups/routes.js';
 import { registerFrayunRoutes } from './modules/frayun/routes.js';
 import { registerWayfairRoutes } from './modules/wayfair/routes.js';
 import { registerTongtoolRoutes } from './modules/tongtool/routes.js';
+import { registerEtsyRoutes } from './modules/etsy/routes.js';
+import { registerEbayRoutes } from './modules/ebay/routes.js';
+import { registerShopifyRoutes } from './modules/shopify/routes.js';
+import { registerAmzadRoutes } from './modules/amzad/routes.js';
 import { installRouter, preloadRouteTable } from './router.js';
 
 import { parseLaravelQuery } from './http.js';
@@ -61,8 +64,16 @@ preloadRouteTable();
 // fp() = global scope: form bodies must be parsed for routes registered on
 // the root app (T02's auth module registered them after this plugin; without
 // fp() the plugin is encapsulated and root routes 415 on urlencoded POSTs).
-await app.register(fp(formbody));
 await app.register(fp(multipart), { attachFieldsToBody: false });
+// T42: /ebayClosureNotification needs $request->getContent() (the RAW urlencoded
+// body), so formbody is NOT registered here: this parser both captures the raw
+// bytes on the request and hands them to the same parseLaravelQuery parser the
+// app's querystringParser already uses (body and query share one parser).
+app.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'buffer' },
+  (_req, body, done) => {
+    (_req as { rawBody?: string }).rawBody = body.toString();
+    done(null, parseLaravelQuery(body.toString()));
+  });
 // registerHttpHelpers before the session plugin: its onSend must run first
 // (onSend hooks are FIFO) so flashed errors/old input are consumed once.
 await app.register(registerHttpHelpers);
@@ -105,6 +116,19 @@ registerUpsRoutes(app);
 registerFrayunRoutes(app);
 registerWayfairRoutes(app);
 registerTongtoolRoutes(app);
+registerEtsyRoutes(app);
+registerEbayRoutes(app);
+registerShopifyRoutes(app);
+registerAmzadRoutes(app);
+
+// Laravel renders uncaught exceptions through the app's own error view (old app
+// ships resources/views/error/500.blade.php) — same as sendServer500.
+app.setErrorHandler(async (err, req, reply) => {
+  const e = err as { statusCode?: number; message: string };
+  const status = Math.min(Math.max(e.statusCode ?? 500, 400), 599);
+  if (status !== 500) return reply.code(status).send(e.message);
+  await render(req, reply, 'error/500');
+});
 
 // T01 dev-only test route: renders a page extending `layout` (see views/layout-test.njk).
 if (process.env.NODE_ENV !== 'production') {

@@ -420,3 +420,8 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - Not verified (code review only, per the no-external-calls / mutating rule): /Wayfair.registerOrder (external label register + os_grant_order/os_trackings writes) and /Wayfair.packingSlip (external token + packing-slip GET) — never called in tests; the multipart file-upload success paths of store/picklist against the live old app (inject-tested with generated xlsx/csv only); the byte-parity of store()'s full regdates JSON against a real Wayfair CSV (logic unit-tested against a small CSV).
 - Open questions: none.
 - Manual checklist: log in (admin/user/remote) -> /Wayfair, upload a Wayfair CSV ("Item Number/Item Name/Quantity/Registered Timestamp/PO Number/Ship To Name/Packing Slip URL" header) -> the reg-date tables render with product name/location/image per SKU; "Upload new format" -> picklist table. /Tongtool -> upload its xlsx pick-list -> table with SKU/qty/name/location. Do NOT hit /Wayfair.registerOrder or /Wayfair.packingSlip in tests (they call the live Wayfair API).
+
+## T42 — partial
+- Marketplace callback routes are ported; deterministic guards, eBay challenge, Shopify legacy 500, and AmzAd tests pass.
+- Etsy token-exchange and eBay raw-body persistence integration tests remain skipped: inject cannot reliably retain the OAuth1 session and the raw-body parser write stalls. No live OAuth calls were made.
+- Shopify callback keeps the old app’s controller-load 500; its Laravel debug HTML is excluded from content parity.
