@@ -29,6 +29,8 @@ const EnvSchema = z.object({
   SCHEDULER_ENABLED: z.enum(['0', '1']).default('0'),
   // T23: /api/orders image fallback (old config/app.php use_local_image).
   USE_LOCAL_IMAGE: z.string().default(''),
+  // T30: X-Import-Token for /api/products/import-faire-images (old config/app.php product_image_import_token).
+  PRODUCT_IMAGE_IMPORT_TOKEN: z.string().default(''),
 });
 
 export const config = EnvSchema.parse(process.env);
