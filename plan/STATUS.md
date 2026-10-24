@@ -438,3 +438,8 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - Verified token-identical to the old app (ignoring debugbar/CSRF): /enfloral /unshipped1 /unshipped2 /unshipped4 /unshipped5 (now in parity-routes.json). /unshipped3 hits a live feed and is not parity-tested; refreshNotes (eBay + DB writes) is only tested with a stub.
 - Fixes: restored commented `drawCallback` blocks (enfloral, unshipped5); store2 now attaches ProductMap; store2/store4 multi-orders use full ids and `<br>`; prioritize text read from the order; notes echoed raw (`| safe`); qty `0 == null` loose check; `days-past-promise` null+2.
 - Local env: PUSHER_APP_ID/KEY/SECRET copied from the old .env into the gitignored .env (the page embeds the key).
+
+## U2 — done (Qwen port + supervisor fixes)
+- /unshipped6–13 ported; all verified `hunks 0` with plan/tools/pagecmp.py. Stores 6–10 and 13 are empty in the DB, so each was also compared with a temporary cloned order (ZZSEED*, deleted afterwards).
+- Fixes found only with real rows: store7 itemStats keyed by plain asin (blank count, old quirk); `strtotimeRel` with a date-less base is relative to *now* (PHP strtotime(' + N days')); `url()` trims the path's trailing slash like Laravel (shared helper in src/view.ts).
+- test/u2.test.ts: guards + 200 renders. Layouts' mass-print/label actions are not exercised (they write/buy).

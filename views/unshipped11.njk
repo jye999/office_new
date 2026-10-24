@@ -1,0 +1,256 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+            <tr>
+                <th class="hidden-xs"><input type="checkbox" id="chkAll"></th>
+                <th class="hidden-xs">Order Number</th>
+                <th class="hidden-xs">SKU</th>
+                <th class="hidden-xs">Product Name</th>
+                <th class="hidden-xs">Order Qty</th>
+                <th class="hidden-xs">Product Picture</th>
+                <th class="hidden-xs">Total Qty</th>
+                <th class="hidden-xs">Ship Date</th>
+                <th class="hidden-xs">Print</th>
+                <th class="hidden-lg hidden-md hidden-sm"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr  class='orderTr {{ "urgent" if (isset(order.priority) and order.priority==2) else "" }} {{ "made" if (isset(item.made) and item.made=="Y") else "" }} {{ "inprogress" if (isset(item.made) and item.made=="P") else "" }}  {{ "halfmade" if (isset(item.made) and item.made=="H") else "" }} {{ item.priorityFlag }}'
+                >
+                <td class="hidden-xs">
+  
+<input type="checkbox" class="action" value="{{ item.orderId }}"> 
+               
+                </td>
+                <td class="hidden-xs">{{ item.orderId }}  
+                {% if order.country!='US' %}
+                <i class="glyphicon glyphicon-globe"></i>{{ order.country }}
+                {% endif %}
+                <br/>
+                    
+<span style="display:none" class="store">{{ item.store }}</span>  
+                    <span class="orderSpan" style="display:none">{{ item.orderId }}</span>
+                    <a class="anchor" id="{{ item.orderId }}">{{ item.orderId }} </a>
+                    <br/>
+                    {{ order.multiOrdersHtml | safe }}
+                    <br/>
+                    <button class="btn btn-primary btn-lg prioritizeBtn" value="{{ item.orderId }}">
+                    {{ order.prioritizeBtnText }}
+                    </button>
+                </td>
+                <td class="hidden-xs">
+                <span class="externalSku" style="display:none">{{ item.sku }}</span> <br/>
+                {{ item.sku }} <br/>
+                
+                {% if item.ProductMap is none %}
+                    {% if not phpEmpty(item.sku) %}
+                        <button class="btn btn-sm btn-primary btnFindMatch">Find Match</button>
+                        <span class="internalSku"></span>
+                    {% else %}
+                        <span >No SKU</span>
+                    {% endif %}
+                {% else %}
+                  <a class="internalSku">{{ item.ProductMap.sku }} {{ '' if (item.ProductMap.qty is none or item.ProductMap.qty == '') else (' x ' + item.ProductMap.qty) }}</a> 
+                    <button class="btn btn-sm btn-primary btnFindMatch">Update Match</button>
+                {% endif %}
+
+                    <div class="skuLocation"><br/>Location <br/>
+                        {{ item.skuLocationHtml | safe }}
+                    </div>
+                </td>
+                <td class="hidden-xs">
+                <a href="https://www.etsy.com/your/orders/sold?search_query={{ item.orderId }}" target="_blank">
+                {{ item.name }} 
+                </a>
+                    <br/>
+                    <textarea class="notes" >{{ (item.notes if isset(item.notes) else '') | safe }}</textarea><br/>
+                    <button class="saveNote" value="{{ item.id }}">Save</button>
+                    <br/><span>Buyer : <a href="#" class="searchBuyer" >{{ order.buyer }} </a></span>
+                </td>
+                <td class="hidden-xs" style="font-weight:bold;font-size:16pt;{{ 'color:#1e9ffe' if item.qty>1 else '' }}">{{ item.qty }}</td>
+                <td class="hidden-xs"><a class="gallery" href="{{ item.asin if isset(item.asin) else '' }}"><img src="{{ item.image if isset(item.image) else '' }}" width="250px" class="itemImage"></a></td>
+                <td class="hidden-xs"><a href="#" data-title="{{ item.name }}" class="sameProduct">{{ itemStats[item.asin] if item.asin in itemStats else '' }}</a></td>
+                <td class="hidden-xs">
+                                    <span>
+                                    {{ item.shipDate }}<br></span><br/>
+                       <span class="shiplevel">{{ item.shipLevel }}</span>
+                    </td>
+
+                <td class="hidden-xs">
+
+                {% if hasRole(['user','admin']) %}
+
+                <button class="btn btn-primary progressBtn {{ 'invisible' if (isset(item.made) and item.made=='Y') else '' }}"  value="{{ item.itemId }}">
+                     {{ "In Progress" if (isset(item.made) and item.made=="P") else "Start Process" }}
+                    </button>
+                    
+                    
+                    <button class="btn btn-primary madeBtn"  value="{{ item.id }}">
+                     {{ "Unmade" if (item.made == "Y") else "Made" }}
+                    </button>
+
+                    <a class="btn btn-primary " target="_blank" 
+                    href="https://www.etsy.com/your/orders/sold?order_id={{ item.orderId }}">
+                         Store
+                     </a>
+                    {% if hasRole(['packing','admin']) %}
+                    <button class="btn btn-primary doneBtn actionBtn" value="{{ item.orderId }}">
+                        Done
+                    </button>
+
+                    <button class="btn btn-primary addTrackBtn actionBtn" value="{{ item.orderId }}">
+                        Add Tracking
+                    </button>
+                    <button class="btn btn-primary btn-lg labelBtn actionBtn" value="{{ item.orderId }}">
+                        Print Label
+                    </button>
+                    {% if order.country=='US' or order.country=='USA' %}
+                    <button class="btn btn-primary fedexPrint actionBtn" value="{{ item.orderId }}">
+                        Fedex
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    
+                </td>
+                <td class="hidden-lg hidden-md hidden-sm">
+                <p>{{ item.name }}<p>
+                    <img width="320px" src="{{ item.image if isset(item.image) else '' }}" class="itemImage">
+                    <a class="anchor" id="{{ item.orderId }}">{{ item.orderId }} </a>
+                    <br/>
+                    {{ order.multiOrdersHtml | safe }}
+					Notes: {{ (item.notes if isset(item.notes) else '') | safe }}<br/>
+                    <span>Buyer : {{ order.buyer }}</span>
+					<br/>
+					Order QTY: {{ item.qty }}
+					<br/>Same Item QTY: {{ itemStats[item.asin] if item.asin in itemStats else '' }}
+<br/>
+<span class="externalSku" style="display:none">{{ item.asin }}</span> <br/>
+                <span class="externalAsin" >{{ item.asin }}</span> <br/>
+                {% if item.ProductMap is none %}
+                    <button class="btn btn-sm btn-primary btnFindMatch">Find Match</button>
+                    <span class="internalSku"></span>
+                {% else %}
+                  <a class="internalSku">{{ item.ProductMap.sku }} {{ '' if (item.ProductMap.qty is none or item.ProductMap.qty == '') else (' x ' + item.ProductMap.qty) }}</a> 
+                    <button class="btn btn-sm btn-primary btnFindMatch">Update Match</button>
+                {% endif %}
+
+                    <div class="skuLocation"><br/>Location <br/>
+                        {{ item.skuLocationHtml | safe }}
+                    </div>
+ <button class="btn btn-primary progressBtn {{ 'invisible' if (isset(item.made) and item.made=='Y') else '' }}"  value="{{ item.id }}">
+                     {{ "In Progress" if (isset(item.made) and item.made=="P") else "Start Process" }}
+                    </button>                    
+                    <button class="btn btn-primary madeBtn"  value="{{ item.id }}">
+                     {{ "Unmade" if (item.made == "Y") else "Made" }}
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+    <script>
+    var store = 'T2';
+    var currentStore = 'T2';
+    
+	function GridRowCount() {
+        $('span.rowCount-grid').remove();
+        $('input.expandedOrCollapsedGroup').remove();
+
+        $('.dataTables_wrapper').find('[id|=group-id]').each(function () {
+            var rowCount = $(this).nextUntil('[id|=group-id]').length;
+            $(this).find('td').append($('<span />', { 'class': 'rowCount-grid' }).append($('<b />', { 'text': ' Total : ' +rowCount })));
+        });
+
+        $('.dataTables_wrapper').find('.dataTables_filter').append($('<input />', { 'type': 'button', 'class': 'expandedOrCollapsedGroup collapsed', 'value': 'Expanded All Group' }));
+
+        
+        $(document).on('click', '.expandedOrCollapsedGroup', function() {
+           if ($(this).hasClass('collapsed')) {
+                $(this).addClass('expanded').removeClass('collapsed').val('Collapse All Group').parents('.dataTables_wrapper').find('.collapsed-group').trigger('click');
+            }
+            else {
+                $(this).addClass('collapsed').removeClass('expanded').val('Expanded All Group').parents('.dataTables_wrapper').find('.expanded-group').trigger('click');
+            }
+        });
+    };
+    $(document).ready(function() {
+        $("#unshipped11").addClass("active");
+        
+        var groupColumn =0;
+        oTable = $('#orders').DataTable({
+            "aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			},{
+                "sWidth": "75px"
+            }, {
+                "sWidth": "150px"
+            }, {
+                "sWidth": "50px"
+            }, {
+                "sWidth": "50%"
+            }, {
+                "sWidth": "50px"
+            }, {
+                "sWidth": "50px"
+            }, {
+                "sWidth": "50px"
+            }, {
+            }],
+            "aaSorting": [
+                [7, "asc"]
+            ],
+            "sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records per page"
+            },
+            "drawCallback": function ( settings ) {
+                var api = this.api();
+                var rows = api.rows( {page:'current'} ).nodes();
+                var last=null;
+                api.column(groupColumn, {page:'current'} ).data().each( function ( group, i ) {
+                    if ( last !== group ) {
+                        $(rows).eq( i ).before(
+                            '<tr class="group"><td colspan="6">'+$(group).val()+'</td></tr>'
+                        );
+    
+                        last = group;
+                    }
+                } );
+            }
+        });
+
+
+        $(".shiplevel").each(function(){
+            if($(this).text().includes("Express")){
+                $(this).addClass("rainbow-text");
+            }
+        })
+     $('a.gallery').click(function(e){
+        e.preventDefault();
+          var imgSrc = $(this).find('img').attr('src');
+          if(!imgSrc){
+              alert('no image');
+              return;
+          }
+          $.colorbox({html:'<img src="'+imgSrc+'" style="max-width:90vw;max-height:90vh;">', open:true, maxWidth:'95%', maxHeight:'95%'});
+    });
+        
+});
+    </script>
+{% endblock %}

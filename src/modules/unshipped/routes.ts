@@ -13,7 +13,22 @@ import { currentUser } from '../../auth.js';
 import { any, route } from '../../router.js';
 import { render } from '../../view.js';
 import { Ebay, xmlText } from '../../lib/ebay.js';
-import { prepareStore1, prepareStore2, prepareStore3, prepareStore4, prepareStore5, type Row } from './service.js';
+import {
+  prepareStore1,
+  prepareStore10,
+  prepareStore11,
+  prepareStore12,
+  prepareStore13,
+  prepareStore2,
+  prepareStore3,
+  prepareStore4,
+  prepareStore5,
+  prepareStore6,
+  prepareStore7,
+  prepareStore8,
+  prepareStore9,
+  type Row,
+} from './service.js';
 
 const ROLES = ['admin', 'user', 'remote'];
 type User = { company_id?: number } | null;
@@ -80,6 +95,29 @@ async function store1Handler(req: FastifyRequest, reply: FastifyReply) {
 }
 
 export function registerUnshippedRoutes(app: FastifyInstance): void {
+  // U2 store pages 6-13: same render shape (prepare + unshipped<N> view).
+  const storePages: Array<[string, string, (user: User) => Promise<Record<string, unknown>>]> = [
+    ['/unshipped13', 'unshipped13', (u) => prepareStore13(u)],
+    ['/unshipped12', 'unshipped12', (u) => prepareStore12(u)],
+    ['/unshipped11', 'unshipped11', (u) => prepareStore11(u)],
+    ['/unshipped10', 'unshipped10', (u) => prepareStore10(u)],
+    ['/unshipped9', 'unshipped9', (u) => prepareStore9(u)],
+    ['/unshipped8', 'unshipped8', (u) => prepareStore8(u)],
+    ['/unshipped7', 'unshipped7', (u) => prepareStore7(u)],
+    ['/unshipped6', 'unshipped6', (u) => prepareStore6(u)],
+  ];
+  for (const [path, name, prep] of storePages) {
+    route(app, {
+      verb: 'get',
+      path,
+      name,
+      roles: ROLES,
+      handler: async (req: FastifyRequest, reply: FastifyReply) => {
+        const user = (await currentUser(req)).user as User;
+        return render(req, reply, name, await prep(user));
+      },
+    });
+  }
   route(app, {
     verb: 'get',
     path: '/unshipped5',

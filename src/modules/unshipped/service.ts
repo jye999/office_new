@@ -136,7 +136,7 @@ const daysPast = (t: number) => Math.ceil((nowSec() - t) / 60 / 60 / 24);
 // Unparseable base -> epoch 0, like PHP strtotime() === false.
 function strtotimeRel(base: unknown, rel: string): number {
   const m = /([+-])\s*(\d+)\s*(days|weekdays)/.exec(rel);
-  let t = /\d{4}-\d{1,2}-\d{1,2}/.test(String(base ?? '')) ? strtotime(String(base)) : 0;
+  let t = /\d{4}-\d{1,2}-\d{1,2}/.test(String(base ?? '')) ? strtotime(String(base)) : Math.floor(Date.now() / 1000);
   if (!m) return t;
   const n = Number(m[2]);
   const sign = m[1] === '-' ? -1 : 1;
@@ -376,6 +376,345 @@ export async function prepareStore5(user: { company_id?: number } | null, store:
   });
   const staffs = await activeStaffs(user?.company_id);
   return { orders, buyerStats, itemStats, staffs, quickSearchContent: await generateQuickSearch() };
+}
+
+// ------------------------------------------------------------------ stores 6-13
+
+// 6/7/8: priority==true, or planShipDate past due, or paymentDate+(handling+3) days past due.
+function flagPayment(o: Row, i: Row): string {
+  let flag = looseEq(o.priority, true) ? 'priority' : '';
+  if (flag === '' && o.planShipDate != null) {
+    if (daysPast(strtotime(String(o.planShipDate))) > -1) flag = 'priority';
+  } else if (flag === '' && i.handling != null) {
+    if (daysPast(days(o.paymentDate, (i.handling == null ? 0 : Number(i.handling)) + 3)) > -1) flag = 'priority';
+  }
+  return flag;
+}
+
+// 9/10: same shape but the fallback uses planShipDate+(handling+1) days (PHP quirk).
+function flagPlan(o: Row, i: Row): string {
+  let flag = looseEq(o.priority, true) ? 'priority' : '';
+  if (flag === '' && o.planShipDate != null) {
+    if (daysPast(strtotime(String(o.planShipDate))) > -1) flag = 'priority';
+  } else if (flag === '' && i.handling != null) {
+    if (daysPast(days(o.planShipDate, (i.handling == null ? 0 : Number(i.handling)) + 1)) > -1) flag = 'priority';
+  }
+  return flag;
+}
+
+// 11/12/13: priority==true, or purchaseDate+(handling-1) weekdays already passed.
+function flagWeekdays(o: Row, i: Row): string {
+  return looseEq(o.priority, true) || daysPast(weekdays(o.purchaseDate, (i.handling == null ? 0 : Number(i.handling)) - 1)) >= 0 ? 'priority' : '';
+}
+
+// store9/10 merge: fold each detail row into the previous row when itemId,
+// variation and name all match (consecutive scan, like the PHP for loop).
+function mergeConsecutiveDetail(details: Row[]): Row[] {
+  for (let oi = 1; oi < details.length; oi++) {
+    const item = details[oi];
+    const prev = details[oi - 1];
+    if (item.itemId == prev.itemId && item.variation == prev.variation && item.name == prev.name) {
+      item.qty = (item.qty as number) + (prev.qty as number);
+      details.splice(oi - 1, 1);
+      oi--;
+    }
+  }
+  return details;
+}
+
+// 12/13: (int)handling, <3 -> 2, else handling-2; non-numeric handling -> 0.
+function handlingAdjusted(h: unknown): number {
+  if (h == null) return 0;
+  const s = String(h).trim();
+  if (s === '' || isNaN(Number(s))) return 0;
+  const x = Math.trunc(Number(s));
+  return x < 3 ? 2 : x - 2;
+}
+
+// notesFromBuyer/selfNotes spans shared by the eBay-flavoured views.
+function notesHtml(o: Row): { notesFromBuyerHtml: string; selfNotesHtml: string } {
+  return {
+    notesFromBuyerHtml: String(o.notesFromBuyer ?? '').length > 1 ? `<br/>Notes From Buyer : ${o.notesFromBuyer}` : '',
+    selfNotesHtml: String(o.selfNotes ?? '').length > 1 ? `<br/>Notes To Seller : ${o.selfNotes}` : '',
+  };
+}
+
+// store6 (eBay, store 'R').
+export async function prepareStore6(user: { company_id?: number } | null): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail('R');
+  const { buyerStats, itemStats } = buildStats(raw, (o) => o.email, (i) => 'a' + String(i.asin ?? ''));
+  const orders = raw.map((o) => {
+    const key = String(o.email ?? '');
+    const detail = o.detail.map((i) => ({
+      ...i,
+      priorityFlag: flagPayment(o, i),
+      itemID0: String(i.itemId ?? '').split('-')[0] ?? '',
+      variationValue: String(i.variation ?? '').split('|')[1] ?? '',
+      shipDate: ymd(days(o.paymentDate, (i.handling == null ? 0 : Number(i.handling)) + 3)),
+      ...notesHtml(o),
+    }));
+    return {
+      ...o,
+      detail,
+      buyerKey: key,
+      multiOrdersHtml: multiOrdersHtml(buyerStats[key] ?? [], '<br>'),
+      multiOrderCount: (buyerStats[key] ?? []).length,
+      prioritizeBtnText: prioritizeText(o.priority),
+      urgentFlag: looseEq(o.priority, 2),
+    };
+  });
+  const staffs = await activeStaffs(user?.company_id);
+  return { orders, buyerStats, itemStats, staffs, quickSearchContent: await generateQuickSearch() };
+}
+
+// store7 (store 'O'). Multi-orders links use the FULL order id (no shortId).
+// Prioritize button: 'UnPrioritize' only when priority == 1.
+export async function prepareStore7(user: { company_id?: number } | null): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail('O');
+  // Old store7 keys itemStats by plain asin while the view looks up 'a'.asin (so the count is blank).
+  const { buyerStats, itemStats } = buildStats(raw, (o) => String(o.recipientName ?? '').replace(/ /g, '_'), (i) => String(i.asin ?? ''));
+  const orders = raw.map((o) => {
+    const key = String(o.recipientName ?? '').replace(/ /g, '_');
+    const detail = o.detail.map((i) => ({
+      ...i,
+      priorityFlag: flagPayment(o, i),
+      shipDate: ymd(days(o.paymentDate, (i.handling == null ? 0 : Number(i.handling)) + 3)),
+      ...notesHtml(o),
+    }));
+    return {
+      ...o,
+      detail,
+      buyerKey: key,
+      multiOrdersHtml: multiOrdersHtml(buyerStats[key] ?? [], '<br>', false),
+      multiOrderCount: (buyerStats[key] ?? []).length,
+      prioritizeBtnText: looseEq(o.priority, 1) ? 'UnPrioritize' : 'Prioritize',
+      urgentFlag: false,
+    };
+  });
+  const staffs = await activeStaffs(user?.company_id);
+  return { orders, buyerStats, itemStats, staffs, quickSearchContent: await generateQuickSearch() };
+}
+
+// store8 (Houzz, store 'H') — same shape as store6.
+export async function prepareStore8(user: { company_id?: number } | null): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail('H');
+  const { buyerStats, itemStats } = buildStats(raw, (o) => o.email, (i) => 'a' + String(i.asin ?? ''));
+  const orders = raw.map((o) => {
+    const key = String(o.email ?? '');
+    const detail = o.detail.map((i) => ({
+      ...i,
+      priorityFlag: flagPayment(o, i),
+      itemID0: String(i.itemId ?? '').split('-')[0] ?? '',
+      variationValue: String(i.variation ?? '').split('|')[1] ?? '',
+      shipDate: ymd(days(o.paymentDate, (i.handling == null ? 0 : Number(i.handling)) + 3)),
+      ...notesHtml(o),
+    }));
+    return {
+      ...o,
+      detail,
+      buyerKey: key,
+      multiOrdersHtml: multiOrdersHtml(buyerStats[key] ?? [], '<br>'),
+      multiOrderCount: (buyerStats[key] ?? []).length,
+      prioritizeBtnText: looseEq(o.priority, 1) ? 'UnPrioritize' : 'Prioritize',
+      urgentFlag: false,
+    };
+  });
+  const staffs = await activeStaffs(user?.company_id);
+  return { orders, buyerStats, itemStats, staffs, quickSearchContent: await generateQuickSearch() };
+}
+
+// store9 (Walmart, store 'W'): consecutive detail merge + ProductMap attach.
+export async function prepareStore9(user: { company_id?: number } | null): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail('W');
+  for (const o of raw) {
+    mergeConsecutiveDetail(o.detail);
+    await attachProductMaps(o.detail);
+  }
+  const { buyerStats, itemStats } = buildStats(raw, (o) => o.email, (i) => 'a' + String(i.asin ?? ''));
+  const orders = raw.map((o) => {
+    const key = String(o.email ?? '');
+    const detail = o.detail.map((i) => ({
+      ...i,
+      priorityFlag: flagPlan(o, i),
+      itemID0: String(i.itemId ?? '').split('-')[0] ?? '',
+      variationValue: String(i.variation ?? '').split('|')[1] ?? '',
+      shipDate: ymd(strtotime(String(o.planShipDate ?? ''))),
+      ...notesHtml(o),
+    }));
+    return {
+      ...o,
+      detail,
+      buyerKey: key,
+      // 'shippingCost' is DECIMAL (string); PHP compares numerically.
+      shippingCostPositive: Number(o.shippingCost ?? 0) > 0,
+      multiOrdersHtml: multiOrdersHtml(buyerStats[key] ?? [], '<br>'),
+      multiOrderCount: (buyerStats[key] ?? []).length,
+      prioritizeBtnText: prioritizeText(o.priority),
+      urgentFlag: looseEq(o.priority, 2),
+    };
+  });
+  const staffs = await activeStaffs(user?.company_id);
+  return { orders, buyerStats, itemStats, staffs, quickSearchContent: await generateQuickSearch() };
+}
+
+// store10 (Etsy-D, store 'D'): same merge + flag shape as store9, no ProductMap.
+export async function prepareStore10(user: { company_id?: number } | null): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail('D');
+  for (const o of raw) mergeConsecutiveDetail(o.detail);
+  const { buyerStats, itemStats } = buildStats(raw, (o) => o.email, (i) => 'a' + String(i.asin ?? ''));
+  const orders = raw.map((o) => {
+    const key = String(o.email ?? '');
+    const detail = o.detail.map((i) => ({
+      ...i,
+      priorityFlag: flagPlan(o, i),
+      itemID0: String(i.itemId ?? '').split('-')[0] ?? '',
+      variationValue: String(i.variation ?? '').split('|')[1] ?? '',
+      shipDate: ymd(strtotime(String(o.planShipDate ?? ''))),
+      ...notesHtml(o),
+    }));
+    return {
+      ...o,
+      detail,
+      buyerKey: key,
+      multiOrdersHtml: multiOrdersHtml(buyerStats[key] ?? [], '<br>'),
+      multiOrderCount: (buyerStats[key] ?? []).length,
+      prioritizeBtnText: looseEq(o.priority, 1) ? 'UnPrioritize' : 'Prioritize',
+      urgentFlag: false,
+    };
+  });
+  const staffs = await activeStaffs(user?.company_id);
+  return { orders, buyerStats, itemStats, staffs, quickSearchContent: await generateQuickSearch() };
+}
+
+// 11/12/13 share the Etsy-shape stats/flags (buyer key, asin item key, full-id
+// multi-orders); only the per-item shipDate differs per view.
+function prepareEtsy(orders: (Row & { detail: Row[] })[]): {
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+} {
+  const { buyerStats, itemStats } = buildStats(orders, (o) => o.buyer, (i) => i.asin);
+  const out = orders.map((o) => {
+    const key = String(o.buyer ?? '');
+    const detail = o.detail.map((i) => ({
+      ...i,
+      priorityFlag: flagWeekdays(o, i),
+    }));
+    return {
+      ...o,
+      detail,
+      buyerKey: key,
+      multiOrdersHtml: multiOrdersHtml(buyerStats[key] ?? [], '<br>', false),
+      multiOrderCount: (buyerStats[key] ?? []).length,
+      prioritizeBtnText: prioritizeText(o.priority),
+      urgentFlag: looseEq(o.priority, 2),
+    };
+  });
+  return { orders: out, buyerStats, itemStats };
+}
+
+type StorePrep = {
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+};
+
+async function finishPrep(user: { company_id?: number } | null, base: Omit<StorePrep, 'staffs' | 'quickSearchContent'>): Promise<StorePrep> {
+  return { ...base, staffs: await activeStaffs(user?.company_id), quickSearchContent: await generateQuickSearch() };
+}
+
+// store11 (Etsy 2, store 'T2'). The view's shipDate is promiseDate; the
+// handling-adjusted date only exists in a commented-out block.
+export async function prepareStore11(user: { company_id?: number } | null): Promise<StorePrep> {
+  const raw = await grantOrdersWithDetail('T2');
+  for (const o of raw) await attachProductMaps(o.detail);
+  const base = prepareEtsy(raw);
+  const orders = base.orders.map((o) => ({
+    ...o,
+    detail: o.detail.map((i) => ({ ...i, shipDate: ymd(strtotime(String(i.promiseDate ?? ''))) })),
+  }));
+  return finishPrep(user, { ...base, orders });
+}
+
+// store12 (Etsy 3, store 'T3'). shipDate uses the handling-adjusted weekdays.
+export async function prepareStore12(user: { company_id?: number } | null): Promise<StorePrep> {
+  const raw = await grantOrdersWithDetail('T3');
+  for (const o of raw) await attachProductMaps(o.detail);
+  const base = prepareEtsy(raw);
+  const orders = base.orders.map((o) => ({
+    ...o,
+    detail: o.detail.map((i) => ({ ...i, shipDate: ymd(weekdays(o.purchaseDate, handlingAdjusted(i.handling))) })),
+  }));
+  return finishPrep(user, { ...base, orders });
+}
+
+// GrantOrderDetail::Product (hasOne Product sku=sku) with locations + images
+// attached (Product::locations/images hasMany, no ORDER BY).
+export async function attachProduct(details: Row[]): Promise<void> {
+  for (const d of details) {
+    const product =
+      d.sku != null ? ((await db.selectFrom('os_products').selectAll().where('sku', '=', String(d.sku)).executeTakeFirst()) ?? null) : null;
+    d['Product'] = product;
+    if (product != null) {
+      const locs = await db.selectFrom('os_product_locations').selectAll().where('product_id', '=', String(product.id) as never).execute();
+      d['productLocationsHtml'] = locs.map((l) => `${l.location ?? ''}-${l.qty ?? ''}<br/>`).join('');
+      const images = await db.selectFrom('os_product_images').selectAll().where('product_id', '=', String(product.id) as never).execute();
+      d['productImage'] = images.length > 0 ? (images[0]['filename'] ?? '') : '';
+    } else {
+      d['productLocationsHtml'] = '';
+      d['productImage'] = '';
+    }
+  }
+}
+
+// store13 (Wayfair, store 'WF').
+export async function prepareStore13(user: { company_id?: number } | null): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail('WF');
+  for (const o of raw) await attachProduct(o.detail);
+  const base = prepareEtsy(raw);
+  const orders = base.orders.map((o) => ({
+    ...o,
+    detail: o.detail.map((i) => ({ ...i, shipDate: ymd(weekdays(o.purchaseDate, handlingAdjusted(i.handling))) })),
+  }));
+  return finishPrep(user, { ...base, orders });
 }
 
 // store3: file_get_contents (external angelisabella feed) — behind a seam so

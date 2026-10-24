@@ -390,7 +390,8 @@ export function trans(key: string, repl?: Record<string, unknown>): string {
 // params become the query string.
 export function url(path = '', params?: Record<string, unknown>): string {
   const base = appConfig.APP_URL.replace(/\/+$/, '');
-  const p = String(path).replace(/^\/+/, '');
+  // Laravel trims both ends of the path (trimUrl).
+  const p = String(path).replace(/^\/+|\/+$/g, '');
   let out = p ? `${base}/${p}` : base;
   if (params) {
     // http_build_query semantics: spaces become '+'

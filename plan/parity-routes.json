@@ -135,7 +135,16 @@
     "/unshipped4",
     "/unshipped5"
   ],
-  "U2": [],
+  "U2": [
+    "/unshipped6",
+    "/unshipped7",
+    "/unshipped8",
+    "/unshipped9",
+    "/unshipped10",
+    "/unshipped11",
+    "/unshipped12",
+    "/unshipped13"
+  ],
   "U3": [],
   "U4": [
     "/fairePickList"

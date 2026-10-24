@@ -1,0 +1,246 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="chkAll"></th>
+                <th>Order Number</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Product Picture</th>
+                <th>Total Qty</th>
+                <th>Ship Date</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr  class='orderTr {{ "made" if (isset(item.made) and item.made=="Y") else "" }} {{ "inprogress" if (isset(item.made) and item.made=="P") else "" }}  {{ "halfmade" if (isset(item.made) and item.made=="H") else "" }} {{ item.priorityFlag }}'
+                >
+
+                <td>       
+                <input type="checkbox" class="action" value="{{ item.orderId }}"> 
+               
+                </td>
+                <td>{{ item.orderId }}  
+                {% if order.country!='US' %}
+                <i class="glyphicon glyphicon-globe"></i>{{ order.country }}
+                {% endif %}
+                <br/>
+                    
+                <span style="display:none" class="store">{{ item.store }}</span> 
+                    <span class="orderSpan" style="display:none">{{ item.orderId }}</span>
+                    <a class="anchor" id="{{ item.orderId }}">{{ item.orderId }} </a>
+                    
+
+                    <span class="externalSku" >{{ item.sku }}</span> <br/>
+                    <div class="skuLocation"><br/>Location <br/>
+                        {{ item.productLocationsHtml | safe }}
+                    </div>
+                    
+                    <br/>
+                    {{ order.multiOrdersHtml | safe }}
+                    <br/>
+                </td>
+                <td>
+                
+                {{ item.name }} 
+                    <br/>
+                    <textarea class="notes" >{{ (item.notes if isset(item.notes) else '') | safe }}</textarea><br/>
+                    <button class="saveNote" value="{{ item.id }}">Save</button>
+                    <br/><span>Buyer : <a href="#" class="searchBuyer" >{{ order.buyer }} </a></span>
+                </td>
+                <td style="font-weight:bold;font-size:16pt;{{ 'color:#1e9ffe' if item.qty>1 else '' }}">{{ item.qty }}</td>
+                <td>
+                <a class="gallery" href="/storage/product_images_full/{{ item.productImage }}">
+                <img src="/storage/product_images_icon/{{ item.productImage }}" width="250px" class="itemImage"></a>
+                
+                </td>
+                <td><a href="#" data-title="{{ item.name }}" class="sameProduct">{{ itemStats[item.asin] if item.asin in itemStats else '' }}</a></td>
+                <td>
+                                    <span>
+                                    {{ item.shipDate }}</span><br/>
+
+                        {{ item.shipLevel }}
+                    </td>
+
+                <td>
+
+                {% if hasRole(['user','admin']) %}
+
+                <button class="btn btn-primary progressBtn {{ 'invisible' if (isset(item.made) and item.made=='Y') else '' }}"  value="{{ item.id }}">
+                     {{ "In Progress" if (isset(item.made) and item.made=="P") else "Start Process" }}
+                    </button>
+                    
+                    
+                    <button class="btn btn-primary madeBtn"  value="{{ item.id }}">
+                     {{ "Unmade" if (item.made == "Y") else "Made" }}
+                    </button>
+
+                    {% if hasRole(['packing','admin']) %}
+                    <button class="btn btn-primary doneBtn actionBtn" value="{{ item.orderId }}">
+                        Done
+                    </button>
+                    <button class="btn btn-primary btn-lg registerBtn actionBtn" value="{{ item.orderId }}">
+                        Register & Print Label
+                    </button>
+                    
+                    <button class="btn btn-primary btn-lg packingSlipBtn actionBtn" value="{{ item.orderId }}">
+                        Print Packing Slip
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                    
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+    <script>
+        
+    var currentStore = 'T3';
+    
+	function GridRowCount() {
+        $('span.rowCount-grid').remove();
+        $('input.expandedOrCollapsedGroup').remove();
+
+        $('.dataTables_wrapper').find('[id|=group-id]').each(function () {
+            var rowCount = $(this).nextUntil('[id|=group-id]').length;
+            $(this).find('td').append($('<span />', { 'class': 'rowCount-grid' }).append($('<b />', { 'text': ' Total : ' +rowCount })));
+        });
+
+        $('.dataTables_wrapper').find('.dataTables_filter').append($('<input />', { 'type': 'button', 'class': 'expandedOrCollapsedGroup collapsed', 'value': 'Expanded All Group' }));
+
+        
+        $(document).on('click', '.expandedOrCollapsedGroup', function() {
+           if ($(this).hasClass('collapsed')) {
+                $(this).addClass('expanded').removeClass('collapsed').val('Collapse All Group').parents('.dataTables_wrapper').find('.collapsed-group').trigger('click');
+            }
+            else {
+                $(this).addClass('collapsed').removeClass('expanded').val('Expanded All Group').parents('.dataTables_wrapper').find('.expanded-group').trigger('click');
+            }
+        });
+    };
+    $(document).ready(function() {
+        $("#unshipped13").addClass("active");
+        
+        oTable = $('#orders').DataTable({
+            "aoColumns": [{
+				"sWidth": "50px"
+			}, {
+                "sWidth": "75px"
+            }, {
+                "sWidth": "150px"
+            }, {
+                "sWidth": "50px"
+            }, {
+                "sWidth": "50%"
+            }, {
+                "sWidth": "50px"
+            }, {
+                "sWidth": "50px"
+            }, {
+                "sWidth": "50px"
+            }],
+            "aaSorting": [
+                [7, "asc"]
+            ],
+            "sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records per page"
+            },
+            "fnRowCallback": function(nRow, aData) {
+                var days = aData[5]; // ID is returned by the server as part of the data
+                var $nRow = $(nRow); // cache the row wrapped up in jQuery
+                if (days > -1) {
+                    $nRow.css({
+                        //"color": "red"
+                    })
+                } else if (days > -2) {
+                    $nRow.css({
+                        "color": "orange"
+                    })
+                }
+                return nRow
+            }
+        })
+        .rowGrouping({
+                bExpandableGrouping: true,
+                bExpandSingleGroup: false,
+                iExpandGroupOffset: -1
+                //asExpandedGroups: [""]
+            });
+        GridRowCount();
+
+
+        $(".registerBtn").click(function(){
+            var thisBtn=$(this);
+            $(this).prop('disabled',true);
+            $(this).text('processing..');
+            var poNumber = $(this).val();
+            
+            $.ajax({
+                type: 'get',
+                datatype: 'json',
+                url: '{{ route('Wayfair.registerOrder') }}', // in here you should put your query
+                data: {'poNumber': poNumber}, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success: function(r) {
+                  if(r==poNumber){
+                    $('#printModal-step3').modal({
+                        backdrop: 'static'
+                    });
+                    $("#print-body3").html('');
+                    $('<iframe />').remove();
+                    $('<iframe />'); // Create an iframe element
+                    $('<iframe />', {
+                        name: 'labelFrame',
+                        id: 'labelFrame',
+                        scrolling: 'no',
+                        frameborder: '0',
+                        style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+                    }).appendTo('#print-body3');
+                    $('#labelFrame').contents().find('body').html('');
+                    
+                    // $('#labelFrame').contents().find('body').append("<img src='/getOrderLabel?orderId="+poNumber + "' id='labelImage' style='width: 3.812in;height: 5.718in ;'>");
+                    $('#labelFrame').contents().find('body').append("<object type='application/pdf' data='/getOrderLabel?orderId="+poNumber + "' style='width: 3.812in;height: 5.718in ;'></object>");
+                    removeRowByOrderId(poNumber);
+                    thisBtn.prop('disabled',false);
+                  }
+                }
+            });
+
+            
+        });
+        $(".packingSlipBtn").click(function(){
+            var poNumber = $(this).val();
+            $.ajax({
+                type: 'get',
+                datatype: 'json',
+                url: '{{ route('Wayfair.packingSlip') }}', // in here you should put your query
+                data: {'poNumber': poNumber}, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success: function(data) {
+                  console.dir(data);
+                    var blob=new Blob(data);
+                    var link=document.createElement('a');
+                    link.href=window.URL.createObjectURL(blob);
+                    link.download="label.pdf";
+                    link.click();
+                }
+            });
+        });
+    });
+    </script>
+{% endblock %}
