@@ -154,6 +154,11 @@ export function int(value: unknown): number {
   return Number.isFinite(n) ? Math.trunc(n) : 0;
 }
 
+// PHP str_replace(): replaces ALL occurrences of search with replace (unescaped).
+export function str_replace(search: string, replace: string, subject: unknown): string {
+  return String(subject ?? '').split(search).join(replace);
+}
+
 // PHP substr() with negative-start support.
 export function substr(s: string, start: number, length?: number): string {
   let str = String(s ?? '');
@@ -755,6 +760,7 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     int,
     number_format,
     substr,
+    str_replace,
     json_encode,
     nl2br,
     date,

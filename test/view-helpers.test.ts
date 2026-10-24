@@ -13,6 +13,7 @@ import {
   html_style,
   html_script,
   round,
+  str_replace,
   substr,
   strtoupper,
   trans,
@@ -67,6 +68,12 @@ describe('PHP-mimicking globals (known PHP output)', () => {
     expect(substr('hello', 1, 2)).toBe('el');
     expect(substr('hello', -3, 2)).toBe('ll');
     expect(substr('hello', 10)).toBe('');
+  });
+
+  it('str_replace replaces all occurrences', () => {
+    expect(str_replace('|', ':', 'Red | Blue')).toBe('Red : Blue');
+    expect(str_replace('a', 'b', 'a')).toBe('b');
+    expect(str_replace('x', 'y', null)).toBe('');
   });
 
   it('explode/implode/strtoupper/ucfirst', () => {

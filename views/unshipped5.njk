@@ -1,0 +1,212 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Order Number</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Product Picture</th>
+                <th>Purchase Date</th>
+                <th>Total Qty</th>
+                <th>days-past</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr class='orderTr {{ "urgent" if (isset(order.priority) and order.priority==2) else "" }} {{ "made" if (isset(item.made) and item.made=="Y") else "" }} {{ "inprogress" if (isset(item.made) and item.made=="P") else "" }}  {{ "halfmade" if (isset(item.made) and item.made=="H") else "" }} {{ item.priorityFlag }}'>
+
+				<td >&nbsp;&nbsp;
+                    {{ order.firstOrdersCell }}
+                </td>
+                <td>      
+                
+                <input type="checkbox" class="action" value="{{ item.orderId }}" >
+                {{ item.orderId }} 
+                <span style="display:none" class="store">{{ item.store }}</span>  
+                    <span class="orderSpan" style="display:none">{{ item.orderId }}</span>
+                    <a class="anchor" id="{{ substr(item.orderId,-7) }}">{{ item.orderId }} </a>
+                    <br/>
+                    {{ item.multiOrdersHtml | safe }}
+                    <br/>
+                    <button class="btn btn-primary btn-lg prioritizeBtn" value="{{ item.orderId }}">
+                        {{ item.prioritizeBtnText }}
+                    </button>
+                <br/>
+                </td>
+                <td>
+                        <a class="desclink" href="ShopifyDesc?product={{ item.itemID0 }}" target="_blank">
+                        {{ item.name }}</a><br/>
+                <span style='color:black'> {{ str_replace("|",":",item.variation) }} </span>
+                <span style='color:orange'> 
+					{{ item.notesFromBuyerHtml | safe }}
+					{{ item.selfNotesHtml | safe }}
+				</span>
+                    <br/>
+                    <textarea class="notes" >{{ item.notes if isset(item.notes) else '' }}</textarea><br/>
+                    <button class="saveNote" value="{{ item.id }}">Save</button>
+                    <br/><span>Buyer : <a href="#" class="searchBuyer">{{ order.buyer }}{{ order.recipientName }}</a></span>
+                </td>
+                <td style="font-weight:bold;font-size:16pt;{{ 'color:#1e9ffe' if item.qty>1 else '' }}">{{ item.qty }}</td>
+                <td><a class="gallery" href="{{ item.image if isset(item.image) else '' }}"><img src="{{ item.image if isset(item.image) else '' }}" style="width:300px" class="itemImage">
+                        <span class="orderIdvalue" style="display:none">{{ item.orderId }}</span>
+						<span class="variantvalue" style="display:none">{{ item.variationValue }}</span>
+						<span class="itemIdvalue" style="display:none">{{ item.itemIDFirst }}</span>
+						</a></td>
+				<td>
+                    <span>
+                        {{ item.shipDate }}</span>
+                    <input type="text" type="text" class="form-control shipdate" value="{{ order.planShipDate }}">
+    				<button value="{{ order.orderId }}" class="saveShipDateBtn">Update</button>
+                </td>
+
+                <td><a href="#" data-title="{{ item.name }}" class="sameProduct">{{ itemStats['a'+item.asin] if 'a'+item.asin in itemStats else '' }} </a></td>
+                <td></td>
+
+                <td>
+                {{ item.shipLevel }}
+                {% if hasRole(['user','admin']) %}
+
+                <button class="btn btn-primary progressBtn {{ 'invisible' if (isset(item.made) and item.made=='Y') else '' }}"  value="{{ item.id }}">
+                     {{ "In Progress" if (isset(item.made) and item.made=="P") else "Start Process" }}
+                    </button>
+
+                    <button class="btn btn-primary  madeBtn actionBtn" value="{{ item.id }}">
+                        {{ "Unmade" if (item.made is not none and item.made != '' and item.made != '0') else "Made" }}
+                    </button>
+
+                    {% if hasRole(['packing','admin']) %}
+                    <button class="btn btn-primary doneBtn actionBtn" value="{{ item.orderId }}">
+                        Done
+                    </button>
+
+					<button class="btn btn-primary addTrackBtn actionBtn" value="{{ item.orderId }}">
+						Tracking
+					</button>
+                    <button class="btn btn-primary btn-lg labelBtn actionBtn" value="{{ item.orderId }}">
+                        Print Label
+                    </button>
+                    {% if order.country=='US' or order.country=='USA' %}
+                    <button class="btn btn-primary fedexPrint actionBtn" value="{{ item.orderId }}">
+                        Fedex
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+    
+	<script>
+        
+    var currentStore='S';
+    
+    
+    function fulfillOrder(orderId,tracking,serviceType){
+        var data = {
+            "tracking": tracking,
+            "orderId": orderId
+        };
+        if (serviceType && serviceType.indexOf('UPS-') === 0) {
+            data.trackingCompany = 'UPS';
+        }
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            url: '{{ route('FulfillShopify') }}',
+            data: data,
+            success: function(r) {
+                console.dir(r);
+                removeRowByOrderId(orderId);
+            },
+            error: function(e) {
+                console.dir(e);
+                // console.log('save order failed');
+                alert('failed update shopify');
+            }
+        });
+    }
+    
+	function GridRowCount() {
+        $('span.rowCount-grid').remove();
+        $('input.expandedOrCollapsedGroup').remove();
+
+        $('.dataTables_wrapper').find('[id|=group-id]').each(function () {
+            var rowCount = $(this).nextUntil('[id|=group-id]').length;
+            $(this).find('td').append($('<span />', { 'class': 'rowCount-grid' }).append($('<b />', { 'text': ' Total : ' +rowCount })));
+        });
+
+        $('.dataTables_wrapper').find('.dataTables_filter').append($('<input />', { 'type': 'button', 'class': 'expandedOrCollapsedGroup collapsed', 'value': 'Expanded All Group' }));
+        
+        $(document).on('click', '.expandedOrCollapsedGroup', function() {
+           if ($(this).hasClass('collapsed')) {
+                $(this).addClass('expanded').removeClass('collapsed').val('Collapse All Group').parents('.dataTables_wrapper').find('.collapsed-group').trigger('click');
+            }
+            else {
+                $(this).addClass('collapsed').removeClass('expanded').val('Expanded All Group').parents('.dataTables_wrapper').find('.expanded-group').trigger('click');
+            }
+        });
+    };
+    
+	$(document).ready(function() {
+        
+		$("#unshipped5").addClass("active");
+        var groupColumn =0;
+        
+		oTable = $('#orders').DataTable({
+			"aoColumns": [ {
+				"sWidth": "175px"
+			},{
+				"sWidth": "75px"
+			}, {
+				"sWidth": "150px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50%"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}],
+			"aaSorting": [
+				[5, "asc"]
+			],
+			"sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+        });
+        
+	 $('a.gallery').click(function(e){
+		e.preventDefault();
+			var src = $(this).attr('href');
+
+                $("#picHolder").html('');
+                $("#picHolder").append('<a class="group1" href="'+src+'" >link</a>');
+                $(".group1").colorbox({rel:'group1',open:true});
+	});
+	
+
+    });
+</script>
+{% endblock %}

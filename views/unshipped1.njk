@@ -1,0 +1,261 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="chkAll"></th>
+                <th>Order Number</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Product Picture</th>
+                <th>Ship Date</th>
+                <th>Total Qty</th>
+                <th>days-past</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr class='orderTr {{ "made" if item.made == "Y" else "" }} {{ "inprogress" if item.made == "P" else "" }}  {{ "halfmade" if item.made == "H" else "" }} {{ item.priorityFlag }}'>
+
+                <td>      
+                <input type="checkbox" class="action" value="{{ item.orderId }}" data-country="{{ order.country }}" data-multiorder="{{ order.multiOrderCount }}">
+                {% if order.country != 'US' %}
+                <i class="glyphicon glyphicon-globe"></i>{{ order.country }}
+                {% endif %}
+                <br/>
+                </td>
+                <td>{{ item.orderId }} 
+                <span style="display:none" class="store">{{ item.store }}</span>  
+                    <span class="orderSpan" style="display:none">{{ item.orderId }}</span>
+                    <a class="anchor" id="{{ substr(item.orderId, -7) }}">{{ item.orderId }} </a>
+                    <br/>
+                    {{ item.multiOrdersHtml | safe }}
+                    <br/>
+                    <button class="btn btn-primary btn-lg prioritizeBtn " value="{{ item.orderId }}">
+                        {{ item.prioritizeBtnText }}
+                    </button>
+                    
+                </td>
+                <td style="font-size: 13pt">
+                	<a class="desclink" href="ebayDesc?itemId={{ item.itemID0 }}" target="_blank">
+                        {{ item.name }}</a><br/>
+                <span style='color:black'> {{ str_replace("|",":",item.variation) }} </span>
+				<span style='color:orange'> 
+					{{ item.notesFromBuyerHtml | safe }}
+					{{ item.selfNotesHtml | safe }}
+				</span>
+                    <br/>
+                    <textarea class="notes" >{% if item.notes is not none %}{{ item.notes | safe }}{% endif %}</textarea><br/>
+                    <button class="saveNote" value="{{ item.id }}">Save</button>
+                    <br/><span>Buyer : <a href="#" class="searchBuyer">{{ order.buyer }}</a></span>
+                </td>
+                <td style="font-weight:bold;font-size:16pt;{{ 'color:#1e9ffe' if item.qty > 1 else '' }}">{{ item.qty }}</td>
+                <td><a class="gallery" href="{{ item.image if item.image is not none else '' }}"><img src="{{ str_replace('http:','',item.image) if item.image is not none else '' }}" style="width:300px" class="itemImage">
+                        <span class="orderIdvalue" style="display:none">{{ item.orderId }}</span>
+						<span class="variantvalue" style="display:none">{{ item.variationValue }}</span>
+						<span class="itemIdvalue" style="display:none">{{ item.itemID0 }}</span>
+						</a></td>
+				<td>
+                    <span>
+                        {{ item.shipDate }}</span>
+                    <input type="text" type="text" class="form-control shipdate" value="{{ order.planShipDate }}">
+    				<button value="{{ order.orderId }}" class="saveShipDateBtn">Update</button>
+                </td>
+                <td><a href="#" data-title="{{ item.name }}" class="sameProduct">{{ itemStats['a' + item.asin] }}</a></td>
+                <td></td>
+
+                <td>
+
+                {% if hasRole(['user','admin']) %}
+
+                <table style="background-color: inherit;width:200px">
+                <tr style="background-color: inherit ">
+                <td style="vertical-align: top;">
+                    <button class="btn btn-primary  oldlabelBtn actionBtn" value="{{ item.itemId }}">
+                         Store
+                    </button>
+                    
+                <button class="btn btn-primary progressBtn {{ 'invisible' if item.made == 'Y' else '' }}"  value="{{ item.id }}">
+                     {{ "In Progress" if item.made == "P" else "Start Process" }}
+                    </button>
+                    <button class="btn btn-primary  madeBtn actionBtn" value="{{ item.id }}">
+                        {{ "Unmade" if (item.made is not none and item.made != '' and item.made != '0') else "Made" }}
+                    </button>
+
+                    
+                    {% if hasRole(['user','admin']) %}
+                        <button class="btn btn-primary doneBtn actionBtn" value="{{ order.id }}">
+                            Done
+                        </button>
+                        <button class="btn btn-primary addTrackBtn actionBtn" value="{{ item.itemId }}">
+                            Tracking
+                        </button>
+                    {% endif %}
+                </td>
+                <td style="vertical-align: top;">
+                    {% if hasRole(['user','admin']) %}
+                    
+                        <button class="btn btn-primary btn-lg labelBtn actionBtn" value="{{ item.orderId }}">
+                            Print Label
+                        </button>
+                        {% if order.country == 'US' or order.country == 'USA' %}
+                        <button class="btn btn-primary fedexPrint actionBtn" value="{{ item.orderId }}">
+                            Fedex
+                        </button>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                </tr>
+                </table>
+                {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+    
+	<script>
+    var currentStore='E';
+	$(document).ready(function() {
+        var updateEbayPic = function(orderId,itemId, value, imageUrl){
+            $.ajax({
+                type : 'get',
+                    url : '{{ route('UpdateEbayPic') }}', // in here you should put your query 
+                    data :  {'orderId':orderId,
+                            'itemId':itemId,
+                             'variant':value,
+                             'url':imageUrl},
+                    success : function(r)
+                    {
+                    }
+                });
+        };
+
+		var getEbayPic = function(orderId,itemId, value, obj){
+			$.ajax({
+	        	type : 'get',
+	                url : '{{ route('geteBayImage') }}', // in here you should put your query 
+	                data :  {'itemId':itemId,
+	                		 'value':value},
+	                success : function(r)
+	                {
+                        imageUrl = r.replace("$_1.", "$_57.");
+	                	obj.attr('src',imageUrl);
+
+                        updateEbayPic(orderId,itemId, value,imageUrl);
+	                }
+	            });
+		};
+		
+        var getAllEbayPic = function(orderId,itemId, value){
+            $.ajax({
+                type : 'get',
+                    url : '{{ route('geteBayImage') }}', // in here you should put your query 
+                    data :  {'itemId':itemId,
+                             'value':value},
+                    success : function(r)
+                    {
+                        $("#picHolder").html('');
+						if(Array.isArray(r)){
+							 for(im=0;im<r.length;im++){
+								//console.log(r[im]);
+								$("#picHolder").append('<a class="group1" href="'+r[im]+'" >link</a>');
+							}
+                        }
+                        else{
+								//console.log(r);
+								$("#picHolder").append('<a class="group1" href="'+r+'" >link</a>');
+                        }
+                        $('.group1').colorbox({rel:'group1',open:true, width:'800px', height:'800px'});
+                        
+                    }
+                });
+        };
+		$(".itemImage").error(function(){
+			// console.log('img err');
+			//  var value =$(this).parent().find('.variantvalue').text();
+			//  var itemId =$(this).parent().find('.itemIdvalue').text();
+			// var orderId = $(this).parent().find('.orderIdvalue').text();
+			// 	 obj = $(this);
+			// 	 getEbayPic(orderId,itemId, value, obj);
+			
+		});
+
+
+$(".oldlabelBtn").click(function(e) {
+	e.preventDefault();
+	var transitem = $(this).val().split("-");
+        var trans = transitem[1];
+        var item = transitem[0];
+        window.open('https://payments.ebay.com/ws/eBayISAPI.dll?PrintPostage&itemId=' + item + '&transactionId=' + trans);
+});
+
+		$("#unshipped1").addClass("active");
+        
+        
+		oTable = $('#orders').DataTable({
+			"aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "150px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50%"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}],
+			"aaSorting": [
+				[5, "asc"]
+			],
+			"sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+			}
+		});
+        
+	 $('a.gallery').click(function(e){
+		e.preventDefault();
+			var src = $(this).attr('href');
+
+
+            var value =$(this).find('.variantvalue').text();
+            var itemId =$(this).find('.itemIdvalue').text();
+		 	var orderId = $(this).find('.orderIdvalue').text();
+                //$("#picHolder").html('');
+                //$("#picHolder").append('<a class="group1" href="'+src+'" >link</a>');
+                //$(".group1").colorbox({rel:'group1',open:true});
+                
+             getAllEbayPic(orderId,itemId, value);
+	});
+	
+    
+
+    $(".addTrackBtn").click(function() {
+        var transitem = $(this).val().replace("-","_");
+        window.open('http://payments.ebay.com/ws/eBayISAPI.dll?AddTrackingNumber2&LineID=Transactions.' + transitem	);
+    });
+    });
+	</script>
+{% endblock %}
