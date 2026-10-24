@@ -248,8 +248,7 @@ describe('T23 order module (fastify inject)', () => {
     if (!user) throw new Error('no admin/user/remote user in DB');
     const app = buildApp(user);
 
-    // no orderId -> null into a NOT NULL column -> strict-mode SQL error -> 500,
-    // same as the old app.
+    // no orderId -> explicit NULL into a NOT NULL column fails even in non-strict mode -> 500, same as the old app.
     const bad = await app.inject({
       method: 'POST',
       url: '/order',
@@ -258,15 +257,22 @@ describe('T23 order module (fastify inject)', () => {
     });
     expect(bad.statusCode).toBe(500);
 
-    // name/price are NOT NULL and the PHP never sets them -> the detail insert
-    // strict-mode-fails after the order insert succeeds -> 500, same as old.
+    // name/price are NOT NULL and never set: the old app's non-strict connection stores their defaults, so the
+    // request succeeds (verified against the old app: 302 + a detail row with qty 2).
     const ok = await app.inject({
       method: 'POST',
       url: '/order',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: 'orderId=t23temp123&recipientName=t23-temp&address1=a&itemId[]=1&qty[]=2',
     });
-    expect(ok.statusCode).toBe(500);
+    expect(ok.statusCode).toBe(302);
+    const detail = await db.selectFrom('os_grant_orderdetail').select(['itemId', 'qty']).where('orderId', '=', 't23temp123').execute();
+    expect(detail.map((d) => [d.itemId, d.qty])).toEqual([['1', 2]]);
+    await db.deleteFrom('os_grant_orderdetail').where('orderId', '=', 't23temp123').execute();
+    // itemId missing: sizeof(null) warning -> 500, but the order row is already saved.
+    const noItems = await app.inject({ method: 'POST', url: '/order', headers: { 'content-type': 'application/x-www-form-urlencoded' }, payload: 'orderId=t23temp124&recipientName=t23-temp' });
+    expect(noItems.statusCode).toBe(500);
+    await db.deleteFrom('os_grant_order').where('orderId', '=', 't23temp124').execute();
     const created = (
       await sql`select id from os_grant_order where orderId = 't23temp123'`.execute(db)
     ) as { rows: { id: number }[] };

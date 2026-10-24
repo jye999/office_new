@@ -19,8 +19,19 @@ const mysqlOptions = {
   timezone: 'local' as const,
 };
 
-export const officePool = mysql.createPool({ ...mysqlOptions, database: config.DB_DATABASE });
-export const hwcPool = mysql.createPool({ ...mysqlOptions, database: config.DB_HWC_DATABASE });
+// config/database.php sets 'strict' => false on every connection, so Laravel runs
+// `set session sql_mode='NO_ENGINE_SUBSTITUTION'` after connecting: NOT NULL columns omitted from an INSERT get
+// their implicit default, over-long values are truncated, etc. The old app relies on this (e.g. Tracking rows
+// saved without Url), so every pool does the same.
+export function applyLaravelSqlMode<P extends mysql.Pool>(pool: P): P {
+  pool.on('connection', (conn) => {
+    conn.query("SET SESSION sql_mode='NO_ENGINE_SUBSTITUTION'");
+  });
+  return pool;
+}
+
+export const officePool = applyLaravelSqlMode(mysql.createPool({ ...mysqlOptions, database: config.DB_DATABASE }));
+export const hwcPool = applyLaravelSqlMode(mysql.createPool({ ...mysqlOptions, database: config.DB_HWC_DATABASE }));
 
 export type OfficeDatabase = import('./db/office.js').DB;
 export type HwcDatabase = import('./db/hwc.js').DB;

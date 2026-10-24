@@ -1,0 +1,106 @@
+{% extends "layout.njk" %}
+{% block content %}
+    
+    <div style="margin-top:100px" >
+    <button class="btn btn-primary" id="btnCreateForm">Create Scan Form</button> 
+    <span> This list only shows what we print from stamps.com</span>
+    <table class="table table-bordered table-condensed" id="trackings">
+        <thead>
+            <tr>
+            <th><input type="checkbox" id="chkall" text="check all"></th>
+                <th>Order</th>
+                <th>Tracking</th>
+                <th>Buyer</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in info %}
+            <tr>
+                <td><input type="checkbox" class="chk" value="{{ i['stampsTxId'] }}" ></td>
+                <td>{{ i['orderId'] }}
+                </td>
+                <td>{{ i['tracking'] }}
+                </td>
+                <td>{{ i['buyer'] }}
+		        </td>
+                <td>{{ i['created_at'] }}
+		        </td>
+            </tr>
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+        </tfoot>
+    </table>
+<div id="printDiv"></div>
+    <script>
+
+$(document).ready(function() {
+    $("#chkall").change(function(e){
+        e.preventDefault();
+        $(".chk").prop('checked', $(this).prop('checked'));
+    });
+    $("#btnCreateForm").click(function(e){
+        e.preventDefault();
+        var stampsTxId = Array();
+        $( ".chk" ).each(function( index ) {
+            if($(this).prop('checked')){
+                stampsTxId.push($(this).val());
+            }
+        });
+        if(stampsTxId.length==0){
+            alert('please select at least 1 tracking');
+        }
+        else{
+            console.dir(stampsTxId);
+            $.ajax({
+                type : 'post',
+                dataType: 'json',
+                url : '{{ route('printScanForm') }}', // in here you should put your query 
+                data : {"stampsTxIds":stampsTxId}, // here you pass your id via ajax .
+                success : function(r)
+                {
+                    console.dir(r);
+                },
+                error: function(r){
+                }
+            });
+        }
+    });
+    
+function printFrame(id) {
+            var frm = document.getElementById(id).contentWindow;
+            frm.focus();// focus on contentWindow is needed on some ie versions
+            frm.print();
+            return false;
+};
+
+$(document).on('click','#printBtn',function(){
+ frames["labelFrame"].focus();
+                frames["labelFrame"].print();
+});
+
+    $(".reprint").click(function() {
+        $("#printDiv").html('');
+        var orderId = $(this).val();
+        $('<iframe />').remove();
+                $('<iframe/>'); 
+                $('<iframe />', {
+                name: 'labelFrame',
+                        id: 'labelFrame',
+                        scrolling: 'no',
+                        frameborder: '0',
+                        style:"width: 3.812in; height: 5.718in; border: 1px dashed black;"
+                }).appendTo('#printDiv');
+                
+        $('#labelFrame').contents().find('body').html('');
+        $('#labelFrame').contents().find('body').append("<img src='{{ route('getOrderLabel') }}?orderId="+orderId+"' id='labelImage' style='width: 3.812in;height: 5.718in;'  onload=window.print()>");
+        
+    });
+
+
+});
+    </script>	
+
+{% endblock %}

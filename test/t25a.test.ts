@@ -247,30 +247,31 @@ describe('T25a inventory (fastify inject, live DB)', () => {
     }
   });
 
-  it('create always 500s (qty NOT NULL, controller never sets it); update -> delete lifecycle', async () => {
+  it('create succeeds with qty 0 (non-strict sql_mode like the old app; controller never sets qty); update -> delete lifecycle', async () => {
     const user = await userWithRole(['admin', 'user', 'remote']);
     if (!user) throw new Error('no admin/user/remote user in DB');
     const app = asUser(user);
     let id = 0;
     try {
-      // os_inventory.qty is NOT NULL with no default and the controller never
-      // assigns qty -> the insert fails in the old app too (QueryException 500).
+      // os_inventory.qty is NOT NULL with no default and the controller never assigns qty. The old app's connection is
+      // non-strict, so MySQL stores qty = 0 and the request succeeds (verified against the old app).
       const created = await app.inject({
         method: 'PUT',
         url: '/inventory.create',
         payload: { sku: 'T25A-C1', name: 'Temp one', location: 'T25A-NEW', qty: 3 },
       });
-      expect(created.statusCode).toBe(500);
-      const leaked = await db.selectFrom('os_inventory').select('id').where('sku', '=', 'T25A-C1').executeTakeFirst();
-      expect(leaked).toBeFalsy();
+      expect(created.statusCode, created.body).toBe(200);
+      const stored = await db.selectFrom('os_inventory').select(['id', 'qty']).where('sku', '=', 'T25A-C1').executeTakeFirst();
+      expect(stored?.qty).toBe(0);
 
-      // _method spoofing reaches the create handler (same 500, no row).
+      // _method spoofing reaches the create handler (same result).
       const spoofed = await app.inject({
         method: 'POST',
         url: '/inventory.create',
         payload: { _method: 'PUT', sku: 'T25A-C2', name: 'Temp two', location: 'T25A-NEW' },
       });
-      expect(spoofed.statusCode).toBe(500);
+      expect(spoofed.statusCode).toBe(200);
+      await db.deleteFrom('os_inventory').where('sku', 'in', ['T25A-C1', 'T25A-C2']).execute();
 
       id = await tempInventory({ sku: 'T25A-C1', name: 'Temp one', location: 'T25A-NEW', qty: 3 });
 
@@ -387,7 +388,7 @@ describe('T25a inventory (fastify inject, live DB)', () => {
 
       // New location -> insert. Location is normalised UPPER(TRIM()).
       const created = await app.inject({ method: 'POST', url: '/inventory.quickUpdate', payload: { sku: 'T25A-QU', location: ' t25a-qloc ', qty: '5' } });
-      expect(created.statusCode).toBe(200);
+      expect(created.statusCode, created.body).toBe(200);
       let body = created.json() as { success: boolean; sku: string; locations: { location: string; qty: number }[]; message: string };
       expect(body.success).toBe(true);
       expect(body.sku).toBe('T25A-QU');

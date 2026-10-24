@@ -168,7 +168,10 @@
     "/PrintShipping",
     "/LabelCountReport"
   ],
-  "U8": [],
+  "U8": [
+    "/trackings",
+    "/scanform"
+  ],
   "U9": [
     "/getEbayItem",
     "/getEbayOrder",

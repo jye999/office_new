@@ -53,6 +53,26 @@ async function toggleMade(req: FastifyRequest, reply: FastifyReply, status: 'Y' 
   return json(reply, '0');
 }
 
+// updateOrder / uploadAmzTracking: for every detail line whose ProductMap has a qty and a Product, take
+// `detail.qty * map.qty` off the first bin that holds more than map.qty.
+export async function deductStock(orderId: string): Promise<void> {
+  const details = (await db.selectFrom('os_grant_orderdetail').selectAll().where('orderId', '=', orderId).execute()) as Row[];
+  await attachProductMaps(details);
+  for (const i of details) {
+    const pm = i['ProductMap'] as Row | null;
+    // PHP loose `qty != null`: null, 0 and '' skip the stock deduction.
+    if (pm != null && pm['qty'] != null && pm['qty'] !== 0 && pm['qty'] !== '' && pm['Product'] != null) {
+      const locs = (pm['Product'] as Row)['locations'] as Row[];
+      for (const l of locs) {
+        if (Number(l['qty']) > Number(pm['qty'])) {
+          await saveChanges('os_product_locations', l, { qty: Number(l['qty']) - Number(i['qty']) * Number(pm['qty']) });
+          break;
+        }
+      }
+    }
+  }
+}
+
 let redis: IORedis | null = null;
 const cacheRedis = (): IORedis => (redis ??= new IORedis({ host: config.REDIS_HOST, port: config.REDIS_PORT, lazyConnect: true, maxRetriesPerRequest: 1 }));
 
@@ -133,21 +153,7 @@ export function registerOrderActionRoutes(app: import('fastify').FastifyInstance
       const changes: Row = { status: 'submit', updated_at: nowDb() };
       if (pendingToship != null && pendingToship !== '') changes['PendingShipment'] = 1;
       await saveChanges('os_grant_order', order, changes);
-      const details = (await db.selectFrom('os_grant_orderdetail').selectAll().where('orderId', '=', orderId).execute()) as Row[];
-      await attachProductMaps(details);
-      for (const i of details) {
-        const pm = i['ProductMap'] as Row | null;
-        // PHP loose `qty != null`: null, 0 and '' skip the stock deduction.
-        if (pm != null && pm['qty'] != null && pm['qty'] !== 0 && pm['qty'] !== '' && pm['Product'] != null) {
-          const locs = (pm['Product'] as Row)['locations'] as Row[];
-          for (const l of locs) {
-            if (Number(l['qty']) > Number(pm['qty'])) {
-              await saveChanges('os_product_locations', l, { qty: Number(l['qty']) - Number(i['qty']) * Number(pm['qty']) });
-              break;
-            }
-          }
-        }
-      }
+      await deductStock(orderId);
       return reply.send({ status: 'ok', orderId });
     },
   });

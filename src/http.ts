@@ -172,13 +172,19 @@ export function parseLaravelQuery(qs: string): QueryObj {
       continue;
     }
     const segs = [m[1], ...[...m[2].matchAll(/\[([^\[\]]*)\]/g)].map((x) => x[1])];
+    // PHP parse_str: an empty `[]` appends at the next free integer index (`a[]=1&a[]=2` -> [1, 2]).
+    const nextIndex = (n: Record<string, unknown>): string => {
+      const ints = Object.keys(n).filter((k) => /^(0|[1-9]\d*)$/.test(k)).map(Number);
+      return String(ints.length ? Math.max(...ints) + 1 : 0);
+    };
     let node: Record<string, unknown> = out;
     for (let i = 0; i < segs.length - 1; i++) {
-      const s = segs[i];
+      const s = i > 0 && segs[i] === '' ? nextIndex(node) : segs[i];
       if (typeof node[s] !== 'object' || node[s] === null) node[s] = {};
       node = node[s] as Record<string, unknown>;
     }
-    node[segs[segs.length - 1]] = val;
+    const last = segs[segs.length - 1];
+    node[segs.length > 1 && last === '' ? nextIndex(node) : last] = val;
   }
   // Consecutive integer keys become arrays (PHP lists).
   const toPhp = (v: unknown): QueryValue => {

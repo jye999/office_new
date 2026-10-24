@@ -11,7 +11,7 @@ import { MysqlDialect } from 'kysely';
 import mysql from 'mysql2';
 import { Kysely } from 'kysely';
 import { config } from '../../config.js';
-import { nowDb } from '../../db.js';
+import { applyLaravelSqlMode, nowDb } from '../../db.js';
 import { input } from '../../http.js';
 import { route, routeUrl } from '../../router.js';
 import { sendServer500 } from '../../view.js';
@@ -121,7 +121,7 @@ interface IntegrationDB {
 function integrationDb(): Kysely<IntegrationDB> {
   const name = process.env.DB_INTEGRATION_DATABASE || 'integration';
   // Same pool options as src/db.ts (mysql2 `timezone: 'local'`).
-  const pool = mysql.createPool({
+  const pool = applyLaravelSqlMode(mysql.createPool({
     host: config.DB_HOST,
     port: config.DB_PORT,
     user: config.DB_USERNAME,
@@ -131,7 +131,7 @@ function integrationDb(): Kysely<IntegrationDB> {
     supportBigNumbers: true,
     bigNumberStrings: false,
     timezone: 'local' as const,
-  });
+  }));
   return new Kysely<IntegrationDB>({ dialect: new MysqlDialect({ pool }) });
 }
 

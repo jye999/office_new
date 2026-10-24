@@ -26,3 +26,13 @@ describe('queue job serialization matches PHP 7.4', () => {
     expect(p.id).toMatch(/^[A-Za-z0-9]{32}$/);
   });
 });
+
+import { parseLaravelQuery } from '../src/http.js';
+describe('parseLaravelQuery matches PHP parse_str (golden values from the old app container)', () => {
+  it('auto-indexes empty brackets and nests like PHP', () => {
+    expect(parseLaravelQuery('orderId=x&itemId[]=1&qty[]=2&itemId[]=3')).toEqual({ orderId: 'x', itemId: ['1', '3'], qty: ['2'] });
+    expect(parseLaravelQuery('a[][b]=1&a[][b]=2')).toEqual({ a: [{ b: '1' }, { b: '2' }] });
+    expect(parseLaravelQuery('a[1]=x&a[]=y')).toEqual({ a: { '1': 'x', '2': 'y' } });
+    expect(parseLaravelQuery('filter[name]=x&columns[0][data]=id')).toEqual({ filter: { name: 'x' }, columns: [{ data: 'id' }] });
+  });
+});

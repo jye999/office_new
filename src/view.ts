@@ -284,6 +284,15 @@ export const array_key_exists = (k: unknown, o: unknown): boolean => o != null &
 // PHP loose `== null` (null, '', 0, false, []) and numeric coercion of null operands (null + 2 === 2).
 export const phpNull = (v: unknown): boolean => v === null || v === undefined || v === '' || v === 0 || v === false || (Array.isArray(v) && v.length === 0);
 export const num = (v: unknown): number => (v == null || v === '' ? 0 : Number(v) || 0);
+// PHP strpos/strrpos: index of the needle or false.
+export const strpos = (h: unknown, n: unknown): number | false => {
+  const i = String(h ?? '').indexOf(String(n ?? ''));
+  return i < 0 ? false : i;
+};
+export const strrpos = (h: unknown, n: unknown): number | false => {
+  const i = String(h ?? '').lastIndexOf(String(n ?? ''));
+  return i < 0 ? false : i;
+};
 export const cat = (...parts: unknown[]): string => parts.map((p) => (p == null ? '' : String(p))).join('');
 
 // PHP date() format chars, in the app timezone.
@@ -811,6 +820,8 @@ export async function buildContext(req: FastifyRequest, data: Record<string, unk
     strlen,
     array_key_exists,
     cat,
+    strpos,
+    strrpos,
     phpNull,
     num,
     sizeof: count,

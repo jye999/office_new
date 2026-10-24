@@ -206,18 +206,16 @@ async function orderStore(req: FastifyRequest, reply: FastifyReply): Promise<voi
   const storedOrderId = ins?.orderId ?? input(req, 'orderId') ?? '';
   const itemId = arrayField(req, 'itemId');
   const qty = arrayField(req, 'qty');
-  if (Array.isArray(itemId)) {
-    // name/price are NOT NULL in the table and the PHP never sets them -> the
-    // detail insert strict-mode-fails like the old app; the cast keeps it raw.
-    const rows = itemId.map((id, i) => ({
-      store: 'O',
-      orderId: storedOrderId,
-      itemId: String(id),
-      qty: String(Array.isArray(qty) ? (qty[i] ?? '') : (qty ?? '')),
-      created_at: now,
-      updated_at: now,
-    }));
-    if (rows.length) await db.insertInto('os_grant_orderdetail').values(rows as never).execute();
+  // for($i=0;$i<sizeof($request->itemId);$i++): sizeof(null|string) is a warning -> ErrorException -> 500 (after the order insert).
+  if (!Array.isArray(itemId)) throw new Error('sizeof(): Parameter must be an array or an object that implements Countable');
+  for (let i = 0; i < itemId.length; i++) {
+    // `$request->qty[$i]` on a missing/short qty is an undefined offset notice -> 500 (earlier details stay saved).
+    if (!Array.isArray(qty) || !(i in qty)) throw new Error(`Undefined offset: ${i}`);
+    // name/price are NOT NULL and never set: the old app's non-strict connection stores their column defaults.
+    await db
+      .insertInto('os_grant_orderdetail')
+      .values({ store: 'O', orderId: storedOrderId, itemId: String(itemId[i]), qty: String(qty[i]), created_at: now, updated_at: now } as never)
+      .execute();
   }
   lredirect(req, reply, url('order'));
 }

@@ -251,9 +251,9 @@ describe('T25b transfers + consolidation (fastify inject, live DB)', () => {
       expect(spoof.statusCode).toBe(200);
       expect(Number((spoof.json() as Record<string, unknown>)['id'])).toBeGreaterThan(0);
 
-      // Missing NOT NULL column (status) -> MySQL error -> 500, like PHP QueryException.
+      // Missing NOT NULL column (status): the old app's connection is non-strict, so MySQL stores '' and the request succeeds.
       const missing = await app.inject({ method: 'PUT', url: '/inventory.createTransfer', payload: { sku: 'T25B-INV', from_location: 'T25BF', to_location: 'T25BT', qty: 1 } });
-      expect(missing.statusCode).toBe(500);
+      expect(missing.statusCode).toBe(200);
     } finally {
       await db.deleteFrom('os_inventory_transfer').where('sku', '=', 'T25B-INV').execute();
       await db.deleteFrom('os_inventory').where('sku', '=', 'T25B-INV').execute();

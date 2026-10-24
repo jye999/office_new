@@ -1,0 +1,331 @@
+{% extends "layout.njk" %}
+{% block content %}
+<div style="margin-top:100px">
+    <a class="btn btn-primary " id="btnOpenForm" target="_blank" style="display:none">Open Scan Form Page</a>
+    <a class="btn btn-primary " id="btnOpenBuyLabel" target="_blank" style="display:none">Buy Shipping Label</a>
+    <a class="btn btn-primary " id="btnOpenStampHome" target="_blank" style="display:none">Stamps Home</a>
+
+    <span style="width:100px;margin-left:100px"><button id="btnMassPrint" class="btn btn-primary">Mass
+            shipping</button></span>
+    <table class="table table-bordered">
+        <tr>
+            <td class="col-md-2">Today : <span id="today"></span></td>
+            <td>Yesterday :<span id="yesterday"></span></td>
+            <td>7-Days : <span id="seven"></span> </td>
+            <td>30-Days : <span id="thirty"></span></td>
+        </tr>
+    </table>
+</div>
+<div style="">
+    Order Id : <input type="text" id="searchOrderId">
+    Or
+    Tracking # : <input type="text" id="searchTracking">
+    <button id="searchBtn">Search</button>
+    <div id="searchResult"></div>
+</div>
+<table class="table table-bordered table-condensed" id="trackings">
+    <thead>
+        <tr>
+            <th><input type="checkbox" id="chkAll"></th>
+            <th>Store</th>
+            <th>Order</th>
+            <th>Tracking</th>
+            <th>Amount</th>
+            <th>Discounted Rate</th>
+            <th>Created</th>
+            <th>Print</th>
+            <th>Void</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for tracking in trackings %}
+        <tr>
+            <td><input type="checkbox" class="action" value="{{ str_replace('#', '', tracking.orderId) }}"></td>
+            <td>{{ tracking.store }}
+            </td>
+            <td>{{ tracking.orderId }}
+            </td>
+            <td class="trackingNum">{{ tracking.tracking }}
+                {% if strlen(tracking.tracking) == 12 %}
+                <a target="_blank"
+                    href="https://www.fedex.com/apps/fedextrack/?action=track&trackingnumber={{ tracking.tracking }}&cntry_code=us&locale=en_US">Check</a>
+                {% else %}
+                <a target="_blank"
+                    href="https://tools.usps.com/go/TrackConfirmAction?tLabels={{ tracking.tracking }}">Check</a>
+                {% endif %}
+            </td>
+            <td>{{ tracking.Amount }}
+            </td>
+            <td>{{ tracking.DiscountedRate }}
+            </td>
+            <td>{{ tracking.created_at }}
+            </td>
+            <td>
+                {% if tracking.tracking != "N/A" and not strpos(tracking.Url, '.pdf') %}
+                <button value="{{ tracking.orderId }}" class="btn btn-primary reprint">re-print</button>
+
+            {% else %}
+            <button value="{{ tracking.orderId }}" class="btn btn-primary reprintpdf">download label</button>
+            {% endif %}
+            <td>
+
+                {% if hasRole(['user', 'admin']) %}
+                {% if tracking.canceled == 'true' %}
+                <span>voided</span>
+                {% elif strlen(tracking.tracking) == 12 %}
+                Fedex
+                <button value="{{ tracking.tracking }}" class="btn btn-danger voidFedex">Void</button>
+                {% elif strrpos(tracking.tracking, "1Z") !== false %}
+                UPS
+                <button value="{{ tracking.tracking }}" class="btn btn-danger voidUps">Void</button>
+                {% else %}
+                <button value="{{ tracking.stampsTxId }}" class="btn btn-danger void">Void</button>
+                {% endif %}
+
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+    <tfoot>
+    </tfoot>
+</table>
+<div id="printDiv"></div>
+<script>
+
+    $(document).ready(function () {
+        $("#tracking").addClass("active");
+        var loadStampsHomeUrl = function () {
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('getStampsUrl') }}', // in here you should put your query
+                data: { 'url': 'HomePage' },
+                success: function (r) {
+                    console.dir(r);
+                    if (r.success) {
+                        $("#btnOpenStampHome").show();
+                        $("#btnOpenStampHome").prop('href', r.response.URL);
+                    }
+                },
+                error: function (r) {
+                    console.log('error');
+                    console.dir(r);
+                }
+            });
+        }
+        var loadShippingUrl = function () {
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('getStampsUrl') }}', // in here you should put your query
+                data: { 'url': 'WebClientHome' },
+                success: function (r) {
+                    console.dir(r);
+                    if (r.success) {
+                        $("#btnOpenBuyLabel").show();
+                        $("#btnOpenBuyLabel").prop('href', r.response.URL);
+                        loadStampsHomeUrl();
+                    }
+                },
+                error: function (r) {
+                    console.log('error');
+                    console.dir(r);
+                }
+            });
+        }
+
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            url: '{{ route('getStampsUrl') }}', // in here you should put your query
+            data: { 'url': 'OnlineReportingSCAN' },
+            success: function (r) {
+                console.dir(r);
+                if (r.success) {
+                    $("#btnOpenForm").show();
+                    $("#btnOpenForm").prop('href', r.response.URL);
+
+                    loadShippingUrl();
+                }
+            },
+            error: function (r) {
+                console.log('error');
+                console.dir(r);
+            }
+        });
+
+        $("#tracking").addClass("active");
+        function printFrame(id) {
+            var frm = document.getElementById(id).contentWindow;
+            frm.focus();// focus on contentWindow is needed on some ie versions
+            frm.print();
+            return false;
+        };
+
+        $(document).on('click', '#printBtn', function () {
+            frames["labelFrame"].focus();
+            frames["labelFrame"].print();
+        });
+        $(document).on('click', '.reprint', function () {
+            $("#printDiv").html('');
+            var orderId = $(this).val();
+            if (orderId.charAt(0) == '#') {
+                orderId = orderId.slice(1);
+            }
+            var tracking = $(this).parent().parent().find(".trackingNum").text().trim();
+            var dimension = "width: 3.812in; height: 5.718in";
+
+            $('<iframe />').remove();
+            $('<iframe/>');
+            $('<iframe />', {
+                name: 'labelFrame',
+                id: 'labelFrame',
+                scrolling: 'no',
+                frameborder: '0',
+                style: dimension + "; border: 1px dashed black;"
+            }).appendTo('#printDiv');
+
+            $('#labelFrame').contents().find('body').html('');
+            $('#labelFrame').contents().find('body').append("<img src='{{ route('getOrderLabel') }}?orderId=" + orderId + "' id='labelImage' style='" + dimension + "'  onload=window.print()>");
+
+
+        });
+        $(document).on('click', '.reprintpdf', function () {
+            $("#printDiv").html('');
+            var orderId = $(this).val().replace("#","");
+            //window.location='/getOrderLabel?orderId='+orderId;
+            var req = new XMLHttpRequest();
+            req.open("GET", '/getOrderLabel?orderId=' + orderId, true);
+            req.responseType = "blob";
+            req.onload = function (event) {
+                var blob = req.response;
+                //var fileName = req.getResponseHeader("fileName") //if you have the fileName header available
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = orderId+".pdf";
+                link.click();
+            };
+
+            req.send();
+
+        });
+
+
+        $(".void").click(function () {
+            var stampsTxId = $(this).val();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('cancelLabel') }}',
+                data: { "stampsTxId": stampsTxId },
+                success: function (r) {
+
+                }
+            });
+
+        });
+
+        $(".voidFedex").click(function () {
+            var trackingNum = $(this).val();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('fedex.void') }}',
+                data: { "trackingNum": trackingNum },
+                success: function (r) {
+                    console.dir(r);
+                }
+            });
+
+        });
+
+        $(".voidUps").click(function () {
+            console.log('void ups ');
+            var trackingNum = $(this).val();
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('ups.void') }}',
+                data: { "trackingNum": trackingNum },
+                success: function (r) {
+                    console.dir(r);
+                }
+            });
+
+        });
+        $("#searchBtn").click(function () {
+            var orderId = $("#searchOrderId").val();
+            var tracking = $("#searchTracking").val();
+            console.log(tracking);
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('SearchTracking') }}',
+                data: { "orderId": orderId, "tracking": tracking, },
+                success: function (r) {
+                    $("#searchResult").html('');
+                    var result = "";
+                    if (r.length < 1) {
+                        $("#searchResult").html('<p style="color:red">no orders found</p>');
+                    }
+                    $.each(r, function (idx, t) {
+                        result += "Order : " + t.orderId + " - Tracking : " + t.tracking + " created at " + t.created_at;
+                        result += '<button value="' + t.orderId.replace("#", "") + '" class="btn btn-primary reprint">re-print</button><br/>';
+                    });
+                    $("#searchResult").append(result);
+                    $("#searchResult").append("<hr/>");
+                }
+            });
+        });
+
+        $.ajax({
+            type: 'post',
+            dataType: 'json',
+            url: '{{ route('LabelCountReport') }}',
+            success: function (r) {
+                console.dir(r);
+                $("#today").text(r.today[0].total);
+                $("#yesterday").text(r.yesterday[0].total);
+                $("#seven").text(r.seven[0].total);
+                $("#thirty").text(r.thirty[0].total);
+            }
+        });
+
+
+        $(document).on('click', '#chkAll', function () {
+            $('input:visible[type=checkbox].action').prop('checked', $(this).prop('checked'));
+        });
+
+        var printLabelPdf = function (orders) {
+            $("#downloadFormPoster").remove();
+            $("<div id='downloadFormPoster' style='display: none;'><iframe name='downloadFormPosterIframe'></iframe></div>").appendTo('body');
+            $("<form id='pdflabelform' action='{{ route('printing') }}' target='downloadFormPosterIframe' method='post'></form>")
+                .appendTo("#downloadFormPoster");
+            $.each(orders, function (index, elem) {
+                $("#pdflabelform").append("<input type='hidden' name='orders[]' value='" + elem + "'/>");
+            });
+            $("#pdflabelform").submit();
+        };
+
+        $(document).on('click', '#btnMassPrint', function () {
+            var massPrintOrderArray = [];
+            $.each($("input.action:checked"), function (index, value) {
+                if (massPrintOrderArray.indexOf($(this).val()) < 0) {
+                    massPrintOrderArray.push($(this).val());
+                }
+            });
+
+            if (massPrintOrderArray.length > 0) {
+                printLabelPdf(massPrintOrderArray);
+            }
+            else {
+                alert('no orders to print');
+            }
+        });
+
+    });
+</script>
+
+{% endblock %}
