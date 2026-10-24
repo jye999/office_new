@@ -4,9 +4,13 @@
 // registers their actions here. Unknown commands 500 the same way Laravel
 // does: InvalidArgumentException('Command "x" is not defined.').
 
+import { runSyncAction } from './actions.js';
+
 type ArtisanCommand = (params: Record<string, string>) => Promise<number>;
 
-const commands: Record<string, ArtisanCommand> = {};
+const commands: Record<string, ArtisanCommand> = {
+  sync: async ({ action, arg1 }) => runSyncAction(action, arg1),
+};
 
 export function registerArtisanCommand(name: string, fn: ArtisanCommand): void {
   commands[name] = fn;

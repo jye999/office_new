@@ -126,18 +126,18 @@ describe('U7 read routes', () => {
 });
 
 describe('U7 actions (stubbed)', () => {
-  it('mass print routes enqueue one Laravel job each and return an empty 200', async () => {
+  it('mass print routes enqueue one BullMQ job each and return an empty 200', async () => {
     const app = buildApp();
     pushed.length = 0;
     const a = await post(app, '/getMultiAmzLabel', { 'orders[0]': 'A1', 'orders[1]': 'A2', lb: '1', oz: '2', length: '3', width: '4', height: '5' });
     const f = await post(app, '/getMultiFrayunLabel', { 'orders[0]': 'F1', lb: '1', oz: '2', length: '3', width: '4', height: '5' });
     expect([a.statusCode, a.body, f.statusCode, f.body]).toEqual([200, '', 200, '']);
-    expect(pushed.map(([q]) => q)).toEqual(['default', 'default']);
+    expect(pushed.map(([q]) => q)).toEqual(['jobs', 'jobs']);
     const [pa, pf] = pushed.map(([, p]) => JSON.parse(p));
-    expect(pa.displayName).toBe('App\\Jobs\\AmzMassPrintLabel');
-    expect(pa.data.command).toContain('s:5:"\0*\0oz";i:18;'); // 2 + 1*16
-    expect(pf.displayName).toBe('App\\Jobs\\FrayunMassPrintLabel');
-    expect(pf.timeout).toBe(600);
+    expect(pa.name).toBe('AmzMassPrintLabel');
+    expect(pa.data.oz).toBe(18); // 2 + 1*16
+    expect(pf.name).toBe('FrayunMassPrintLabel');
+    expect(pf.data.packageType).toBe('FIRST CLASS');
     await app.close();
   });
 

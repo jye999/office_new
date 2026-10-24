@@ -21,8 +21,7 @@ const html = (reply: FastifyReply, body: string) => reply.type('text/html; chars
 
 // `if(!is_numeric($oz)) $oz = 0; if(is_numeric($lb)) $oz = $oz + $lb*16;`
 function weightOz(oz: unknown, lb: unknown): number {
-  const r = ozPlusLbTimes16(oz, lb);
-  return typeof r === 'number' ? r : r.v;
+  return ozPlusLbTimes16(oz, lb);
 }
 
 async function itemsToShip(orderId: unknown) {

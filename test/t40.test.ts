@@ -92,7 +92,7 @@ describe('T40 stamps routes (fastify inject)', () => {
     await app.close();
   });
 
-  it('getMultiCleanse: 200 empty body + Laravel 5.4 payload pushed to queues:default', async () => {
+  it('getMultiCleanse: 200 empty body + BullMQ MassPrintLabel job', async () => {
     pushed = [];
     const app = buildApp();
     await app.ready();
@@ -106,19 +106,11 @@ describe('T40 stamps routes (fastify inject)', () => {
     expect(res.body).toBe('');
     expect(pushed).toHaveLength(1);
     const payload = JSON.parse(pushed[0]) as Record<string, unknown>;
-    expect(payload.displayName).toBe('App\\Jobs\\MassPrintLabel');
-    expect(payload.job).toBe('Illuminate\\Queue\\CallQueuedHandler@call');
-    expect(payload.maxTries).toBe(1);
-    const data = payload.data as Record<string, unknown>;
-    expect(data.commandName).toBe('App\\Jobs\\MassPrintLabel');
-    const command = data.command as string;
-    expect(command.startsWith('O:23:"App\\Jobs\\MassPrintLabel":18:{s:14:"\0*\0fromAddress";a:9:{')).toBe(true);
-    // protected property mangling + constructor args (golden format: see queue-jobs.test.ts)
-    expect(command).toContain('s:9:"\0*\0orders";a:2:{i:0;s:2:"O1";i:1;s:2:"O2";}');
-    expect(command).toContain('s:5:"\0*\0lb";s:1:"2";');
-    expect(command).toContain('s:7:"Company";s:19:"Angel Isabella, LLC";');
-    expect(payload.id).toMatch(/^[A-Za-z0-9]{32}$/);
-    expect(payload.attempts).toBe(0);
+    expect(payload.name).toBe('MassPrintLabel');
+    expect(payload.data).toEqual({
+      orders: ['O1', 'O2'], lb: '2', oz: '4', length: '10', width: '5', height: '3',
+      packageType: 'Package', declareValue: '0', insurance: '0',
+    });
     await app.close();
   });
 

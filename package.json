@@ -6,8 +6,12 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
+    "worker": "tsx src/jobs/worker.ts",
+    "sync": "tsx src/jobs/sync.ts",
+    "pda:api-key": "tsx src/jobs/pda-api-key.ts",
+    "faire:import-images": "tsx src/jobs/faire-import-images.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "test": "vitest run --maxWorkers=1",
     "parity": "tsx scripts/parity.ts",
     "db:types": "bash -c 'set -a; . ./.env; set +a; kysely-codegen --url \"mysql://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_DATABASE\" --out-file src/db/office.d.ts && kysely-codegen --url \"mysql://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_HWC_DATABASE\" --out-file src/db/hwc.d.ts'"
   },
@@ -19,6 +23,7 @@
     "@fastify/secure-session": "^8.4.1",
     "@fastify/static": "^10.1.7",
     "bcryptjs": "^3.0.3",
+    "bullmq": "^6.4.2",
     "dotenv": "^18.0.8",
     "exceljs": "^4.4.0",
     "fastify": "^5.12.7",

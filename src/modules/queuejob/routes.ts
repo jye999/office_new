@@ -6,6 +6,7 @@
 
 import type { FastifyInstance } from 'fastify';
 import { db, nowDb, sql } from '../../db.js';
+import { dispatchQueuePing } from '../../lib/queueJobs.js';
 import { input, lredirect } from '../../http.js';
 import { route } from '../../router.js';
 import { render } from '../../view.js';
@@ -138,22 +139,15 @@ export function registerQueueJobRoutes(app: FastifyInstance): void {
     },
   });
 
-  // Route::get('/queue.ping') -> PingQueue: the old app pushes a QueuePing job
-  // onto the queue (QUEUE_CONNECTION=database); the job inserts a ping row and
-  // fires QueuePingEvent (which has no listeners). Ported inline — same
-  // observable effect, immediate.
+  // Route::get('/queue.ping') -> PingQueue. The BullMQ worker inserts the
+  // QueuePing row and fires no observable event (QueuePingEvent has no listeners).
   route(app, {
     verb: 'get',
     path: '/queue.ping',
     name: 'queue.ping',
     middleware,
     handler: async (req, reply) => {
-      // SAFETY: nowDb() is a 'YYYY-MM-DD HH:mm:ss' string, not a Date.
-      const now = nowDb() as unknown as Date;
-      await db
-        .insertInto('os_queuejobs')
-        .values({ queueId: Math.floor(Date.now() / 1000), type: 'ping', status: 'start', created_at: now, updated_at: now })
-        .execute();
+      await dispatchQueuePing('hello');
       return lredirect(req, reply, '/queue');
     },
   });

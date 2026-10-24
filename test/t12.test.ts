@@ -9,6 +9,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { db } from '../src/db.js';
 import { registerHttpHelpers } from '../src/http.js';
 import { registerArtisanCommand } from '../src/jobs/artisan.js';
+import { setQueueAddForTests } from '../src/jobs/queue.js';
 import { registerExecRoutes } from '../src/modules/exec/routes.js';
 import { registerPriceRoutes } from '../src/modules/price/routes.js';
 import { registerQueueJobRoutes } from '../src/modules/queuejob/routes.js';
@@ -105,22 +106,21 @@ describe('T12 exec / queuejob / price (fastify inject)', () => {
     await app.close();
   });
 
-  it('GET /queue.ping: 302 -> /queue and inserts a ping row (cleaned up)', async () => {
+  it('GET /queue.ping: 302 -> /queue and enqueues QueuePing', async () => {
     const admin = await userWithRole(['admin']);
     if (!admin) throw new Error('no admin user in DB');
-    const before = await db.selectFrom('os_queuejobs').select('id').orderBy('id', 'desc').limit(1).executeTakeFirst();
-    const app = buildApp(admin);
-    const out = await app.inject({ method: 'GET', url: '/queue.ping' });
-    expect(out.statusCode).toBe(302);
-    expect(out.headers['location']).toBe('http://localhost:80/queue');
-    const after = await db.selectFrom('os_queuejobs').select(['id', 'type', 'status', 'queueId']).orderBy('id', 'desc').limit(1).executeTakeFirst();
-    expect(after).toBeDefined();
-    expect(after!.id).toBeGreaterThan(before?.id ?? 0);
-    expect(after!.type).toBe('ping');
-    expect(after!.status).toBe('start');
-    // cleanup: remove the row the test created
-    await db.deleteFrom('os_queuejobs').where('id', '=', after!.id).execute();
-    await app.close();
+    const queued: unknown[] = [];
+    setQueueAddForTests(async (name, data, options) => { queued.push({ name, data, options }); });
+    try {
+      const app = buildApp(admin);
+      const out = await app.inject({ method: 'GET', url: '/queue.ping' });
+      expect(out.statusCode).toBe(302);
+      expect(out.headers['location']).toBe('http://localhost:80/queue');
+      expect(queued).toEqual([{ name: 'QueuePing', data: { msg: 'hello' }, options: { attempts: 1 } }]);
+      await app.close();
+    } finally {
+      setQueueAddForTests(null);
+    }
   });
 
   it('price routes all 500 (old app: Class BaseController not found)', async () => {
@@ -175,17 +175,17 @@ describe('T12 exec / queuejob / price (fastify inject)', () => {
     await app.close();
   });
 
-  it('POST /exec.refreshAmz: no asin -> 302 refreshAmzImg; asin -> sync cmd (unregistered -> 500)', async () => {
+  it('POST /exec.refreshAmz: no asin -> 302 refreshAmzImg; unknown sync action succeeds silently', async () => {
     const admin = await userWithRole(['admin']);
     if (!admin) throw new Error('no admin user in DB');
     const app = buildApp(admin);
     let out = await app.inject({ method: 'POST', url: '/exec.refreshAmz' });
     expect(out.statusCode).toBe(302);
     expect(out.headers['location']).toBe('http://localhost:80/refreshAmzImg');
-    // 'sync' is ported in Phase 5; until then the call throws, like Laravel
-    // would for an undefined command. Do NOT register it here.
+    // Runner.php has no final else, so an unported action is a successful no-op.
     out = await app.inject({ method: 'POST', url: '/exec.refreshAmz', payload: { asin: 'B0TEST123' } });
-    expect(out.statusCode).toBe(500);
+    expect(out.statusCode).toBe(302);
+    expect(out.headers['location']).toBe('http://localhost:80/refreshAmzImg');
     await app.close();
   });
 });
