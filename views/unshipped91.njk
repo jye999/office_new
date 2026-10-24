@@ -1,0 +1,343 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+    <table class="table table-bordered table-condensed" id="orders" style="width:100%">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="chkAll"></th>
+                <th>Order Number</th>
+                <th>SKU</th>
+                <th>Product Name</th>
+                <th>Order Qty</th>
+                <th>Product Picture</th>
+                <th>Total Qty</th>
+                <th>ship date</th>
+                <th>Print</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for order in orders %}
+                {% for item in order.detail %}
+            <tr  class='orderTr {{ "urgent" if (isset(order.priority) and order.priority==2) else "" }} {{ "made" if (isset(item.made) and item.made=="Y") else "" }} {{ "inprogress" if (isset(item.made) and item.made=="P") else "" }} {{ "halfmade" if (isset(item.made) and item.made=="H") else "" }} {{ item.priorityFlag }}
+            ' >
+                <td> 
+                <input type="checkbox" class="action" value="{{ item.orderId }}" data-country="{{ order.country }}" data-multiorder="{{ count(buyerStats[order.emailKey]) }}">
+                
+                {% if order.country!='US' %}
+                <i class="glyphicon glyphicon-globe"></i>{{ order.country }}
+                {% endif %}
+                <br/>
+                </td>
+                <td>
+                <span style="display:none" class="store">{{ item.store }}</span>   
+                {{ item.orderId }} 
+                    {% if isset(item.isPrime) and item.isPrime=='true' %}
+                        <br/><img src="{{ url('/images/prime_small.png') }}" /></br>
+                    {% endif %}
+                    <span class="orderSpan" style="display:none">{{ item.orderId }}</span>
+                    <a class="anchor" id="{{ item.orderId }}">{{ item.orderId }} </a>
+                    <br/>
+                    {{ order.multiOrdersHtml | safe }}
+                    <br/>
+                    <button class="btn btn-primary btn-lg prioritizeBtn" value="{{ item.orderId }}">
+                    {{ order.prioritizeBtnText }}
+                    </button>
+                    <br/>
+                </td>
+                <td>
+                <span class="externalSku" style="display:none">{{ item.asin }}</span> <br/>
+                <span class="externalAsin" >{{ item.asin }}</span> <br/>
+                {% if item.ProductMap is none %}
+                    <button class="btn btn-sm btn-primary btnFindMatch">Find Match</button>
+                    <span class="internalSku"></span>
+                {% else %}
+                  <a class="internalSku">{{ item.ProductMap.sku }} {{ "" if (item.ProductMap.qty is none or item.ProductMap.qty === 0 or item.ProductMap.qty === "") else " x " + item.ProductMap.qty }}</a> 
+                    <button class="btn btn-sm btn-primary btnFindMatch">Update Match</button>
+                {% endif %}
+
+                    <div class="skuLocation"><br/>Location <br/>
+                        {{ item.skuLocationHtml | safe }}
+                    </div>
+                </td>
+                <td style="font-size: 13pt"><a href="#" class="itemName" data-asin="{{ item.asin if isset(item.asin) else '' }}">{{ item.name }} </a>
+                
+                    <br/>
+                    <textarea class="notes" >{{ (item.notes if isset(item.notes) else '') | safe }}</textarea><br/>
+                    <button class="saveNote" value="{{ item.id }}">Save</button>
+                    <br/><span>Buyer : {{ order.buyer }} {{ str_replace("@marketplace.amazon.com","",order.email) }} </span>
+                    <br/><a href="#" class="searchBuyer" >{{ order.addressLine }}</a>
+                </td>
+                <td style="font-weight:bold;font-size:16pt;{{ 'color:#1e9ffe' if item.qty>1 else '' }}">{{ item.qty }}</td>
+                <td><a class="gallery" href="{{ item.sku if isset(item.sku) else '' }}"><img src="{{ item.image if isset(item.image) else '' }}" class="itemImage"></a></td>
+                <td><a href="#" data-title="{{ item.name }}" class="sameProduct">{{ item.sameCount }}</a></td>
+               
+                <td>
+                {{ item.shipDate }}
+                        
+                   <!-- <br/><br/> -->
+                   <!-- {{ item.promiseDate }} -->
+                    </td>
+
+                <td>
+
+                {% if hasRole(['user','admin']) %}
+                <table style="background-color: inherit;width:200px">
+                <tr style="background-color: inherit ">
+                <td style="vertical-align: top;">
+                    <button class="btn btn-primary progressBtn {{ 'invisible' if (isset(item.made) and item.made=='Y') else '' }}"  value="{{ item.id }}">
+                     {{ "In Progress" if (isset(item.made) and item.made=="P") else "Start Process" }}
+                    </button>
+
+                    <button class="btn btn-primary madeBtn"  value="{{ item.id }}">
+                     {{ "Unmade" if (isset(item.made) and item.made=="Y") else "Made" }}
+                    </button>
+                    {% if hasRole(['packing','admin']) %}
+                    <button class="btn btn-primary doneBtn actionBtn" value="{{ item.orderId }}">
+                        Done
+                    </button>
+
+                      {% if item.shipLevel!='SecondDay' and item.shipLevel!='SameDay' %}
+                      <button class="btn btn-primary addTrackBtn actionBtn" value="{{ item.orderId }}">
+                          Add Tracking
+                      </button>
+                      {% endif %}
+                    {% endif %}
+                </td>
+                <td style="vertical-align: top;">
+                
+                {% if hasRole(['packing','admin']) %}
+                {% if item.shipLevel!='SecondDay' and item.shipLevel!='SameDay' %}
+                    <button class="btn btn-primary labelBtn actionBtn" value="{{ item.orderId }}">
+                        Print
+                        {{ "Priority" if item.shipLevel=='Standard' else item.shipLevel }}
+                    </button>
+                    {% endif %}
+                    <!--
+                  <button class="btn btn-primary amzPrint actionBtn" value="{{ item.orderId }}">
+                        Amz Print
+                    </button> 
+                -->
+                    {% if order.country=='US' or order.country=='USA' %}
+                    <button class="btn btn-primary fedexPrint actionBtn" value="{{ item.orderId }}">
+                        Fedex
+                    </button>
+                    <button class="btn btn-primary upsPrint actionBtn" value="{{ item.orderId }}">
+                        UPS
+                    </button>
+                    {% endif %}
+                    {% endif %}
+                </td>
+                </tr>
+                </table>
+                  
+                   
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+
+        </tbody>
+        <tfoot>
+            <tr>
+                <th>End</th>
+                <th><span id="total_span"></span></th>
+            </tr>
+        </tfoot>
+    </table>
+ {% include "amzMassPrint.njk" %}
+
+<script>
+    var currentStore='FOUR';
+    var store = 'FOUR';
+    $(document).ready(function(){
+        $("#btnAmzMassPrint").show();
+		$("#unshipped91").addClass("active");
+
+		oTable = $('#orders').DataTable({
+			"aoColumns": [{
+				"sWidth": "50px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "75px"
+			}, {
+				"sWidth": "150px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50%"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}, {
+				"sWidth": "50px"
+			}],
+			"aaSorting": [
+				[7, "asc"]
+			],
+            "sDom": "<'row-fluid'<'span6'l><'boutonniereSearch'><'corsageSearch'><'bouquetSearch'><'quickSearch'><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+			"bPaginate": false,
+			"oLanguage": {
+				"sLengthMenu": "_MENU_ records per page"
+			},
+			"fnRowCallback": function(nRow, aData) {
+				var days = aData[5]; // ID is returned by the server as part of the data
+				var $nRow = $(nRow); // cache the row wrapped up in jQuery
+				if (days > -1) {
+					$nRow.css({
+						//"color": "red"
+					})
+				} else if (days > -2) {
+					$nRow.css({
+						"color": "orange"
+					})
+				}
+				return nRow
+			}
+		});
+
+
+	 $('a.gallery').click(function(e){
+		e.preventDefault();
+			var id = $(this).attr('href');
+			if(id==''){
+				alert('no image');
+				return;
+			}
+		$.ajax({
+            type:'get',
+			datatype: 'json',
+			url: '{{ route('getAmzImage') }}', 
+			data: {'asin': id}, 
+			success: function(r) {
+                $("#picHolder").html('');
+                console.dir(r);
+                if(r!=''){
+                    addImageToGallery(r.image);
+                    addImageToGallery(r.image_1);
+                    addImageToGallery(r.image_2);
+                    addImageToGallery(r.image_3);
+                    addImageToGallery(r.image_4);
+                    addImageToGallery(r.image_5);
+                    addImageToGallery(r.image_6);
+                    addImageToGallery(r.image_7);
+                    addImageToGallery(r.image_8);
+                    addImageToGallery(r.image_9);
+                    addImageToGallery(r.image_10);
+                }
+                $(".group1").colorbox({rel:'group1',open:true});
+			},
+            error: function(err){
+                console.dir(err);
+            }
+		});
+	});
+	
+    $(document).on('click','.itemName',function(e){
+        
+        e.preventDefault();
+            var id = $(this).attr('data-asin');
+            if(id==''){
+                return;
+            }
+        $.ajax({
+            type:'get',
+            datatype: 'json',
+            url: '{{ route('getAmzImage') }}', 
+            data: {'asin': id}, 
+            success: function(r) {
+                if(r!=''){
+                    var htmlToAdd = '<div style="width:500px"><h3><ul>';
+                    if(r.bullet_point_1!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_1+'</li>';
+                    }
+                    if(r.bullet_point_2!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_2+'</li>';
+                    }
+                    if(r.bullet_point_3!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_3+'</li>';
+                    }
+                    if(r.bullet_point_4!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_4+'</li>';
+                    }
+                    if(r.bullet_point_5!=null){
+                        htmlToAdd += '<li>'+r.bullet_point_5+'</li>';
+                    }
+                    htmlToAdd += '</ul></h3></div>';
+                    $.colorbox({html:htmlToAdd});
+                }
+            },
+            error: function(err){
+                console.dir(err);
+            }
+        });
+    });
+
+        $(".confirmBtn").click(function() {
+            pendingToship ="1";
+            $("#shipLevel").val('');
+            $("#fullname").val('');
+            $("#address1").val('');
+            $("#address2").val('');
+            $("#city").val('');
+            $("#state").val('');
+            $("#zipcode").val('');
+            $("#postalcode").val('');
+            $("#country").val('');
+            $("#phone").val('');
+            $("#product-items").html('');
+            $("#order-id").val('');
+            $("#signature").prop( "checked", false );
+            $("#insurance").val('');
+
+
+            target_row = $(this).closest("tr").get(0);
+            var orderId = $(this).val();
+            //alert($('#printModal'));
+            $.ajax({
+                type: 'post',
+                url: '{{ route('getOrder') }}', // in here you should put your query 
+                data: 'orderId=' + orderId, // here you pass your id via ajax .
+                // in php you should use $_POST['post_id'] to get this value 
+                success: function(order) {
+                    $("#product-items").html('');
+                    $('#printModal').modal({
+                        backdrop: 'static'
+                    });
+                    $("#fullname").val(order['recipientName']);
+                    $("#address1").val(order['address1']);
+                    $("#address2").val(order['address2'] );
+                    $("#city").val(order['city']);
+                    $("#state").val(String(order['state']).toUpperCase());
+                    $("#zipcode").val(order['zip']);
+                    $("#postalcode").val(order['zip']);
+                    $("#country").val(order['country']);
+                    $("#phone").val(order['phone']);
+                    $.each(order.detail, function(idx, item) {
+                        if(item['shipLevel']=='Standard'){
+                            $("#shipLevel").val('Standard');
+                        }
+                        $("#product-items").html($("#product-items").html() + item['qty'] + ' x ' + item['name'] + "<br/>");
+                    });
+                    $("#order-id").val(order['orderId']);
+                    
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    alert('request failed');
+                }
+            });
+        });
+
+$(".prioritySearch").html("<button id='prioritySearchBtn' class='pull-left'>Print Priority</button>");
+      $(document).on('click','#prioritySearchBtn',function(e){
+          e.preventDefault();
+          var searchText ='Print Priority';
+          $('#orders_filter label input').val(searchText);
+          oTable.search(searchText).draw();
+      });
+
+    });
+</script>
+
+{% endblock %}

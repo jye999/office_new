@@ -145,7 +145,12 @@
     "/unshipped12",
     "/unshipped13"
   ],
-  "U3": [],
+  "U3": [
+    "/unshippedFaire",
+    "/unshipped91",
+    "/unshipped92",
+    "/unshipped101"
+  ],
   "U4": [
     "/fairePickList"
   ],

@@ -1,0 +1,107 @@
+{% extends "unshipped_layout.njk" %}
+{% block content %}
+
+<table class="table table-bordered table-condensed" id="orders" style="width:100%">
+    <thead>
+        <tr>
+            <th>Order Number</th>
+            <th>items</th>
+            <th class="no-print">Order Date</th>
+            <th class="no-print">Expected ShipDate</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for order in orders %}
+        <tr>
+            <td>
+                {{ order.display_id }}<br/><br/>
+                
+                {{ order.companyName }} <br/>
+                
+                {{ order.shipDateHtml | safe }}
+            </td>
+            <td>
+                <table class="table">
+                    
+                    {% for item in order.items %}
+                    <tr>
+                        <td>{{ item.sku }} x <span style="font-weight:bold;font-size:14pt">{{ item.quantity }}</span>
+                           >>>
+                             Location: <span style="font-size:14pt">
+                            {{ item.locationHtml | safe }}</span>
+                        </td>
+                    </tr>
+                    <tr style="border-bottom:2pt solid black;">
+                        <td>{{ item.product_name }} -- variant : {{ item.variant_name }}<br/>
+                    </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
+
+            <td  class="no-print">
+                {{ order.createdDate }}
+            </td>
+
+            <td  class="no-print">
+                {{ order.expectedShip }}
+                
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+    <tfoot>
+        <tr>
+            <th>End</th>
+            <th><span id="total_span"></span></th>
+        </tr>
+    </tfoot>
+</table>
+
+
+<script>
+    var currentStore = 'FAIRE';
+    var store = 'FAIRE';
+    $(document).ready(function() {
+        $("#unshipped_faire").addClass("active");
+        $(".hidden-xs").hide();
+        oTable = $('#orders').DataTable({
+            "aoColumns": [{
+                "sWidth": "75px"
+            }, {
+                "sWidth": "375px"
+            }, {
+                "sWidth": "75px"
+            }, {
+                "sWidth": "75px"
+            }],
+            "aaSorting": [
+                [3, "asc"]
+            ],
+            "sDom": "<'row-fluid'<'span6'l><'span6'f<'clearSearch'>>r>t<'row-fluid'<'span12'i><'span12 center'p>>",
+            "bPaginate": false,
+            "oLanguage": {
+                "sLengthMenu": "_MENU_ records per page"
+            },
+            "fnRowCallback": function(nRow, aData) {
+                var days = aData[5]; // ID is returned by the server as part of the data
+                var $nRow = $(nRow); // cache the row wrapped up in jQuery
+                if (days > -1) {
+                    $nRow.css({
+                        //"color": "red"
+                    })
+                } else if (days > -2) {
+                    $nRow.css({
+                        "color": "orange"
+                    })
+                }
+                return nRow
+            }
+        });
+
+
+    });
+</script>
+
+{% endblock %}

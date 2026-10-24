@@ -18,7 +18,7 @@ import {
   prepareStore10,
   prepareStore11,
   prepareStore12,
-  prepareStore13,
+  prepareStore13, prepareFaire, prepareStore90, prepareStore91, prepareStore92, prepareStore101,
   prepareStore2,
   prepareStore3,
   prepareStore4,
@@ -97,6 +97,11 @@ async function store1Handler(req: FastifyRequest, reply: FastifyReply) {
 export function registerUnshippedRoutes(app: FastifyInstance): void {
   // U2 store pages 6-13: same render shape (prepare + unshipped<N> view).
   const storePages: Array<[string, string, (user: User) => Promise<Record<string, unknown>>]> = [
+    ['/unshippedFaire', 'unshippedFaire', () => prepareFaire()],
+    ['/unshipped101', 'unshipped101', (u) => prepareStore101(u)],
+    ['/unshipped92', 'unshipped92', (u) => prepareStore92(u)],
+    ['/unshipped91', 'unshipped91', (u) => prepareStore91(u)],
+    ['/unshipped90', 'unshipped90', (u) => prepareStore90(u)],
     ['/unshipped13', 'unshipped13', (u) => prepareStore13(u)],
     ['/unshipped12', 'unshipped12', (u) => prepareStore12(u)],
     ['/unshipped11', 'unshipped11', (u) => prepareStore11(u)],

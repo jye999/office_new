@@ -1,0 +1,403 @@
+<div class="modal fade " id="frayunMassLoadingModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+               <h2> Loading... <img src="{{ asset('assets/img/loading.gif') }}"></img></h2>
+               <h2><br/><span id="loadingMsg"></span></h2>
+        </div>
+    </div>
+</div>
+    <div class="modal fade " id="frayunMassPrintModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Print Label</h4>
+
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="frayunMassPrint-step2">Next</button>
+                    <span id="frayunMass-total"></span>
+                </div>
+                <div class="modal-body" id="print-body">
+
+                    <div style="width:90%;float:left;margin-left:10px">
+                        <div class="row">
+                            <div class="control-group col-md-6">
+                                <label class="control-label" for="weight">Weight</label>
+                                <div class="controls">
+                                    <input type="text" name="pound" id="frayunMass-pound" class="input-mini" style="width:30px"> lb
+                                    <input type="text" name="ounce" id="frayunMass-ounce" class="input-mini" style="width:30px"> oz
+                                </div>
+                            </div>
+
+                            <div class="control-group col-md-6">
+                                <label class="control-label" for="dimensions">Dimensions</label>
+                                <div class="controls">
+                                    <input type="text" name="height" id="frayunMass-height" class="input-mini" style="width:30px"> x
+                                    <input type="text" name="width" id="frayunMass-width" class="input-mini" style="width:30px"> x
+                                    <input type="text" name="length" id="frayunMass-length" class="input-mini" style="width:30px"> 
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Name</th>
+                                    <th>Address1</th>
+                                    <th>Address2</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Zip</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersToPrint">
+
+                            </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade " id="frayunMassPrintModal-step2" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="width:1000px">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Print Label</h4>
+
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="frayunMassPrint-step3">Next</button>
+                </div>
+                <div class="modal-body" id="print-body">
+
+                    <div style="width:90%;float:left;margin-left:10px">
+                        
+                        <div class="row">
+                            <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Order</th>
+                                    <th>Name</th>
+                                    <th>Address1</th>
+                                    <th>Address2</th>
+                                    <th>City</th>
+                                    <th>State</th>
+                                    <th>Zip</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="ordersToPrint-2">
+
+                            </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="frayunMassPrintModal-step3" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal" id="frayunMass-Finish" >Close</button>
+
+                    <button type="button" class="btn btn-primary" id="frayunMassPrintBtn">Download Labels</button>
+                </div>
+                <div class="modal-body" id="frayunMass-print-body3">
+                </div>
+                <div class="modal-footer">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>              
+    var frayunMassPrinting = false;
+    var frayunMassPrintOrderArray = [];
+    var frayunMassPrintOrderUrlArray = [];
+    var frayunMassRates = null;
+    var addOrderToTable = function(o,rate){
+        var htmlToAdd = "<tr>";
+        htmlToAdd += "<td>"+o.orderId+"</td>";
+        if(rate==null){
+            htmlToAdd += "<td>"+o.recipientName+"</td>";
+            htmlToAdd += "<td>"+o.address1+"</td>";
+            htmlToAdd += "<td>"+o.address2+"</td>";
+            htmlToAdd += "<td>"+o.city+"</td>";
+            htmlToAdd += "<td>"+o.state+"</td>";
+            htmlToAdd += "<td>"+o.zip+"</td>";
+            htmlToAdd += "<td></td>";
+        }
+        else{
+            htmlToAdd += "<td>"+rate.Address.FullName+"</td>";
+            htmlToAdd += "<td>"+rate.Address.Address1+"</td>";
+            htmlToAdd += "<td>"+rate.Address.Address2+"</td>";
+            htmlToAdd += "<td>"+rate.Address.City+"</td>";
+            htmlToAdd += "<td>"+rate.Address.State+"</td>";
+            htmlToAdd += "<td>"+rate.Address.ZIPCode+"</td>";
+            htmlToAdd += "<td>"
+
+            htmlToAdd += "<select class='selectRate'>";
+            $.each(rate.Rates, function(idx, r) {
+                
+                var totalAmount = parseFloat(r.Amount);
+                $.each(r.AddOns.AddOnV7, function(ix, ao){
+                    if(ao.AddOnType=='US-A-INS'){
+                        if($("#frayunMass-insurance").val()>0){
+                            totalAmount+=parseFloat(ao.Amount) ;
+                        }
+                    }
+                    if(ao.AddOnType=='US-A-SC'){
+                        if($("#frayunMass-signature").prop('checked')){
+                            totalAmount+=parseFloat(ao.Amount) ;
+                        }
+                    }
+                });
+                htmlToAdd += "<option value='"+r.ServiceType+"'>";
+                switch (r.ServiceType) {
+                    case 'US-FC':
+                        htmlToAdd += 'USPS First-Class Mail';
+                        break;
+                    case 'US-MM':
+                        htmlToAdd += 'USPS Media Mail';
+                        break;
+                    case 'US-PP':
+                        htmlToAdd += 'USPS Parcel Post';
+                        break;
+                    case 'US-PM':
+                        htmlToAdd += 'USPS Priority Mail';
+                        break;
+                    case 'US-GA':
+                        htmlToAdd += 'USPS Ground Advantage';
+                        break;
+                    case 'US-XM':
+                        htmlToAdd += 'USPS Priority Mail Express';
+                        break;
+                    case 'US-EMI':
+                        htmlToAdd += 'USPS Priority Mail Express International';
+                        break;
+                    case 'US-PMI':
+                        htmlToAdd += 'USPS Priority Mail International';
+                        break;
+                    case 'US-FCI':
+                        htmlToAdd += 'USPS First Class Mail International';
+                        break;
+                    case 'US-CM':
+                        htmlToAdd += 'USPS Critical Mail';
+                        break;
+                    case 'US-PS':
+                        htmlToAdd += 'USPS Parcel Select';
+                        break;
+                    case 'US-LM':
+                        htmlToAdd += 'USPS Library Mail';
+                        break;
+                }
+                htmlToAdd +=  " -- " +totalAmount;
+                htmlToAdd += "</option>";
+            });
+            htmlToAdd += "</select>";
+            htmlToAdd += "</td>";
+        }
+        htmlToAdd += "</tr>";
+        return htmlToAdd;
+    }
+    var pusherBinding = function(){
+
+        var pusher = new Pusher("{{ env("PUSHER_KEY") }}");
+            var channel = pusher.subscribe('label');
+
+            channel.bind('App\\Events\\LabelDoneEvent', function(data) {
+
+            console.log('An event was triggered with message: '+data.result);
+            if(data.result.indexOf('failed')>-1){
+                $.notify({
+                    // options
+                    message: data.result
+                },{
+                    // settings
+                    type: 'danger',
+                    delay: 0,
+                });
+            }
+            else if(data.result.indexOf('success')>-1){
+                $.notify({
+                    // options
+                    message: data.result
+                },{
+                    // settings
+                    type: 'success',
+                    delay: 0,
+                });
+                $('#btnFrayunMassPrint').prop( "disabled", false );
+            }
+            else{
+                $.notify({
+                    // options
+                    message: data.result
+                },{
+                    // settings
+                    type: 'info',
+                    delay: 10000,
+                });
+            }
+            
+            });
+    }
+
+    var pusherBinded = false;
+    $(document).ready(function(){
+            console.log('mass ready');
+        $('#frayunMassPrintModal').modal('hide');
+        $(document).on('click','#btnFrayunMassPrint',function(){
+            $('#btnFrayunMassPrint').prop( "disabled", true );
+            console.log('btnFrayunMassPrint');
+            if(pusherBinded==false){
+                pusherBinding();
+                pusherBinded =true;
+            }
+            frayunMassRates = null;
+            frayunMassPrinting = true;
+            frayunMassPrintOrderArray = [];
+            var msg = '';
+            $.each($( "input.action:checked" ), function( index, value ) {
+                var toPrint = true;
+                if ( frayunMassPrintOrderArray.indexOf($(this).val()) <0 ){
+                    if($(this).data('country') != 'US'){
+                        msg += $(this).val() + ' is internation order\n';
+                        toPrint = false;
+                    }
+                    if($(this).data('multiorder')>1){
+                        msg += $(this).val() + ' has multiple orders\n';
+                        toPrint = false;
+                    }
+                    if(toPrint){
+                        frayunMassPrintOrderArray.push($(this).val()); 
+                    }
+                    else{
+                        $(this).prop('checked',false);
+                    }
+                }
+            });
+            if(msg!=''){
+                alert('the following orders are removed from frayunMass print\n'+msg);
+            }
+            if(frayunMassPrintOrderArray.length<1){
+                alert('Please select at least one order');
+                return ;
+            }
+            $("#frayunMass-total").html('print '+frayunMassPrintOrderArray.length + ' orders');
+            $("#frayunMassLoadingModal").modal({
+                backdrop: 'static'
+            });
+            console.dir(frayunMassPrintOrderArray);
+            $("#ordersToPrint").html('loading...');
+            $.ajax({
+                type:'post',
+                datatype: 'json',
+                url: '{{ route('getMultiOrders') }}', 
+                data: {'orders': frayunMassPrintOrderArray}, 
+                success: function(r) {
+                    console.dir(r);
+                    if(r.length>0){
+                        $("#ordersToPrint").html('');
+                        $.each(r, function( index, elem ) {
+                            var htmlToAdd = addOrderToTable(elem,null);
+                            $("#ordersToPrint").append(htmlToAdd);
+                        });
+                    }
+                    else{
+                        $("#ordersToPrint").html('<tr><td colspan="8">cannot find orders</td></tr>');
+                    }
+
+                    $("#frayunMassLoadingModal").modal('hide');
+                },
+                error: function(err){
+                    console.dir(err);
+                }
+            });
+            $('#frayunMassPrintModal').modal({
+               backdrop: 'static'
+            });
+        });
+
+        $(document).on('click','#frayunMassPrint-step2',function(){
+            
+            $('#frayunMassPrintModal').modal('hide');
+            // $("#frayunMassLoadingModal").modal({
+            //     backdrop: 'static'
+            // });
+            $.ajax({
+                type:'post',
+                datatype: 'json',
+                url: '{{ route('getMultiFrayunLabel') }}', 
+                data: {
+    					"orders": frayunMassPrintOrderArray,
+    					"lb": $("#frayunMass-pound").val(),
+    					"oz": $("#frayunMass-ounce").val(),
+    					"height": $("#frayunMass-height").val(),
+    					"width": $("#frayunMass-width").val(),
+    					"length": $("#frayunMass-length").val()
+                        
+    				},
+                success: function(r) {
+                    $.each(frayunMassPrintOrderArray, function( index, elem ) {
+                            removeRowByOrderId(elem);
+                    });
+                    frayunMassRates = r;
+
+                    $("#frayunMassPrintModal").modal('hide');
+                    
+                    $("#frayunMassLoadingModal").modal('hide');
+                },
+                error: function(err){
+                    console.dir(err);
+                }
+            });
+        });
+        var processCount = 0;
+        
+        var printLabelPdf = function(orders){
+            $("#downloadFormPoster").remove();
+            $("<div id='downloadFormPoster' style='display: none;'><iframe name='downloadFormPosterIframe'></iframe></div>").appendTo('body');
+            $("<form id='pdflabelform' action='{{ route('printing') }}' target='downloadFormPosterIframe' method='post'></form>")
+            .appendTo("#downloadFormPoster");
+            $.each(orders, function(index,elem){
+                $("#pdflabelform").append("<input type='hidden' name='orders[]' value='"+elem+"'/>" );
+            });
+            $("#pdflabelform").submit();
+        };
+
+		$(document).on('click', '#frayunMassPrintBtn', function() {
+            if(frayunMassPrintOrderArray.length>0){
+                printLabelPdf(frayunMassPrintOrderArray);
+            }
+            else{
+                alert('no orders to print');
+            }
+		});
+
+
+		$(document).on('click', '#frayunMass-Finish', function() {
+            $("#frayunMassLoadingModal").modal({
+                backdrop: 'static'
+            });
+            window.location.reload();
+		});
+        
+        $(document).on('click','#chkAll', function(){
+            $('input:visible[type=checkbox].action').prop('checked',$(this).prop('checked'));
+        });
+   
+    });
+</script>

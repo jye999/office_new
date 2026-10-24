@@ -443,3 +443,10 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - /unshipped6–13 ported; all verified `hunks 0` with plan/tools/pagecmp.py. Stores 6–10 and 13 are empty in the DB, so each was also compared with a temporary cloned order (ZZSEED*, deleted afterwards).
 - Fixes found only with real rows: store7 itemStats keyed by plain asin (blank count, old quirk); `strtotimeRel` with a date-less base is relative to *now* (PHP strtotime(' + N days')); `url()` trims the path's trailing slash like Laravel (shared helper in src/view.ts).
 - test/u2.test.ts: guards + 200 renders. Layouts' mass-print/label actions are not exercised (they write/buy).
+
+## U3 — done
+- Ported /unshippedFaire, /unshipped90, 91, 92, 101 (+ views/frayunMassPrint.njk partial). Views 90/91/92/101 are generated from the Blade source by a one-off script; service fns `prepareStore90/91/92/101`, `prepareFaire` in src/modules/unshipped/service.ts.
+- Verified `hunks 0` (plan/tools/pagecmp.py): Faire (4 real PROCESSING/NEW orders), 90 (406 real rows, with a temporary hwc.products table), 91 / 92 / 101 (temporary seeded orders ZZSEED*, deleted; hwc table dropped afterwards).
+- /unshipped90 and any /unshipped92 page with orders 500 on this dev DB because `hwc.products` does not exist — the old app fails identically (kept; production has the table). An item with an empty sku also 500s (`$hwc['']` undefined index) in both.
+- Shared fix: the global error handler (src/server.ts) rendered the 500 page with HTTP 200; it now sets 500 like Laravel.
+- Not exercised: label/print/tracking actions behind these pages (write/buy).

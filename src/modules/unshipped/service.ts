@@ -8,7 +8,7 @@
 // on these routes. Debugbar::info calls dropped.
 
 import { Kysely } from 'kysely';
-import { db } from '../../db.js';
+import { db, hwc } from '../../db.js';
 import { date, strtotime } from '../../view.js';
 
 export type Row = Record<string, unknown>;
@@ -772,4 +772,142 @@ export async function prepareStore3(user: { company_id?: number } | null): Promi
   }
   const staffs = await activeStaffs(user?.company_id);
   return { orderItems, buyers, staffs };
+}
+
+// ------------------------------------------------------------------ U3: stores 90/91/92/101
+
+// Shared shape of store90/91/92/101: buyerStats gets the order id under BOTH the
+// address1+zip and the email key (once per detail row); itemStats is keyed by sku.
+type GrantKind = 'hwc2' | 'hwc8' | 'plain' | 'temu';
+
+async function prepareGrantStore(
+  user: { company_id?: number } | null,
+  store: string,
+  kind: GrantKind,
+): Promise<{
+  orders: PrepOrder[];
+  buyerStats: Record<string, string[]>;
+  itemStats: Record<string, number>;
+  staffs: Row[];
+  quickSearchContent: string;
+}> {
+  const raw = await grantOrdersWithDetail(store);
+  const buyerStats: Record<string, string[]> = {};
+  const itemStats: Record<string, number> = {};
+  const hwcFnskus: Record<string, string> = {};
+  const hwcCompany = kind === 'hwc2' ? '2' : kind === 'hwc8' ? '8' : null;
+  for (const o of raw) {
+    await attachProductMaps(o.detail);
+    for (const i of o.detail) {
+      const sku = i.sku as string | null;
+      if (hwcCompany != null && sku != null && sku !== '') {
+        // HwcProduct::where('company_id', C)->where(sku|upc|fnsku = $asin)->get(); the view print_r's each fnsku.
+        // SAFETY: hwc.products is missing from the generated hwc type map (and from this dev DB), so cast.
+        const rows = await (hwc as unknown as Kysely<{ products: Record<string, any> }>)
+          .selectFrom('products')
+          .select('fnsku')
+          .where('company_id', '=', hwcCompany)
+          .where((eb) => eb.or([eb('sku', '=', sku), eb('upc', '=', sku), eb('fnsku', '=', sku)]))
+          .execute();
+        hwcFnskus[sku] = rows.map((r: Record<string, unknown>) => String(r.fnsku ?? '')).join('');
+      }
+      if (kind === 'temu') {
+        const product = await db.selectFrom('os_products').select('id').where('sku', '=', String(sku ?? '')).executeTakeFirst();
+        if (product != null) {
+          const img = await db.selectFrom('os_product_images').select('filename').where('product_id', '=', String(product.id) as never).executeTakeFirst();
+          if (img != null) i['image'] = '/storage/product_images_full/' + img.filename;
+        }
+      }
+      const addrKey = String(o.address1 ?? '') + String(o.zip ?? '');
+      const emailKey = String(o.email ?? '');
+      (buyerStats[addrKey] ??= []).push(o.orderId as string);
+      (buyerStats[emailKey] ??= []).push(o.orderId as string);
+      const ik = String(sku ?? '');
+      itemStats[ik] = ik in itemStats ? itemStats[ik] + (i.qty as number) : (i.qty as number);
+    }
+  }
+  const orders = raw.map((o) => {
+    const addrKey = String(o.address1 ?? '') + String(o.zip ?? '');
+    const ids = buyerStats[addrKey] ?? [];
+    const detail = o.detail.map((i) => {
+      const sku = String(i.sku ?? '');
+      // 90/92 view: `$hwc[$item->sku]` on an unset key is a PHP "Undefined index" -> 500.
+      if (hwcCompany != null && !(sku in hwcFnskus)) throw new Error(`Undefined index: ${sku}`);
+      return {
+        ...i,
+        priorityFlag:
+          String(i.isPrime ?? '') === 'true' || looseEq(o.priority, 1) || daysPast(strtotime(String(i.promiseDate ?? ''))) >= -1 ? 'priority' : '',
+        shipDate: ymd(minusDays(i.promiseDate, 2)),
+        hwcFnskus: hwcFnskus[sku] ?? '',
+        // 90/101 blank the count for an empty sku; 91 prints $itemStats[$sku] unconditionally.
+        sameCount: kind === 'plain' || sku !== '' ? itemStats[sku] : '',
+      };
+    });
+    return {
+      ...o,
+      detail,
+      buyerKey: addrKey,
+      addrKey,
+      // address1.' '.address2.', '.state.' '.zip (PHP concat renders null as '')
+      addressLine: [o.address1, ' ', o.address2, ', ', o.state, ' ', o.zip].map((x) => (x == null ? '' : String(x))).join(''),
+      emailKey: String(o.email ?? ''),
+      multiOrdersHtml: ids.length > 1 ? `<br> Multi-orders ${ids.map((b) => `<br><a href='#${b}'>${b}</a><br>`).join('')}` : '',
+      multiOrderCount: ids.length,
+      prioritizeBtnText: prioritizeText(o.priority),
+      urgentFlag: looseEq(o.priority, 2),
+    };
+  });
+  const staffs = await activeStaffs(user?.company_id);
+  return { orders, buyerStats, itemStats, staffs, quickSearchContent: '' };
+}
+
+export const prepareStore90 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'WINDY', 'hwc2');
+export const prepareStore92 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'mermaid', 'hwc8');
+export const prepareStore91 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'FOUR', 'plain');
+export const prepareStore101 = (u: { company_id?: number } | null) => prepareGrantStore(u, 'TEMU', 'temu');
+
+// ------------------------------------------------------------------ U3: Faire
+
+// PHP strtotime() on the ISO-8601 ('2025-08-04T12:00:00.000Z') strings Faire stores; false -> 0.
+const isoTs = (s: unknown): number => {
+  const t = Date.parse(String(s ?? ''));
+  return Number.isNaN(t) ? 0 : Math.floor(t / 1000);
+};
+
+// fairestore(): FaireOrder (content cast to object) in PROCESSING/NEW, plus the
+// bin locations of every sku (Product::with('locations')->where('sku')->first()).
+export async function prepareFaire(): Promise<{ orders: Row[]; quickSearchContent: string }> {
+  const rows = await db.selectFrom('os_faire_orders').selectAll().where('order_status', 'in', ['PROCESSING', 'NEW']).execute();
+  const locations: Record<string, string> = {};
+  const orders: Row[] = [];
+  for (const o of rows) {
+    const content = (typeof o.content === 'string' ? JSON.parse(o.content) : o.content) as Row;
+    const items = (content['items'] as Row[]) ?? [];
+    for (const item of items) {
+      const sku = item['sku'];
+      if (sku != null && !(String(sku) in locations)) {
+        const product = await db.selectFrom('os_products').select('id').where('sku', '=', String(sku)).executeTakeFirst();
+        if (product != null) {
+          const locs = await db.selectFrom('os_product_locations').select('location').where('product_id', '=', String(product.id) as never).execute();
+          locations[String(sku)] = locs.map((l) => `${l.location ?? ''} , `).join('');
+        }
+      }
+    }
+    const ship = content['expected_ship_date'];
+    orders.push({
+      display_id: o.display_id,
+      companyName: ((content['address'] as Row) ?? {})['company_name'],
+      shipDateHtml: ship != null ? `<br/>Ship Date: ${date('Y-m-d', isoTs(ship))}` : '',
+      items: items.map((item) => ({
+        sku: item['sku'] ?? '',
+        quantity: item['quantity'] ?? '',
+        product_name: item['product_name'],
+        variant_name: item['variant_name'] ?? '',
+        locationHtml: item['sku'] != null ? (locations[String(item['sku'])] ?? '') : '',
+      })),
+      createdDate: date('Y-m-d', isoTs(content['created_at'])),
+      expectedShip: ship != null ? date('Y-m-d', isoTs(ship)) : 'Not set yet',
+    });
+  }
+  return { orders, quickSearchContent: '' };
 }

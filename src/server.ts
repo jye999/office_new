@@ -129,6 +129,7 @@ app.setErrorHandler(async (err, req, reply) => {
   const e = err as { statusCode?: number; message: string };
   const status = Math.min(Math.max(e.statusCode ?? 500, 400), 599);
   if (status !== 500) return reply.code(status).send(e.message);
+  reply.code(500); // Laravel answers uncaught exceptions with HTTP 500, not 200
   await render(req, reply, 'error/500');
 });
 
