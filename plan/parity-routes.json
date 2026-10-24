@@ -162,9 +162,7 @@
     "/PendingShipment"
   ],
   "U6": [
-    "/submittedOrder",
-    "/getOrder",
-    "/getPriority"
+    "/submittedOrder"
   ],
   "U7": [
     "/Barcode",

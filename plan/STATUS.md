@@ -463,3 +463,9 @@ Wayfair + Tongtool controllers (routes/web.php:465-472; all role:admin,user,remo
 - /geturls (UnshippedController@getUrls does not exist) and /createPacking (view `packing` missing) are 500 in the old app and here.
 - Shared: view.ts strtotime now understands relative `+/- N days|weekdays` and ISO-with-zone; new globals strlen, array_key_exists, cat, phpNull, num, ceil, time, sizeof; server error handler logs `[500] ...` to stderr.
 - Not verified: the per-row action buttons these pages render (they call other routes: U6-U10).
+
+## U6 — done
+- 13 order-action routes in src/modules/unshipped/orders.ts (+ views/submitted.njk via blade2njk, src/lib/eloquent.ts save() semantics, src/lib/labels.ts storeLabel). 
+- Verified against the old app on a temp order (ZZU6, with product map + 2 bins): identical JSON responses and identical resulting DB rows for notes, priority, assign (with/without subOrderId), ship date, getOrder/getPriority (incl. not found), updateOrder (tracking whitespace strip, PendingShipment, status, stock deduction), doneOrder; /submittedOrder `hunks 0`. Not run against the old app: madeOrder/progressOrder (they fire real Pusher events) — covered by test/u6.test.ts with a stubbed pusher; DB effect is the simple made toggle.
+- Quirks kept: `catch (exception $e)` in updateOrder never matches, so a failed label download 500s before the tracking row is saved; unknown order/detail ids 500 (null model); `response()->json(null)` is `{}`.
+- /clearCache = Cache::flush() = FLUSHDB on redis db 0, which in the old app also holds sessions and the queue. Ported as FLUSHDB, never invoked in tests/parity. /removeOrderFromCache is a no-op (the 'unshipped_items' key is never written anywhere).
