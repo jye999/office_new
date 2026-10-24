@@ -1,5 +1,7 @@
 import { amazonActions } from './actions/amazon.js';
 import { ebayActions } from './actions/ebay.js';
+import { houzzActions } from './actions/houzz.js';
+import { shopifyActions } from './actions/shopify.js';
 import { walmartActions } from './actions/walmart.js';
 
 export type SyncAction = (arg1?: string) => Promise<number>;
@@ -8,6 +10,8 @@ export const actions = new Map<string, SyncAction>([
   ...Object.entries(amazonActions),
   ...Object.entries(ebayActions),
   ...Object.entries(walmartActions),
+  ...Object.entries(shopifyActions),
+  ...Object.entries(houzzActions),
 ]);
 
 export function registerSyncAction(name: string, action: SyncAction): void {
