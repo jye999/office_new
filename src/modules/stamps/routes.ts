@@ -7,12 +7,11 @@
 // below (see plan/NOTES.md).
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { Redis as IORedis } from 'ioredis';
-import { config } from '../../config.js';
 import { input, allInput } from '../../http.js';
 import { route } from '../../router.js';
 import { Stamps, type StampsAddress } from '../../lib/stamps.js';
 import { db } from '../../db.js';
+import { dispatchMassPrintLabel, setQueuePushForTests } from '../../lib/queueJobs.js';
 import { json_encode } from '../../view.js';
 
 // PHP response()->json(): the body is a JSON literal even for plain strings.
@@ -109,69 +108,10 @@ async function appendDomesticUpsRates(
 }
 
 // ---------------------------------------------------------------- MassPrintLabel dispatch
-
-// PHP-serialize scalars/arrays, byte-length string form.
-function phpSerializeString(s: string): string {
-  return `s:${Buffer.byteLength(s, 'utf8')}:"${s}";`;
-}
-function phpSerialize(v: unknown): string {
-  if (v === null || v === undefined) return 'N;';
-  if (typeof v === 'boolean') return v ? 'b:1;' : 'b:0;';
-  if (typeof v === 'number') return Number.isInteger(v) ? `i:${v};` : `d:${v};`;
-  if (typeof v === 'string') return phpSerializeString(v);
-  if (Array.isArray(v)) return `a:${v.length}{${v.map((x, i) => `i:${i};${phpSerialize(x)}`).join('')}}`;
-  const entries = Object.entries(v as Record<string, unknown>);
-  return `a:${entries.length}{${entries.map(([k, x]) => `${phpSerializeString(k)};${phpSerialize(x)}`).join('')}}`;
-}
-
-// serialize(new App\Jobs\MassPrintLabel(...)) with Laravel 5.4 property order
-// (InteractsWithQueue, Queueable, then class body).
-function serializeMassPrintLabel(args: {
-  orders: unknown; lb: unknown; oz: unknown; length: unknown; width: unknown; height: unknown;
-  packageType: unknown; declareValue: unknown; insurance: unknown;
-}): string {
-  const P = '\0App\Jobs\MassPrintLabel\0';
-  const p = (name: string, value: unknown) => `${phpSerializeString(P + name)};${phpSerialize(value)}`;
-  const fromAddress = {
-    Company: 'Angel Isabella, LLC', Address1: '1550 Oak Industrial Lane', Address2: 'Ste F', City: 'Cumming',
-    State: 'GA', ZIPCode: '30041', PostalCode: '30041', Country: 'US', PhoneNumber: '678-999-6232',
-  };
-  return `O:23:"App\\Jobs\\MassPrintLabel";{s:3:"job";N;s:6:"failed";b:0;s:10:"connection";N;s:5:"queue";N;s:18:"delayAfterFailures";N;${p(
-    'fromAddress',
-    fromAddress,
-  )}s:5:"tries";i:1;${p('firstClass', false)}${p('orders', args.orders)}${p('lb', args.lb)}${p('oz', args.oz)}${p(
-    'length',
-    args.length,
-  )}${p('width', args.width)}${p('height', args.height)}${p('packageType', args.packageType)}${p(
-    'declareValue',
-    args.declareValue,
-  )}${p('insurance', args.insurance)}${p('currentJobId', null)}${p('queuejob', null)}`;
-}
-
-// Laravel 5.4 Queue::createObjectPayload -> json, RPUSH queues:default (QUEUE_DRIVER=redis).
-function massPrintLabelPayload(args: Parameters<typeof serializeMassPrintLabel>[0]): string {
-  return JSON.stringify({
-    displayName: 'App\\Jobs\\MassPrintLabel',
-    job: 'Illuminate\\Queue\\CallQueuedHandler@call',
-    maxTries: 1,
-    timeout: null,
-    data: {
-      commandName: 'App\\Jobs\\MassPrintLabel',
-      command: serializeMassPrintLabel(args),
-    },
-  });
-}
-
-let redis: IORedis | null = null;
-function defaultQueuePush(payload: string): Promise<void> {
-  redis ??= new IORedis({ host: config.REDIS_HOST, port: config.REDIS_PORT, lazyConnect: true, maxRetriesPerRequest: 1 });
-  // SAFETY: ioredis rpush resolves number|string on both redis replies; callers ignore the value.
-  return redis.rpush('queues:default', payload) as unknown as Promise<void>;
-}
-let queuePush: (payload: string) => Promise<void> = defaultQueuePush;
-// Test seam so unit tests never touch redis.
+// Job serialization + the redis payload live in lib/queueJobs.ts (verified against the old app's PHP 7.4).
+// Test seam kept for existing tests: receives the payload JSON.
 export function setMassPrintQueuePushForTests(fn: ((payload: string) => Promise<void>) | null): void {
-  queuePush = fn ?? defaultQueuePush;
+  setQueuePushForTests(fn ? (payload) => fn(payload) : null);
 }
 
 // ---------------------------------------------------------------- routes
@@ -192,7 +132,7 @@ export function registerStampsRoutes(app: FastifyInstance): void {
       insurance: input(req, 'insurance'),
     };
     console.info('dispatch MassPrintLabel Jobs');
-    await queuePush(massPrintLabelPayload(args));
+    await dispatchMassPrintLabel(args);
     return reply.code(200).send('');
   });
 

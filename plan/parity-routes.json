@@ -165,8 +165,8 @@
     "/submittedOrder"
   ],
   "U7": [
-    "/Barcode",
-    "/getS3Image"
+    "/PrintShipping",
+    "/LabelCountReport"
   ],
   "U8": [],
   "U9": [

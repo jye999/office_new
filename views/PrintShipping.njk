@@ -1,0 +1,1080 @@
+{% extends "layout.njk" %}
+{% block content %}
+<input type="hidden" id="authenicator">
+<div style="margin-top:100px"><h2>buy label</h2></div>
+<div id="step1Div" style="width:90%;">
+<div style="width:45%;float:left">
+        <div class="form-group">
+            <label class="" for="fullname">First Name</label>
+            <div class="form-controls">
+                <input type="text" name="firstname" id="firstname" style="width:90%">
+            </div>
+        </div> 
+        <div class="form-group">
+            <label class="" for="fullname">Last Name</label>
+            <div class="form-controls">
+                <input type="text" name="lastname" id="lastname" style="width:90%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="address1">Address 1</label>
+            <div class="controls">
+                <input type="text" name="address1" id="address1" style="width:90%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="address2">Address 2</label>
+            <div class="controls">
+                <input type="text" name="address2" id="address2" style="width:90%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="city">City</label>
+            <div class="controls">
+                <input type="text" name="city" id="city" style="width:90%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="state">State</label>
+            <div class="controls">
+                <input type="text" name="state" id="state" style="width:90%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="postalcode">postalcode</label>
+            <div class="controls">
+                <input type="text" name="postalcode" id="postalcode" style="width:90%">
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="country">Country</label>
+            <div class="controls">
+                <select id="country" name="country" style="width:90%">
+    <option value="US">United States</option>
+    <option value="AF">Afghanistan</option>
+    <option value="AX">Åland Islands</option>
+    <option value="AL">Albania</option>
+    <option value="DZ">Algeria</option>
+    <option value="AS">American Samoa</option>
+    <option value="AD">Andorra</option>
+    <option value="AO">Angola</option>
+    <option value="AI">Anguilla</option>
+    <option value="AQ">Antarctica</option>
+    <option value="AG">Antigua and Barbuda</option>
+    <option value="AR">Argentina</option>
+    <option value="AM">Armenia</option>
+    <option value="AW">Aruba</option>
+    <option value="AU">Australia</option>
+    <option value="AT">Austria</option>
+    <option value="AZ">Azerbaijan</option>
+    <option value="BS">Bahamas</option>
+    <option value="BH">Bahrain</option>
+    <option value="BD">Bangladesh</option>
+    <option value="BB">Barbados</option>
+    <option value="BY">Belarus</option>
+    <option value="BE">Belgium</option>
+    <option value="BZ">Belize</option>
+    <option value="BJ">Benin</option>
+    <option value="BM">Bermuda</option>
+    <option value="BT">Bhutan</option>
+    <option value="BO">Bolivia, Plurinational State of</option>
+    <option value="BQ">Bonaire, Sint Eustatius and Saba</option>
+    <option value="BA">Bosnia and Herzegovina</option>
+    <option value="BW">Botswana</option>
+    <option value="BV">Bouvet Island</option>
+    <option value="BR">Brazil</option>
+    <option value="IO">British Indian Ocean Territory</option>
+    <option value="BN">Brunei Darussalam</option>
+    <option value="BG">Bulgaria</option>
+    <option value="BF">Burkina Faso</option>
+    <option value="BI">Burundi</option>
+    <option value="KH">Cambodia</option>
+    <option value="CM">Cameroon</option>
+    <option value="CA">Canada</option>
+    <option value="CV">Cape Verde</option>
+    <option value="KY">Cayman Islands</option>
+    <option value="CF">Central African Republic</option>
+    <option value="TD">Chad</option>
+    <option value="CL">Chile</option>
+    <option value="CN">China</option>
+    <option value="CX">Christmas Island</option>
+    <option value="CC">Cocos (Keeling) Islands</option>
+    <option value="CO">Colombia</option>
+    <option value="KM">Comoros</option>
+    <option value="CG">Congo</option>
+    <option value="CD">Congo, the Democratic Republic of the</option>
+    <option value="CK">Cook Islands</option>
+    <option value="CR">Costa Rica</option>
+    <option value="CI">Côte d'Ivoire</option>
+    <option value="HR">Croatia</option>
+    <option value="CU">Cuba</option>
+    <option value="CW">Curaçao</option>
+    <option value="CY">Cyprus</option>
+    <option value="CZ">Czech Republic</option>
+    <option value="DK">Denmark</option>
+    <option value="DJ">Djibouti</option>
+    <option value="DM">Dominica</option>
+    <option value="DO">Dominican Republic</option>
+    <option value="EC">Ecuador</option>
+    <option value="EG">Egypt</option>
+    <option value="SV">El Salvador</option>
+    <option value="GQ">Equatorial Guinea</option>
+    <option value="ER">Eritrea</option>
+    <option value="EE">Estonia</option>
+    <option value="ET">Ethiopia</option>
+    <option value="FK">Falkland Islands (Malvinas)</option>
+    <option value="FO">Faroe Islands</option>
+    <option value="FJ">Fiji</option>
+    <option value="FI">Finland</option>
+    <option value="FR">France</option>
+    <option value="GF">French Guiana</option>
+    <option value="PF">French Polynesia</option>
+    <option value="TF">French Southern Territories</option>
+    <option value="GA">Gabon</option>
+    <option value="GM">Gambia</option>
+    <option value="GE">Georgia</option>
+    <option value="DE">Germany</option>
+    <option value="GH">Ghana</option>
+    <option value="GI">Gibraltar</option>
+    <option value="GR">Greece</option>
+    <option value="GL">Greenland</option>
+    <option value="GD">Grenada</option>
+    <option value="GP">Guadeloupe</option>
+    <option value="GU">Guam</option>
+    <option value="GT">Guatemala</option>
+    <option value="GG">Guernsey</option>
+    <option value="GN">Guinea</option>
+    <option value="GW">Guinea-Bissau</option>
+    <option value="GY">Guyana</option>
+    <option value="HT">Haiti</option>
+    <option value="HM">Heard Island and McDonald Islands</option>
+    <option value="VA">Holy See (Vatican City State)</option>
+    <option value="HN">Honduras</option>
+    <option value="HK">Hong Kong</option>
+    <option value="HU">Hungary</option>
+    <option value="IS">Iceland</option>
+    <option value="IN">India</option>
+    <option value="ID">Indonesia</option>
+    <option value="IR">Iran, Islamic Republic of</option>
+    <option value="IQ">Iraq</option>
+    <option value="IE">Ireland</option>
+    <option value="IM">Isle of Man</option>
+    <option value="IL">Israel</option>
+    <option value="IT">Italy</option>
+    <option value="JM">Jamaica</option>
+    <option value="JP">Japan</option>
+    <option value="JE">Jersey</option>
+    <option value="JO">Jordan</option>
+    <option value="KZ">Kazakhstan</option>
+    <option value="KE">Kenya</option>
+    <option value="KI">Kiribati</option>
+    <option value="KP">Korea, Democratic People's Republic of</option>
+    <option value="KR">Korea, Republic of</option>
+    <option value="KW">Kuwait</option>
+    <option value="KG">Kyrgyzstan</option>
+    <option value="LA">Lao People's Democratic Republic</option>
+    <option value="LV">Latvia</option>
+    <option value="LB">Lebanon</option>
+    <option value="LS">Lesotho</option>
+    <option value="LR">Liberia</option>
+    <option value="LY">Libya</option>
+    <option value="LI">Liechtenstein</option>
+    <option value="LT">Lithuania</option>
+    <option value="LU">Luxembourg</option>
+    <option value="MO">Macao</option>
+    <option value="MK">Macedonia, the former Yugoslav Republic of</option>
+    <option value="MG">Madagascar</option>
+    <option value="MW">Malawi</option>
+    <option value="MY">Malaysia</option>
+    <option value="MV">Maldives</option>
+    <option value="ML">Mali</option>
+    <option value="MT">Malta</option>
+    <option value="MH">Marshall Islands</option>
+    <option value="MQ">Martinique</option>
+    <option value="MR">Mauritania</option>
+    <option value="MU">Mauritius</option>
+    <option value="YT">Mayotte</option>
+    <option value="MX">Mexico</option>
+    <option value="FM">Micronesia, Federated States of</option>
+    <option value="MD">Moldova, Republic of</option>
+    <option value="MC">Monaco</option>
+    <option value="MN">Mongolia</option>
+    <option value="ME">Montenegro</option>
+    <option value="MS">Montserrat</option>
+    <option value="MA">Morocco</option>
+    <option value="MZ">Mozambique</option>
+    <option value="MM">Myanmar</option>
+    <option value="NA">Namibia</option>
+    <option value="NR">Nauru</option>
+    <option value="NP">Nepal</option>
+    <option value="NL">Netherlands</option>
+    <option value="NC">New Caledonia</option>
+    <option value="NZ">New Zealand</option>
+    <option value="NI">Nicaragua</option>
+    <option value="NE">Niger</option>
+    <option value="NG">Nigeria</option>
+    <option value="NU">Niue</option>
+    <option value="NF">Norfolk Island</option>
+    <option value="MP">Northern Mariana Islands</option>
+    <option value="NO">Norway</option>
+    <option value="OM">Oman</option>
+    <option value="PK">Pakistan</option>
+    <option value="PW">Palau</option>
+    <option value="PS">Palestinian Territory, Occupied</option>
+    <option value="PA">Panama</option>
+    <option value="PG">Papua New Guinea</option>
+    <option value="PY">Paraguay</option>
+    <option value="PE">Peru</option>
+    <option value="PH">Philippines</option>
+    <option value="PN">Pitcairn</option>
+    <option value="PL">Poland</option>
+    <option value="PT">Portugal</option>
+    <option value="PR">Puerto Rico</option>
+    <option value="QA">Qatar</option>
+    <option value="RE">Réunion</option>
+    <option value="RO">Romania</option>
+    <option value="RU">Russian Federation</option>
+    <option value="RW">Rwanda</option>
+    <option value="BL">Saint Barthélemy</option>
+    <option value="SH">Saint Helena, Ascension and Tristan da Cunha</option>
+    <option value="KN">Saint Kitts and Nevis</option>
+    <option value="LC">Saint Lucia</option>
+    <option value="MF">Saint Martin (French part)</option>
+    <option value="PM">Saint Pierre and Miquelon</option>
+    <option value="VC">Saint Vincent and the Grenadines</option>
+    <option value="WS">Samoa</option>
+    <option value="SM">San Marino</option>
+    <option value="ST">Sao Tome and Principe</option>
+    <option value="SA">Saudi Arabia</option>
+    <option value="SN">Senegal</option>
+    <option value="RS">Serbia</option>
+    <option value="SC">Seychelles</option>
+    <option value="SL">Sierra Leone</option>
+    <option value="SG">Singapore</option>
+    <option value="SX">Sint Maarten (Dutch part)</option>
+    <option value="SK">Slovakia</option>
+    <option value="SI">Slovenia</option>
+    <option value="SB">Solomon Islands</option>
+    <option value="SO">Somalia</option>
+    <option value="ZA">South Africa</option>
+    <option value="GS">South Georgia and the South Sandwich Islands</option>
+    <option value="SS">South Sudan</option>
+    <option value="ES">Spain</option>
+    <option value="LK">Sri Lanka</option>
+    <option value="SD">Sudan</option>
+    <option value="SR">Suriname</option>
+    <option value="SJ">Svalbard and Jan Mayen</option>
+    <option value="SZ">Swaziland</option>
+    <option value="SE">Sweden</option>
+    <option value="CH">Switzerland</option>
+    <option value="SY">Syrian Arab Republic</option>
+    <option value="TW">Taiwan, Province of China</option>
+    <option value="TJ">Tajikistan</option>
+    <option value="TZ">Tanzania, United Republic of</option>
+    <option value="TH">Thailand</option>
+    <option value="TL">Timor-Leste</option>
+    <option value="TG">Togo</option>
+    <option value="TK">Tokelau</option>
+    <option value="TO">Tonga</option>
+    <option value="TT">Trinidad and Tobago</option>
+    <option value="TN">Tunisia</option>
+    <option value="TR">Turkey</option>
+    <option value="TM">Turkmenistan</option>
+    <option value="TC">Turks and Caicos Islands</option>
+    <option value="TV">Tuvalu</option>
+    <option value="UG">Uganda</option>
+    <option value="UA">Ukraine</option>
+    <option value="AE">United Arab Emirates</option>
+    <option value="GB">United Kingdom</option>
+    <option value="UM">United States Minor Outlying Islands</option>
+    <option value="UY">Uruguay</option>
+    <option value="UZ">Uzbekistan</option>
+    <option value="VU">Vanuatu</option>
+    <option value="VE">Venezuela, Bolivarian Republic of</option>
+    <option value="VN">Viet Nam</option>
+    <option value="VG">Virgin Islands, British</option>
+    <option value="VI">Virgin Islands, U.S.</option>
+    <option value="WF">Wallis and Futuna</option>
+    <option value="EH">Western Sahara</option>
+    <option value="YE">Yemen</option>
+    <option value="ZM">Zambia</option>
+    <option value="ZW">Zimbabwe</option>
+</select>
+
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="phone">Phone</label>
+            <div class="controls">
+                <input type="text" name="phone" id="phone" style="width:90%">
+            </div>
+        </div>
+    </div>
+
+    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+        <div class="form-group">
+            <label class="" for="weight">Weight</label>
+            <div class="controls">
+                <input type="text" name="pound" id="pound" class="input-mini" style="width:30px"> lb
+                <input type="text" name="ounce" id="ounce" class="input-mini" style="width:30px"> oz
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="" for="dimensions">Dimensions</label>
+            <div class="controls">
+                <input type="text" name="height" id="height" class="input-mini" style="width:30px"> x
+                <input type="text" name="width" id="width" class="input-mini" style="width:30px"> x
+                <input type="text" name="length" id="length" class="input-mini" style="width:30px"> 
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="package-type">Package Type</label>
+            <div class="controls">
+                <select id="package-type" name="package-type">
+                    <option value="Thick Envelope">Thick Envelope</option>
+                    <option value="Package" selected="selected">Package</option>
+                    <option value="Flat Rate Box">Flat Rate Box</option>
+                    <option value="Small Flat Rate Box">Small Flat Rate Box</option>
+                    <option value="Large Flat Rate Box">Large Flat Rate Box</option>
+                    <option value="Flat Rate Envelope">Flat Rate Envelope</option>
+                    <option value="Flat Rate Padded Envelope">Flat Rate Padded Envelope</option>
+                    <option value="Large Package">Large Package</option>
+                    <option value="Oversized Package">Oversized Package</option>
+                    <option value="Regional Rate Box A">Regional Rate Box A</option>
+                    <option value="Regional Rate Box B">Regional Rate Box B</option>
+                    <option value="Regional Rate Box C">Regional Rate Box C</option>
+                    <option value="Legal Flat Rate Envelope">Legal Flat Rate Envelope</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="declareValue">Declare Value</label>
+            <div class="controls">
+                <input type="text" name="declareValue" id="declareValue" class="input-mini"> 
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="" for="insurance">Buy Insurance</label>
+            <div class="controls">
+                <input type="text" name="insurance" id="insurance" class="input-mini"> 
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="" for="signature">Add Signature</label>
+            <div class="controls">
+                <input type="checkbox" name="signature" id="signature" class="input-mini"> 
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="" for="note">Note</label>
+            <div class="controls">
+                <input type="text" name="note" id="note" class="input"> 
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="controls">
+                <button id="nextBtn"> Next</button>
+                
+                <span id="lbl-residential">Is Residential</span><input type="checkbox" name="residential" id="residential"><br/>
+                <span id="fedex-ground-rate"></span><button id="getFedexGroundRate" >Get Fedex Rate</button><br> 
+                <button id="fedexBtn"> Fedex</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="step2Div">
+</div>
+<div id="step3Div">
+</div>
+
+<div class="modal fade" id="frayun-printModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4 class="modal-title" id="myModalLabel">Print Label</h4>
+                </div>
+                <div class="modal-body" id="frayun-print-body">
+                    <div style="width:45%;float:left">
+                        <div class="control-group">
+                            <input type="hidden" name="order-id" id="frayun-order-id">
+                            <div class="controls" id="product-items">
+
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <input type="hidden" name="shipLevel" id="frayun-shipLevel">
+                            <label class="control-label" for="fullname">Full Name</label>
+                            <div class="controls">
+                                <input type="text" name="fullname" id="frayun-fullname">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="address1">Address 1</label>
+                            <div class="controls">
+                                <input type="text" name="address1" id="frayun-address1">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="address2">Address 2</label>
+                            <div class="controls">
+                                <input type="text" name="address2" id="frayun-address2">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="city">City</label>
+                            <div class="controls">
+                                <input type="text" name="city" id="frayun-city">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="state">State</label>
+                            <div class="controls">
+                                <input type="text" name="state" id="frayun-state">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="zipcode">zipcode</label>
+                            <div class="controls">
+                                <input type="text" name="zipcode" id="frayun-zipcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="postalcode">postalcode</label>
+                            <div class="controls">
+                                <input type="text" name="postalcode" id="frayun-postalcode">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="country">Country</label>
+                            <div class="controls">
+                                <input type="text" name="country" id="frayun-country">
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="phone">Phone</label>
+                            <div class="controls">
+                                <input type="text" name="phone" id="frayun-phone">
+                            </div>
+                        </div>
+                        <input type="hidden" name="frayun-total" id="frayun-total">
+                    </div>
+
+                    <div style="width:45%;float:left;border-left:1px solid black;margin-left:10px">
+                        <div class="control-group">
+                            <label class="control-label" for="frayun-shipping-method">Service Type</label>
+                            <div class="controls">
+                                <select id="frayun-shipping-method">
+                                  <option value=""></option>
+                                  <option value="First Class">First Class Mail</option>
+                                  <option value="Priority Mail">Priority Mail</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="control-group">
+                            <label class="control-label" for="weight">Weight</label>
+                            <div class="controls">
+                                <input type="text" name="pound" id="frayun-pound" class="input-mini" style="width:30px"> lb
+                                <input type="text" name="ounce" id="frayun-ounce" class="input-mini" style="width:30px"> oz
+                            </div>
+                        </div>
+
+                        <div class="control-group">
+                            <label class="control-label" for="dimensions">Dimensions</label>
+                            <div class="controls">
+                                <input type="text" name="height" id="frayun-height" class="input-mini" style="width:30px"> x
+                                <input type="text" name="width" id="frayun-width" class="input-mini" style="width:30px"> x
+                                <input type="text" name="length" id="frayun-length" class="input-mini" style="width:30px">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-default pull-left" id="frayun-verifyBtn">Verify Address</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="frayun-buy">Next</button>
+                    <div id="frayun-requireSignature">
+                    </div>
+                    <div id="frayun-sugguessedAddress">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+var cleanseAddress;
+$(document).ready(function(){
+        $("#buylabel").addClass("active");
+
+                
+        $("#getFedexGroundRate").click(function(){
+    var address = {
+    				FullName: $("#firstname").val()+' '+ $("#lastname").val(),
+    				Address1: $("#address1").val(),
+    				Address2: $("#address2").val(),
+    				City: $("#city").val(),
+    				State: $("#state").val(),
+    				ZIPCode: $("#postalcode").val().substring(0, 5),
+    				PostalCode: $("#postalcode").val(),
+    				Country: $("#country").val(),
+    				PhoneNumber: $("#phone").val()
+    				//order: $("#order-id").val()
+    			};
+
+            if( $("#pound").val()=='' &&  $("#ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if( $("#height").val()=='' ||  $("#width").val()=='' ||  $("#length").val()==''){
+                alert('dimensions are required');
+                return;
+            }
+            $("#fedex-ground-rate").text('loading...');
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('fedex.getrate') }}', // in here you should put your query 
+                data: {
+                    "address": address,
+                    "lb": $("#pound").val(),
+                    "oz": $("#ounce").val(),
+                    "height": $("#height").val(),
+                    "width": $("#width").val(),
+                    "length": $("#length").val(),
+                    "isResidential": $("#residential").prop('checked')
+                },
+                success: function(r) {
+                    console.dir(r);
+                    $("#fedex-ground-rate").text("$"+r[0].amount+ " "+r[0].deliveryDate);
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                }
+            });
+            
+});
+$("#fedexNextBtn").click(function(){
+    $("fedexNextBtn").prop('disabled',true);
+    var address = {
+    				FullName: $("#firstname").val()+' '+ $("#lastname").val(),
+    				Address1: $("#address1").val(),
+    				Address2: $("#address2").val(),
+    				City: $("#city").val(),
+    				State: $("#state").val(),
+    				ZIPCode: $("#postalcode").val().substring(0, 5),
+    				PostalCode: $("#postalcode").val(),
+    				Country: $("#country").val(),
+    				PhoneNumber: $("#phone").val()
+    				//order: $("#order-id").val()
+    			};
+                
+            var packageType = $("input[name='fedex-package']:checked").val();
+            if (typeof getStore !== 'undefined') {
+                if(getStore){
+                    currentStore = $(target_row).find(".store").first().text();
+                }
+            }
+            if( packageType==null || packageType==''){
+                alert('service type is required');
+                return;
+            }
+            if( $("#fedex-pound").val()=='' &&  $("#fedex-ounce").val()==''){
+                alert('weight is required');
+                return;
+            }
+            if(packageType=='FEDEX_GROUND'){
+                if( $("#height").val()=='' ||  $("#width").val()=='' ||  $("#length").val()==''){
+                    alert('dimensions are required');
+                    return;
+                }
+            }
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('fedex.getLabel') }}', // in here you should put your query 
+                data: {
+                    "orderId":'',
+                    "store":currentStore,
+                    "address": address,
+                    "lb": $("#fedex-pound").val(),
+                    "oz": $("#fedex-ounce").val(),
+                    "height": $("#fedex-height").val(),
+                    "width": $("#fedex-width").val(),
+                    "length": $("#fedex-length").val(),
+                    "isResidential": $("#fedex-residential").prop('checked'),
+                    "fedex-package":packageType
+                },
+                success: function(r) {
+                    console.dir(r);
+                    if(r=="error"){
+                        alert('failed to get label');
+                        $('#fedex-PrintModal').modal('hide');
+                        $("fedexNextBtn").prop('disabled',false);
+                        $("#fedex-order-id").val('');
+                    }
+                    else{
+                        $("fedexNextBtn").prop('disabled',false);
+
+                        $('#fedex-PrintModal').modal('hide');
+                        $('#printModal-step3').modal({
+                            backdrop: 'static'
+                        });
+                        $("#print-body3").html('');
+                        $('<iframe />').remove();
+                        $('<iframe />'); // Create an iframe element
+                        $('<iframe />', {
+                            name: 'labelFrame',
+                            id: 'labelFrame',
+                            scrolling: 'no',
+                            frameborder: '0',
+                            style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+                        }).appendTo('#print-body3');
+                        $('#labelFrame').contents().find('body').html('');
+                        var oId = $("#fedex-order-id").val()
+                                        
+                        if(oId.charAt(0)=='#'){
+                            oId = oId.slice(1);
+                        }
+                        $('#labelFrame').contents().find('body').append("<img src='/getOrderLabel?orderId="+oId + "' id='labelImage' style='width: 3.812in;height: 5.718in ;'>");
+
+                        removeRowByOrderId($("#fedex-order-id").val());
+                        $("#fedex-order-id").val('');
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    console.dir(xhr);
+                }
+            });
+        
+});
+
+
+    $("#nextBtn").click(function(){
+        $("#nextBtn").prop("disabled",true);
+            var address = {
+                FirstName: $("#firstname").val(),
+                LastName: $("#lastname").val(),
+                Address1: $("#address1").val(),
+                Address2: $("#address2").val(),
+                City: $("#city").val(),
+                State: $("#state").val(),
+                ZIPCode: $("#postalcode").val().substring(0, 5),
+                PostalCode: $("#postalcode").val(),
+                Country: $("#country").val(),
+                PhoneNumber: $("#phone").val()
+                //order: $("#order-id").val()
+            }
+            cleanseAddress='';
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('getCleanse') }}', // in here you should put your query 
+                data: {
+                    "address": address,
+                    "lb": $("#pound").val(),
+                    "oz": $("#ounce").val(),
+                    "height": $("#height").val(),
+                    "width": $("#width").val(),
+                    "length": $("#length").val(),
+                    "packageType": $("#package-type").val(),
+                    "declareValue": $("#declareValue").val(),
+                    "signature":$("#signature").prop('checked'),
+                    "insurance":$("#insurance").val()
+                },
+                success: function(r) {
+                    $("#nextBtn").prop("disabled",false);
+                    //console.dir(r);
+                    if (r['success'] == true) {
+                        cleanseAddress = r.Address;
+                        $("#authenicator").val(r.Authenticator);
+                        var result = "";
+                        console.dir(r.Address);
+                        result +=  "<tr><td colspan='3'>"
+                        +r.Address.FirstName+" "+r.Address.LastName+ "<br/> "
+                        +r.Address.Address1+" "
+                        +r.Address.Address2+"<br/> "
+                        +r.Address.City+", "
+                        +r.Address.State+" "
+                        +r.Address.PostalCode+" <br/>"
+                        +((r.Address.Country==undefined)?"":r.Address.Country)+" "
+
+                        +"</td></tr>";
+                        var firstRate = true;
+                        $.each(r.Rates, function(idx, rate) {
+                            //alert(JSON.stringify(rate));
+                            result += "<tr><td><input type='radio' id='rate' name='rate' value='" + rate.Code + "' ";
+                            if (firstRate == true) {
+                                result += " checked ";
+                                firstRate = false;
+                            }
+                            var totalAmount = parseFloat(rate.Amount);
+                            result += "></td><td>" + rate.Amount;
+                            $.each(rate.AddOns.AddOnV5, function(ix, ao){
+                                if(ao.AddOnType=='US-A-INS'){
+                                    if($("#insurance").val()>0){
+                                        result +=" | insurance: "+ao.Amount + " | ";
+                                        totalAmount+=parseFloat(ao.Amount) ;
+                                    }
+                                }
+                                if(ao.AddOnType=='US-A-SC'){
+                                    if($("#signature").prop('checked')){
+                                        result +=" | signature: "+ao.Amount + " | ";
+                                        totalAmount+=parseFloat(ao.Amount) ;
+                                    }
+                                }
+                            });
+                            result+= "<strong> total:"+ totalAmount.toFixed(2) + "</strong>" ;
+                            result += "</td><td>";
+                            switch (rate.ServiceType) {
+                                case 'US-FC':
+                                    result += 'USPS First-Class Mail';
+                                    break;
+                                case 'US-MM':
+                                    result += 'USPS Media Mail';
+                                    break;
+                                case 'US-PP':
+                                    result += 'USPS Parcel Post';
+                                    break;
+                                case 'US-PM':
+                                    result += 'USPS Priority Mail';
+                                    break;
+                                case 'US-GA':
+                                    result += 'USPS Ground Advantage';
+                                    break;
+                                case 'US-XM':
+                                    result += 'USPS Priority Mail Express';
+                                    break;
+                                case 'US-EMI':
+                                    result += 'USPS Priority Mail Express International';
+                                    break;
+                                case 'US-PMI':
+                                    result += 'USPS Priority Mail International';
+                                    break;
+                                case 'US-FCI':
+                                    result += 'USPS First Class Mail International';
+                                    break;
+                                case 'US-CM':
+                                    result += 'USPS Critical Mail';
+                                    break;
+                                case 'US-PS':
+                                    result += 'USPS Parcel Select';
+                                    break;
+                                case 'US-LM':
+                                    result += 'USPS Library Mail';
+                                    break;
+                            }
+                            result += '</td></tr>';
+                        });
+                        result += '<tr><td colspan="3"><button id="buyLabel">Buy Label</button></td></tr>';
+                        $("#step2Div").html("<table class='table table-bordered table-condensed' >" + result + "</table>");
+                        if(cleanseAddress.Country != undefined && cleanseAddress.Country != "US"){
+                            var custom = '<table>';
+                                custom += '<tr><td>Description</td><td>Qty</td><td>Value</td><td>Lb</td><td>Oz</td></tr>';
+                            for(var i=0;i<10;i++){
+                                custom += '<tr><td><input type="text" id="cusDesc'+i+'"></td><td><input type="text" id="qty'+i+'"></td><td><input type="text" id="val'+i+'"></td><td><input type="text" id="lb'+i+'"></td><td><input type="text" id="oz'+i+'"></td></tr>';
+                            }
+                            custom += '</table>';
+                            $("#step2Div").append(custom)
+                        }
+                        $("#step1Div").hide();
+                    } else {
+                        alert('oops\n' + r.message);
+                        alert(r.message.response.Authenticator);
+                        console.dir(r);
+                        //console.dir(r);
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    $("#nextBtn").prop("disabled",false);
+                    alert('request failed');
+                }
+            });
+        });
+  
+      var labelRate='';
+
+        $(document).on('click','input:radio[id=rate]',function() {
+            labelRate= $(this).val();
+        });
+
+        $(document).on('click', '#printBtn', function() {
+            frames["labelFrame"].focus();
+            frames["labelFrame"].print();
+        });
+
+        $(document).on('click','#buyLabel',function() {
+            var authenicator = $("#authenicator").val();
+
+            var rate = $("#rate").val();
+            if(labelRate!=''){
+                rate = labelRate;
+            }
+            
+             address =  cleanseAddress ;
+             var customInfo = Array();
+             if(cleanseAddress.Country != undefined && cleanseAddress.Country != "US"){
+                for(var i=0;i<10;i++){
+                    var ci = {
+                        cusDesc: $("#cusDesc"+i).val(),
+                        qty: $("#qty"+i).val(),
+                        val: $("#val"+i).val(),
+                        lb: $("#lb"+i).val(),
+                        oz: $("#oz"+i).val()
+                    }
+                    customInfo.push(ci);
+                }
+             }
+            $.ajax({
+                type: 'post',
+                dataType: 'json',
+                url: '{{ route('buyLabel') }}', // in here you should put your query 
+                data: {
+                    "authenicator": authenicator,
+                    "rate": rate,
+                    "address": address,
+                    "signature": $("#signature").prop('checked'),
+                    "memo": $("#note").val(),
+                    "customInfo":customInfo
+                },
+                success: function(r) {
+                    if (r['success'] == 'true') {
+                        //                            alert(r['response'].URL);
+                        var tracking = r['response'].TrackingNumber;
+                        if(tracking.length<10){
+                            alert('uh oh, bad tracking #');
+                        }
+                        var url = r['response'].URL;
+                        
+                        $('#printModal-step2').modal('hide');
+                        $('#printModal-step3').modal({
+                            backdrop: 'static'
+                        });
+                        $("#step3Div").html('');
+                        $('<iframe />').remove();
+                        $('<iframe />'); 
+                        $('<iframe />', {
+                            name: 'labelFrame',
+                            id: 'labelFrame',
+                            scrolling: 'no',
+                            frameborder: '0',
+                            style: "width: 3.812in; height: 5.718in; border: 1px dashed black;"
+                        }).appendTo('#step3Div');
+
+                    $("#step3Div").append('<button type="button" class="btn btn-primary" id="printBtn">Print</button>');
+                        $('#labelFrame').contents().find('body').html('');
+
+             if(cleanseAddress.Country != undefined && cleanseAddress.Country != "US"){
+                        $('#labelFrame').contents().find('body').append("<a href='" + r['response'].URL + "' target=_blank>Get Label here</a>");
+             }
+             else{
+                        $('#labelFrame').contents().find('body').append("<img src='" + r['response'].URL + "' id='labelImage' style='width: 3.812in;height: 5.718in;'>");
+             }
+                        $("#step2Div").hide();
+                        
+                    } else {
+                        alert(r['message']);
+                    }
+                },
+                error: function(xhr, textStatus, errorThrown) {
+                    //$("#nextBtn2").prop("disabled",false);
+                    alert('request failed');
+                }
+            });
+
+        });
+
+
+		$("#frayun-buy").click(function() {
+            
+            $("#frayun-buy").prop("disabled",true);
+            var names = $("#frayun-fullname").val().split(/[ ,]+/).filter(Boolean);
+                  var address = {
+                      Name: $("#frayun-fullname").val(),
+                      Address1: $("#frayun-address1").val(),
+                      Address2: $("#frayun-address2").val(),
+                      City: $("#frayun-city").val(),
+                      State: $("#frayun-state").val(),
+                      ZIPCode: ($("#frayun-country").val()!='US'?$("#frayun-postalcode").val():$("#frayun-zipcode").val().substring(0, 5)),
+                      PostalCode: $("#frayun-postalcode").val(),
+                      Country: $("#frayun-country").val(),
+                      PhoneNumber: $("#frayun-phone").val()
+                      //order: $("#order-id").val()
+                  };
+                  if(names.length>1){
+                      var fname =names[0];
+                      for(var i=1;i<names.length-2;i++){
+                          fname = " "+names[i];
+                      }
+                      address = {
+                          Name: $("#frayun-fullname").val(),
+                          FirstName: fname,
+                          LastName: names[names.length-1],
+                          Address1: $("#frayun-address1").val(),
+                          Address2: $("#frayun-address2").val(),
+                          City: $("#frayun-city").val(),
+                          State: $("#frayun-state").val(),
+                          ZIPCode: ($("#frayun-country").val()!='US'?$("#frayun-postalcode").val():$("#frayun-zipcode").val().substring(0, 5)),
+                          PostalCode: $("#frayun-postalcode").val(),
+                          Country: $("#frayun-country").val(),
+                          PhoneNumber: $("#frayun-phone").val()
+                          //order: $("#order-id").val()
+                      };
+                  }
+                  let requestResultCodes ={
+  "00000": "success",
+  "00001": "client number must empty or less than 50 characters",
+  "00002": "Receiver name must be empty or less than 50 characters",
+  "00003": "Receiver company must be empty or less than 200 characters",
+  "00004": "Receiver phone must be empty or less than 50 characters",
+  "00005": "Receiver email must be empty or less than 50 characters",
+  "00006": "Receiver address must be empty or less than 200 characters",
+  "00007": "Receiver city must be empty or less than 50 characters",
+  "00008": "Receiver state must be empty or less than 50 characters",
+  "00009": "Receiver country invalid",
+  "00010": "Receiver zipcode must be empty or less than 50 characters",
+  "00011": "this client number already exist",
+  "00012": "Sku must be less than 50 characters",
+  "00013": "product chinese description must be empty or less than 50 characters",
+  "00014": "product english description must be empty or less than 50 characters",
+  "00015": "qty cannot be 0",
+  "00016": "declare value",
+  "00017": "weight cannot be empty",
+  "00018": "package json invalid",
+  "00019": "package information cannot be empty",
+  "00020": "failed to create package",
+  "00021": "invalid send type",
+  "00022": "does it contain battery?",
+  "00023": "Not enough fund to buy label",
+  "00024": "Actual weight cannot be empty",
+  "00025": "invalid order json",
+  "99999": "failed to authenticate"
+                  }
+                  $("#frayun-sugguessedAddress").html('buying label');
+                  // console.dir(address);
+                  $.ajax({
+                      type: 'post',
+                      dataType: 'json',
+                      url: '{{ route('frayunBuyLabel') }}', // in here you should put your query
+                      data: {
+                          "orderId": $("#frayun-order-id").val(),
+                          "address": address,
+                          "lb": $("#frayun-pound").val(),
+                          "oz": $("#frayun-ounce").val(),
+                          "height": $("#frayun-height").val(),
+                          "width": $("#frayun-width").val(),
+                          "length": $("#frayun-length").val(),
+                          "shippingMethod": $("#frayun-shipping-method").val(),
+                          "ref": currentMemo,
+                          "products":products
+                          //"total": $("#frayun-total").val()
+                      },
+                      success: function(r) {
+                          $("#frayun-buy").prop("disabled",false);
+                          console.dir(r);
+                          let result = JSON.parse(r)
+                          console.dir(result);
+                          if(!Array.isArray(result) || result.length==0){
+                              alert('fail to get label');
+                              return;
+                          }
+                          let labelResult = result[0];
+  
+                          if(labelResult.ResultCode){
+                              if(labelResult.ResultCode!="00000"){
+                                  alert(requestResultCodes[labelResult.ResultCode]);
+                              }
+                              else{
+                                  //labelResult.DpdNo
+                                  console.log('tracking ' + labelResult.TrunNo);
+                                  $("#frayun-buy").prop("disabled",true);
+                                  $("#frayun-sugguessedAddress").html('downloading label');
+                                  $.ajax({
+                                      type: 'post',
+                                      dataType: 'json',
+                                      url: '{{ route('frayunDownloadLabel') }}', // in here you should put your query
+                                      data: {
+                                          "dpdNo": labelResult.DpdNo
+                                      },
+                                      success: function(r) {
+                                          console.dir(r);
+                                          let result = JSON.parse(r)
+                                          console.dir(result);
+                                          if(!Array.isArray(result) || result.length==0){
+                                              alert('fail to get label');
+                                              return;
+                                          }
+                                          let downloadResult = result[0];
+  
+                                          if(downloadResult.ResultCode){
+                                              if(downloadResult.ResultCode!="00000"){
+                                                  alert(requestResultCodes[downloadResult.ResultCode]);
+                                              }
+                                              else {
+                                                  // downloadResult.TurnNo
+                                                  // downloadResult.PdfUrl
+                                                      ///////upload tracking ////////
+                                                      var orderId = $("#frayun-order-id").val();
+                                                      total = parseFloat(labelResult.Total);
+                                                      var zone = labelResult.Zone;
+                                                      var rate = labelResult.Rate;
+                                                      var discountedRate = labelResult.DiscountedRate;
+                                                      if(currentStore!='S' && currentStore!='A' && currentStore!='E' &&  currentStore!='R' &&  currentStore!='T' &&  currentStore!='T2' &&  currentStore!='W' ){
+                                                          total = (1.15 * total).toFixed(2);
+                                                      }
+  
+                                                      ///////end upload tracking ////////
+  
+                                                  $('#printModal-step3').modal({
+                                                      backdrop: 'static'
+                                                  });
+                                                  $("#print-body3").html('');
+                                                  $('<iframe />').remove();
+                                                  $('<iframe />'); // Create an iframe element
+                                                  $('<iframe />', {
+                                                      name: 'labelFrame',
+                                                      id: 'labelFrame',
+                                                      scrolling: 'no',
+                                                      frameborder: '0',
+                                                      style: "width: 3.812in; height: 5.718in; border: 1px dashed black;",
+                                                      src:downloadResult.PdfUrl
+                                                  }).appendTo('#print-body3');
+                                                  $('#labelFrame').contents().find('body').html('');
+                                                  $("#frayun-order-id").val('');
+                                                  $("#frayun-shipping-method").val('');
+                                              }
+                                          }
+                                          else{
+                                              alert('fail to get label');
+                                          }
+                                      },
+                                      error: function(xhr, textStatus, errorThrown) {
+                                          $("#frayun-buy").prop("disabled",false);
+                                          // console.dir(xhr);
+                                          // console.dir(textStatus);
+                                          // console.dir(errorThrown);
+                                          alert('request failed');
+                                      }
+                                  });
+                              }
+                          }
+                          else{
+                              alert('fail to get label');
+                          }
+                      },
+                      error: function(xhr, textStatus, errorThrown) {
+                          $("#frayun-buy").prop("disabled",false);
+                          // console.dir(xhr);
+                          // console.dir(textStatus);
+                          // console.dir(errorThrown);
+                          alert('request failed');
+                      }
+                  });
+  
+          });
+});
+</script>
+{% endblock %}

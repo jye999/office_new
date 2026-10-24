@@ -16,6 +16,7 @@ import { Ebay, xmlText } from '../../lib/ebay.js';
 import { registerFaireRoutes } from './faire.js';
 import { registerListRoutes } from './lists.js';
 import { registerOrderActionRoutes } from './orders.js';
+import { registerLabelRoutes } from './labels.js';
 import {
   prepareStore1,
   prepareStore10,
@@ -101,6 +102,7 @@ export function registerUnshippedRoutes(app: FastifyInstance): void {
   registerFaireRoutes(app);
   registerListRoutes(app);
   registerOrderActionRoutes(app);
+  registerLabelRoutes(app);
   // U2 store pages 6-13: same render shape (prepare + unshipped<N> view).
   const storePages: Array<[string, string, (user: User) => Promise<Record<string, unknown>>]> = [
     ['/unshippedFaire', 'unshippedFaire', () => prepareFaire()],

@@ -1,0 +1,69 @@
+[
+ {
+  "job": "amz",
+  "args": {
+   "orders": [
+    "111-1",
+    "111-2"
+   ],
+   "lb": "2",
+   "oz": "3.5",
+   "length": "10",
+   "width": "8",
+   "height": "6"
+  },
+  "serialized": "O:26:\"App\\Jobs\\AmzMassPrintLabel\":15:{s:14:\"\u0000*\u0000fromAddress\";a:9:{s:7:\"Company\";s:19:\"Angel Isabella, LLC\";s:8:\"Address1\";s:24:\"1550 Oak Industrial Lane\";s:8:\"Address2\";s:5:\"Ste F\";s:4:\"City\";s:7:\"Cumming\";s:5:\"State\";s:2:\"GA\";s:7:\"ZIPCode\";s:5:\"30041\";s:10:\"PostalCode\";s:5:\"30041\";s:7:\"Country\";s:2:\"US\";s:11:\"PhoneNumber\";s:12:\"678-999-6232\";}s:5:\"tries\";i:1;s:13:\"\u0000*\u0000firstClass\";b:0;s:9:\"\u0000*\u0000orders\";a:2:{i:0;s:5:\"111-1\";i:1;s:5:\"111-2\";}s:5:\"\u0000*\u0000lb\";s:1:\"2\";s:5:\"\u0000*\u0000oz\";d:35.5;s:9:\"\u0000*\u0000length\";s:2:\"10\";s:8:\"\u0000*\u0000width\";s:1:\"8\";s:9:\"\u0000*\u0000height\";s:1:\"6\";s:15:\"\u0000*\u0000currentJobId\";N;s:11:\"\u0000*\u0000queuejob\";N;s:6:\"\u0000*\u0000job\";N;s:10:\"connection\";N;s:5:\"queue\";N;s:5:\"delay\";N;}"
+ },
+ {
+  "job": "amz",
+  "args": {
+   "orders": [
+    "x"
+   ],
+   "lb": "",
+   "oz": "abc",
+   "length": "1",
+   "width": "2",
+   "height": "3"
+  },
+  "serialized": "O:26:\"App\\Jobs\\AmzMassPrintLabel\":15:{s:14:\"\u0000*\u0000fromAddress\";a:9:{s:7:\"Company\";s:19:\"Angel Isabella, LLC\";s:8:\"Address1\";s:24:\"1550 Oak Industrial Lane\";s:8:\"Address2\";s:5:\"Ste F\";s:4:\"City\";s:7:\"Cumming\";s:5:\"State\";s:2:\"GA\";s:7:\"ZIPCode\";s:5:\"30041\";s:10:\"PostalCode\";s:5:\"30041\";s:7:\"Country\";s:2:\"US\";s:11:\"PhoneNumber\";s:12:\"678-999-6232\";}s:5:\"tries\";i:1;s:13:\"\u0000*\u0000firstClass\";b:0;s:9:\"\u0000*\u0000orders\";a:1:{i:0;s:1:\"x\";}s:5:\"\u0000*\u0000lb\";s:0:\"\";s:5:\"\u0000*\u0000oz\";i:0;s:9:\"\u0000*\u0000length\";s:1:\"1\";s:8:\"\u0000*\u0000width\";s:1:\"2\";s:9:\"\u0000*\u0000height\";s:1:\"3\";s:15:\"\u0000*\u0000currentJobId\";N;s:11:\"\u0000*\u0000queuejob\";N;s:6:\"\u0000*\u0000job\";N;s:10:\"connection\";N;s:5:\"queue\";N;s:5:\"delay\";N;}"
+ },
+ {
+  "job": "frayun",
+  "args": {
+   "orders": [
+    "a",
+    "b"
+   ],
+   "lb": "1",
+   "oz": "2",
+   "length": "3",
+   "width": "4",
+   "height": "5"
+  },
+  "serialized": "O:29:\"App\\Jobs\\FrayunMassPrintLabel\":19:{s:7:\"timeout\";i:600;s:14:\"\u0000*\u0000fromAddress\";a:9:{s:7:\"Company\";s:19:\"Angel Isabella, LLC\";s:8:\"Address1\";s:24:\"1550 Oak Industrial Lane\";s:8:\"Address2\";s:5:\"Ste F\";s:4:\"City\";s:7:\"Cumming\";s:5:\"State\";s:2:\"GA\";s:7:\"ZIPCode\";s:5:\"30041\";s:10:\"PostalCode\";s:5:\"30041\";s:7:\"Country\";s:2:\"US\";s:11:\"PhoneNumber\";s:12:\"678-999-6232\";}s:5:\"tries\";i:1;s:13:\"\u0000*\u0000firstClass\";b:0;s:9:\"\u0000*\u0000orders\";a:2:{i:0;s:1:\"a\";i:1;s:1:\"b\";}s:5:\"\u0000*\u0000lb\";s:1:\"1\";s:5:\"\u0000*\u0000oz\";s:1:\"2\";s:9:\"\u0000*\u0000length\";s:1:\"3\";s:8:\"\u0000*\u0000width\";s:1:\"4\";s:9:\"\u0000*\u0000height\";s:1:\"5\";s:14:\"\u0000*\u0000packageType\";s:11:\"FIRST CLASS\";s:15:\"\u0000*\u0000declareValue\";N;s:12:\"\u0000*\u0000insurance\";N;s:15:\"\u0000*\u0000currentJobId\";N;s:11:\"\u0000*\u0000queuejob\";N;s:6:\"\u0000*\u0000job\";N;s:10:\"connection\";N;s:5:\"queue\";N;s:5:\"delay\";N;}"
+ },
+ {
+  "job": "frayun",
+  "args": {},
+  "serialized": "O:29:\"App\\Jobs\\FrayunMassPrintLabel\":19:{s:7:\"timeout\";i:600;s:14:\"\u0000*\u0000fromAddress\";a:9:{s:7:\"Company\";s:19:\"Angel Isabella, LLC\";s:8:\"Address1\";s:24:\"1550 Oak Industrial Lane\";s:8:\"Address2\";s:5:\"Ste F\";s:4:\"City\";s:7:\"Cumming\";s:5:\"State\";s:2:\"GA\";s:7:\"ZIPCode\";s:5:\"30041\";s:10:\"PostalCode\";s:5:\"30041\";s:7:\"Country\";s:2:\"US\";s:11:\"PhoneNumber\";s:12:\"678-999-6232\";}s:5:\"tries\";i:1;s:13:\"\u0000*\u0000firstClass\";b:0;s:9:\"\u0000*\u0000orders\";N;s:5:\"\u0000*\u0000lb\";N;s:5:\"\u0000*\u0000oz\";N;s:9:\"\u0000*\u0000length\";N;s:8:\"\u0000*\u0000width\";N;s:9:\"\u0000*\u0000height\";N;s:14:\"\u0000*\u0000packageType\";s:11:\"FIRST CLASS\";s:15:\"\u0000*\u0000declareValue\";N;s:12:\"\u0000*\u0000insurance\";N;s:15:\"\u0000*\u0000currentJobId\";N;s:11:\"\u0000*\u0000queuejob\";N;s:6:\"\u0000*\u0000job\";N;s:10:\"connection\";N;s:5:\"queue\";N;s:5:\"delay\";N;}"
+ },
+ {
+  "job": "stamps",
+  "args": {
+   "orders": [
+    "a",
+    "b"
+   ],
+   "lb": "1",
+   "oz": "2",
+   "length": "3",
+   "width": "4",
+   "height": "5",
+   "packageType": "Package",
+   "declareValue": "10",
+   "insurance": "5"
+  },
+  "serialized": "O:23:\"App\\Jobs\\MassPrintLabel\":18:{s:14:\"\u0000*\u0000fromAddress\";a:9:{s:7:\"Company\";s:19:\"Angel Isabella, LLC\";s:8:\"Address1\";s:24:\"1550 Oak Industrial Lane\";s:8:\"Address2\";s:5:\"Ste F\";s:4:\"City\";s:7:\"Cumming\";s:5:\"State\";s:2:\"GA\";s:7:\"ZIPCode\";s:5:\"30041\";s:10:\"PostalCode\";s:5:\"30041\";s:7:\"Country\";s:2:\"US\";s:11:\"PhoneNumber\";s:12:\"678-999-6232\";}s:5:\"tries\";i:1;s:13:\"\u0000*\u0000firstClass\";b:0;s:9:\"\u0000*\u0000orders\";a:2:{i:0;s:1:\"a\";i:1;s:1:\"b\";}s:5:\"\u0000*\u0000lb\";s:1:\"1\";s:5:\"\u0000*\u0000oz\";s:1:\"2\";s:9:\"\u0000*\u0000length\";s:1:\"3\";s:8:\"\u0000*\u0000width\";s:1:\"4\";s:9:\"\u0000*\u0000height\";s:1:\"5\";s:14:\"\u0000*\u0000packageType\";s:7:\"Package\";s:15:\"\u0000*\u0000declareValue\";s:2:\"10\";s:12:\"\u0000*\u0000insurance\";s:1:\"5\";s:15:\"\u0000*\u0000currentJobId\";N;s:11:\"\u0000*\u0000queuejob\";N;s:6:\"\u0000*\u0000job\";N;s:10:\"connection\";N;s:5:\"queue\";N;s:5:\"delay\";N;}"
+ }
+]

@@ -112,13 +112,13 @@ describe('T40 stamps routes (fastify inject)', () => {
     const data = payload.data as Record<string, unknown>;
     expect(data.commandName).toBe('App\\Jobs\\MassPrintLabel');
     const command = data.command as string;
-    expect(command.startsWith('O:23:"App\\Jobs\\MassPrintLabel";{s:3:"job";N;s:6:"failed";b:0;')).toBe(true);
-    // protected property mangling + constructor args
-    expect(command).toContain('\0App\Jobs\MassPrintLabel\0orders');
-    expect(command).toContain('a:2{i:0;s:2:"O1";i:1;s:2:"O2";}');
-    expect(command).toContain('\0App\Jobs\MassPrintLabel\0lb');
-    expect(command).toContain('s:1:"2";');
-    expect(command).toContain('a:9{s:7:"Company";;s:19:"Angel Isabella, LLC";');
+    expect(command.startsWith('O:23:"App\\Jobs\\MassPrintLabel":18:{s:14:"\0*\0fromAddress";a:9:{')).toBe(true);
+    // protected property mangling + constructor args (golden format: see queue-jobs.test.ts)
+    expect(command).toContain('s:9:"\0*\0orders";a:2:{i:0;s:2:"O1";i:1;s:2:"O2";}');
+    expect(command).toContain('s:5:"\0*\0lb";s:1:"2";');
+    expect(command).toContain('s:7:"Company";s:19:"Angel Isabella, LLC";');
+    expect(payload.id).toMatch(/^[A-Za-z0-9]{32}$/);
+    expect(payload.attempts).toBe(0);
     await app.close();
   });
 
