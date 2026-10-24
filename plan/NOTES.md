@@ -126,3 +126,11 @@
 - UpsClient getRate: the `Pickup` object built in the PHP is never attached to the shipment, and `Carbon::now()` is computed for nothing — the DeliveryTimeInformation carries only PackageBillType 03. Default entity values the library always emits are reproduced: Service 03, empty ShipmentServiceOptions/PackageServiceOptions, `<AttentionName/>` on ShipTo.
 - UpsClient getLabel: unknown service codes (anything but ''/GROUND/the 14 names in the library's Service::$serviceNames) throw `Undefined index` BEFORE the PHP try block (uncaught). PHP DOM `createElement('X', $value)` does not escape `&` (it warns -> ErrorException); the port escapes normally.
 - Skipped (no caller): FedexClient::trackShipment, createShipment (also broken: undefined variables, FedEx\ShipService package not installed), UpsClient::trackShipment.
+
+## L03 — Frayun + Usps
+- Usps::getRate builds `$xml = 'XML=<RateV4Request…>'` and then sends `"API=RateV4&XML=".urlencode($xml)`, so the query carries `XML=XML%3D%3CRateV4Request…` (double prefix). Ported verbatim (src/lib/usps.ts).
+- Usps::getRate's `$serviceType` is only compared to 'FIRST CLASS'; anything else (incl. 'Priority Mail') sends PRIORITY MAIL. `$s='PRIORITY%20MAIL'` is commented out in the PHP.
+- Frayun::buyLabel builds JsonData by string concatenation with no escaping (a `"` in an address name breaks the JSON). Kept. `ClientNumber` uses the raw `$orderId` while product name/Sku use `trim($orderId)`. `$fromAddress` is ignored apart from debug logging. The `Ref` in the commented-out first draft read an undefined `$memo`; the live code uses `$ref`.
+- Frayun::getStateAbbr on an unknown state returns null in PHP (undefined index notice -> ErrorException under Laravel); TS returns `undefined`. Stamps' getStateAbbr (L01) differs (passes through upper-cased); both mirror their own PHP.
+- Frayun::buyLabel under DRY_RUN=1 throws FrayunFault (like L01 Stamps writes surface a fault); real SOAP faults also throw (PHP SoapFault is uncaught in every caller).
+- Usps::getRate has no live caller: Runner.php's usps block is inside a `/* */` comment, FrayunController's use is commented out, UspsController has no route (out of scope per PLAN).

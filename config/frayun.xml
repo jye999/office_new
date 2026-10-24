@@ -1,0 +1,1709 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:element name="Create">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ClientNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveComName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveTel" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveEmail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveAddress" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCity" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveProvince" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCountry" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SendType" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="IsCharged" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonProductInfo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreateResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreatePre">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ClientNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveComName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveTel" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveEmail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveAddress" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCity" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveProvince" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCountry" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SendType" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="IsCharged" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonProductInfo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreatePreResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreatePreResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateToJson">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateToJsonResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreateToJsonResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreatePreToJson">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreatePreToJsonResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreatePreToJsonResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateUPS">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CreateUPSResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CreateUPSResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Update">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ClientNumber" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveComName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveTel" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveEmail" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveAddress" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCity" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveProvince" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCountry" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="ReceiveCode" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="SendType" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="IsCharged" type="s:int" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonProductInfo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UpdateResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Delete">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DeleteResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="DeleteResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CutOff">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="CutOffResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="CutOffResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PackingSlipAndInvoice">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Autograph" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="VatCompanyName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="VatDutyParagraph" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonPackingSlip" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonInvoice" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="PackingSlipAndInvoiceResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="PackingSlipAndInvoiceResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPackingSlipAndInvoiceForExcel">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPackingSlipAndInvoiceForExcelResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPackingSlipAndInvoiceForExcelResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPdf">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPdfResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPdfResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUPSPdf">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetUPSPdfResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetUPSPdfResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPdfPre">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetPdfPreResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetPdfPreResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBalance">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetBalanceResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetBalanceResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetScanForm">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetScanFormResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetScanFormResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrderQuery">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="JsonData" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetOrderQueryResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetOrderQueryResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="Login">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="LoginResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="LoginResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DHLinkOutOrder">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="UserName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="PassWord" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="DpdNo" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DHLinkOutOrderResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="DHLinkOutOrderResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="string" nillable="true" type="s:string" />
+      <s:element name="boolean" type="s:boolean" />
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="CreateSoapIn">
+    <wsdl:part name="parameters" element="tns:Create" />
+  </wsdl:message>
+  <wsdl:message name="CreateSoapOut">
+    <wsdl:part name="parameters" element="tns:CreateResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreSoapIn">
+    <wsdl:part name="parameters" element="tns:CreatePre" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreSoapOut">
+    <wsdl:part name="parameters" element="tns:CreatePreResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateToJsonSoapIn">
+    <wsdl:part name="parameters" element="tns:CreateToJson" />
+  </wsdl:message>
+  <wsdl:message name="CreateToJsonSoapOut">
+    <wsdl:part name="parameters" element="tns:CreateToJsonResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreToJsonSoapIn">
+    <wsdl:part name="parameters" element="tns:CreatePreToJson" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreToJsonSoapOut">
+    <wsdl:part name="parameters" element="tns:CreatePreToJsonResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateUPSSoapIn">
+    <wsdl:part name="parameters" element="tns:CreateUPS" />
+  </wsdl:message>
+  <wsdl:message name="CreateUPSSoapOut">
+    <wsdl:part name="parameters" element="tns:CreateUPSResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdateSoapIn">
+    <wsdl:part name="parameters" element="tns:Update" />
+  </wsdl:message>
+  <wsdl:message name="UpdateSoapOut">
+    <wsdl:part name="parameters" element="tns:UpdateResponse" />
+  </wsdl:message>
+  <wsdl:message name="DeleteSoapIn">
+    <wsdl:part name="parameters" element="tns:Delete" />
+  </wsdl:message>
+  <wsdl:message name="DeleteSoapOut">
+    <wsdl:part name="parameters" element="tns:DeleteResponse" />
+  </wsdl:message>
+  <wsdl:message name="CutOffSoapIn">
+    <wsdl:part name="parameters" element="tns:CutOff" />
+  </wsdl:message>
+  <wsdl:message name="CutOffSoapOut">
+    <wsdl:part name="parameters" element="tns:CutOffResponse" />
+  </wsdl:message>
+  <wsdl:message name="PackingSlipAndInvoiceSoapIn">
+    <wsdl:part name="parameters" element="tns:PackingSlipAndInvoice" />
+  </wsdl:message>
+  <wsdl:message name="PackingSlipAndInvoiceSoapOut">
+    <wsdl:part name="parameters" element="tns:PackingSlipAndInvoiceResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPackingSlipAndInvoiceForExcelSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPackingSlipAndInvoiceForExcel" />
+  </wsdl:message>
+  <wsdl:message name="GetPackingSlipAndInvoiceForExcelSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPackingSlipAndInvoiceForExcelResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPdf" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPdfResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetUPSPdfSoapIn">
+    <wsdl:part name="parameters" element="tns:GetUPSPdf" />
+  </wsdl:message>
+  <wsdl:message name="GetUPSPdfSoapOut">
+    <wsdl:part name="parameters" element="tns:GetUPSPdfResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfPreSoapIn">
+    <wsdl:part name="parameters" element="tns:GetPdfPre" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfPreSoapOut">
+    <wsdl:part name="parameters" element="tns:GetPdfPreResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetBalanceSoapIn">
+    <wsdl:part name="parameters" element="tns:GetBalance" />
+  </wsdl:message>
+  <wsdl:message name="GetBalanceSoapOut">
+    <wsdl:part name="parameters" element="tns:GetBalanceResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetScanFormSoapIn">
+    <wsdl:part name="parameters" element="tns:GetScanForm" />
+  </wsdl:message>
+  <wsdl:message name="GetScanFormSoapOut">
+    <wsdl:part name="parameters" element="tns:GetScanFormResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetOrderQuerySoapIn">
+    <wsdl:part name="parameters" element="tns:GetOrderQuery" />
+  </wsdl:message>
+  <wsdl:message name="GetOrderQuerySoapOut">
+    <wsdl:part name="parameters" element="tns:GetOrderQueryResponse" />
+  </wsdl:message>
+  <wsdl:message name="LoginSoapIn">
+    <wsdl:part name="parameters" element="tns:Login" />
+  </wsdl:message>
+  <wsdl:message name="LoginSoapOut">
+    <wsdl:part name="parameters" element="tns:LoginResponse" />
+  </wsdl:message>
+  <wsdl:message name="DHLinkOutOrderSoapIn">
+    <wsdl:part name="parameters" element="tns:DHLinkOutOrder" />
+  </wsdl:message>
+  <wsdl:message name="DHLinkOutOrderSoapOut">
+    <wsdl:part name="parameters" element="tns:DHLinkOutOrderResponse" />
+  </wsdl:message>
+  <wsdl:message name="CreateHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="ClientNumber" type="s:string" />
+    <wsdl:part name="ReceiveName" type="s:string" />
+    <wsdl:part name="ReceiveComName" type="s:string" />
+    <wsdl:part name="ReceiveTel" type="s:string" />
+    <wsdl:part name="ReceiveEmail" type="s:string" />
+    <wsdl:part name="ReceiveAddress" type="s:string" />
+    <wsdl:part name="ReceiveCity" type="s:string" />
+    <wsdl:part name="ReceiveProvince" type="s:string" />
+    <wsdl:part name="ReceiveCountry" type="s:string" />
+    <wsdl:part name="ReceiveCode" type="s:string" />
+    <wsdl:part name="SendType" type="s:string" />
+    <wsdl:part name="IsCharged" type="s:string" />
+    <wsdl:part name="JsonProductInfo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="ClientNumber" type="s:string" />
+    <wsdl:part name="ReceiveName" type="s:string" />
+    <wsdl:part name="ReceiveComName" type="s:string" />
+    <wsdl:part name="ReceiveTel" type="s:string" />
+    <wsdl:part name="ReceiveEmail" type="s:string" />
+    <wsdl:part name="ReceiveAddress" type="s:string" />
+    <wsdl:part name="ReceiveCity" type="s:string" />
+    <wsdl:part name="ReceiveProvince" type="s:string" />
+    <wsdl:part name="ReceiveCountry" type="s:string" />
+    <wsdl:part name="ReceiveCode" type="s:string" />
+    <wsdl:part name="SendType" type="s:string" />
+    <wsdl:part name="IsCharged" type="s:string" />
+    <wsdl:part name="JsonProductInfo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateToJsonHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateToJsonHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreToJsonHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreToJsonHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateUPSHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateUPSHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="UpdateHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+    <wsdl:part name="ClientNumber" type="s:string" />
+    <wsdl:part name="ReceiveName" type="s:string" />
+    <wsdl:part name="ReceiveComName" type="s:string" />
+    <wsdl:part name="ReceiveTel" type="s:string" />
+    <wsdl:part name="ReceiveEmail" type="s:string" />
+    <wsdl:part name="ReceiveAddress" type="s:string" />
+    <wsdl:part name="ReceiveCity" type="s:string" />
+    <wsdl:part name="ReceiveProvince" type="s:string" />
+    <wsdl:part name="ReceiveCountry" type="s:string" />
+    <wsdl:part name="ReceiveCode" type="s:string" />
+    <wsdl:part name="SendType" type="s:string" />
+    <wsdl:part name="IsCharged" type="s:string" />
+    <wsdl:part name="JsonProductInfo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="UpdateHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="DeleteHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="DeleteHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CutOffHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CutOffHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="PackingSlipAndInvoiceHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+    <wsdl:part name="Autograph" type="s:string" />
+    <wsdl:part name="VatCompanyName" type="s:string" />
+    <wsdl:part name="VatDutyParagraph" type="s:string" />
+    <wsdl:part name="JsonPackingSlip" type="s:string" />
+    <wsdl:part name="JsonInvoice" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="PackingSlipAndInvoiceHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPackingSlipAndInvoiceForExcelHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPackingSlipAndInvoiceForExcelHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUPSPdfHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUPSPdfHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfPreHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfPreHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBalanceHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBalanceHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetScanFormHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetScanFormHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrderQueryHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrderQueryHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="LoginHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="LoginHttpGetOut">
+    <wsdl:part name="Body" element="tns:boolean" />
+  </wsdl:message>
+  <wsdl:message name="DHLinkOutOrderHttpGetIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="DHLinkOutOrderHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="ClientNumber" type="s:string" />
+    <wsdl:part name="ReceiveName" type="s:string" />
+    <wsdl:part name="ReceiveComName" type="s:string" />
+    <wsdl:part name="ReceiveTel" type="s:string" />
+    <wsdl:part name="ReceiveEmail" type="s:string" />
+    <wsdl:part name="ReceiveAddress" type="s:string" />
+    <wsdl:part name="ReceiveCity" type="s:string" />
+    <wsdl:part name="ReceiveProvince" type="s:string" />
+    <wsdl:part name="ReceiveCountry" type="s:string" />
+    <wsdl:part name="ReceiveCode" type="s:string" />
+    <wsdl:part name="SendType" type="s:string" />
+    <wsdl:part name="IsCharged" type="s:string" />
+    <wsdl:part name="JsonProductInfo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="ClientNumber" type="s:string" />
+    <wsdl:part name="ReceiveName" type="s:string" />
+    <wsdl:part name="ReceiveComName" type="s:string" />
+    <wsdl:part name="ReceiveTel" type="s:string" />
+    <wsdl:part name="ReceiveEmail" type="s:string" />
+    <wsdl:part name="ReceiveAddress" type="s:string" />
+    <wsdl:part name="ReceiveCity" type="s:string" />
+    <wsdl:part name="ReceiveProvince" type="s:string" />
+    <wsdl:part name="ReceiveCountry" type="s:string" />
+    <wsdl:part name="ReceiveCode" type="s:string" />
+    <wsdl:part name="SendType" type="s:string" />
+    <wsdl:part name="IsCharged" type="s:string" />
+    <wsdl:part name="JsonProductInfo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateToJsonHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateToJsonHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreToJsonHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreatePreToJsonHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateUPSHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CreateUPSHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="UpdateHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+    <wsdl:part name="ClientNumber" type="s:string" />
+    <wsdl:part name="ReceiveName" type="s:string" />
+    <wsdl:part name="ReceiveComName" type="s:string" />
+    <wsdl:part name="ReceiveTel" type="s:string" />
+    <wsdl:part name="ReceiveEmail" type="s:string" />
+    <wsdl:part name="ReceiveAddress" type="s:string" />
+    <wsdl:part name="ReceiveCity" type="s:string" />
+    <wsdl:part name="ReceiveProvince" type="s:string" />
+    <wsdl:part name="ReceiveCountry" type="s:string" />
+    <wsdl:part name="ReceiveCode" type="s:string" />
+    <wsdl:part name="SendType" type="s:string" />
+    <wsdl:part name="IsCharged" type="s:string" />
+    <wsdl:part name="JsonProductInfo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="UpdateHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="DeleteHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="DeleteHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="CutOffHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="CutOffHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="PackingSlipAndInvoiceHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+    <wsdl:part name="Autograph" type="s:string" />
+    <wsdl:part name="VatCompanyName" type="s:string" />
+    <wsdl:part name="VatDutyParagraph" type="s:string" />
+    <wsdl:part name="JsonPackingSlip" type="s:string" />
+    <wsdl:part name="JsonInvoice" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="PackingSlipAndInvoiceHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPackingSlipAndInvoiceForExcelHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPackingSlipAndInvoiceForExcelHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUPSPdfHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetUPSPdfHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfPreHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetPdfPreHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBalanceHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetBalanceHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetScanFormHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetScanFormHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrderQueryHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="JsonData" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="GetOrderQueryHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="LoginHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="LoginHttpPostOut">
+    <wsdl:part name="Body" element="tns:boolean" />
+  </wsdl:message>
+  <wsdl:message name="DHLinkOutOrderHttpPostIn">
+    <wsdl:part name="UserName" type="s:string" />
+    <wsdl:part name="PassWord" type="s:string" />
+    <wsdl:part name="DpdNo" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="DHLinkOutOrderHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:portType name="ServiceSoap">
+    <wsdl:operation name="Create">
+      <wsdl:input message="tns:CreateSoapIn" />
+      <wsdl:output message="tns:CreateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <wsdl:input message="tns:CreatePreSoapIn" />
+      <wsdl:output message="tns:CreatePreSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <wsdl:input message="tns:CreateToJsonSoapIn" />
+      <wsdl:output message="tns:CreateToJsonSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <wsdl:input message="tns:CreatePreToJsonSoapIn" />
+      <wsdl:output message="tns:CreatePreToJsonSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <wsdl:input message="tns:CreateUPSSoapIn" />
+      <wsdl:output message="tns:CreateUPSSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <wsdl:input message="tns:UpdateSoapIn" />
+      <wsdl:output message="tns:UpdateSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <wsdl:input message="tns:DeleteSoapIn" />
+      <wsdl:output message="tns:DeleteSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <wsdl:input message="tns:CutOffSoapIn" />
+      <wsdl:output message="tns:CutOffSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <wsdl:input message="tns:PackingSlipAndInvoiceSoapIn" />
+      <wsdl:output message="tns:PackingSlipAndInvoiceSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <wsdl:input message="tns:GetPackingSlipAndInvoiceForExcelSoapIn" />
+      <wsdl:output message="tns:GetPackingSlipAndInvoiceForExcelSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <wsdl:input message="tns:GetPdfSoapIn" />
+      <wsdl:output message="tns:GetPdfSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <wsdl:input message="tns:GetUPSPdfSoapIn" />
+      <wsdl:output message="tns:GetUPSPdfSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <wsdl:input message="tns:GetPdfPreSoapIn" />
+      <wsdl:output message="tns:GetPdfPreSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <wsdl:input message="tns:GetBalanceSoapIn" />
+      <wsdl:output message="tns:GetBalanceSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <wsdl:input message="tns:GetScanFormSoapIn" />
+      <wsdl:output message="tns:GetScanFormSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <wsdl:input message="tns:GetOrderQuerySoapIn" />
+      <wsdl:output message="tns:GetOrderQuerySoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <wsdl:input message="tns:LoginSoapIn" />
+      <wsdl:output message="tns:LoginSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <wsdl:input message="tns:DHLinkOutOrderSoapIn" />
+      <wsdl:output message="tns:DHLinkOutOrderSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="ServiceHttpGet">
+    <wsdl:operation name="Create">
+      <wsdl:input message="tns:CreateHttpGetIn" />
+      <wsdl:output message="tns:CreateHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <wsdl:input message="tns:CreatePreHttpGetIn" />
+      <wsdl:output message="tns:CreatePreHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <wsdl:input message="tns:CreateToJsonHttpGetIn" />
+      <wsdl:output message="tns:CreateToJsonHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <wsdl:input message="tns:CreatePreToJsonHttpGetIn" />
+      <wsdl:output message="tns:CreatePreToJsonHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <wsdl:input message="tns:CreateUPSHttpGetIn" />
+      <wsdl:output message="tns:CreateUPSHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <wsdl:input message="tns:UpdateHttpGetIn" />
+      <wsdl:output message="tns:UpdateHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <wsdl:input message="tns:DeleteHttpGetIn" />
+      <wsdl:output message="tns:DeleteHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <wsdl:input message="tns:CutOffHttpGetIn" />
+      <wsdl:output message="tns:CutOffHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <wsdl:input message="tns:PackingSlipAndInvoiceHttpGetIn" />
+      <wsdl:output message="tns:PackingSlipAndInvoiceHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <wsdl:input message="tns:GetPackingSlipAndInvoiceForExcelHttpGetIn" />
+      <wsdl:output message="tns:GetPackingSlipAndInvoiceForExcelHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <wsdl:input message="tns:GetPdfHttpGetIn" />
+      <wsdl:output message="tns:GetPdfHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <wsdl:input message="tns:GetUPSPdfHttpGetIn" />
+      <wsdl:output message="tns:GetUPSPdfHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <wsdl:input message="tns:GetPdfPreHttpGetIn" />
+      <wsdl:output message="tns:GetPdfPreHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <wsdl:input message="tns:GetBalanceHttpGetIn" />
+      <wsdl:output message="tns:GetBalanceHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <wsdl:input message="tns:GetScanFormHttpGetIn" />
+      <wsdl:output message="tns:GetScanFormHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <wsdl:input message="tns:GetOrderQueryHttpGetIn" />
+      <wsdl:output message="tns:GetOrderQueryHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <wsdl:input message="tns:LoginHttpGetIn" />
+      <wsdl:output message="tns:LoginHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <wsdl:input message="tns:DHLinkOutOrderHttpGetIn" />
+      <wsdl:output message="tns:DHLinkOutOrderHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="ServiceHttpPost">
+    <wsdl:operation name="Create">
+      <wsdl:input message="tns:CreateHttpPostIn" />
+      <wsdl:output message="tns:CreateHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <wsdl:input message="tns:CreatePreHttpPostIn" />
+      <wsdl:output message="tns:CreatePreHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <wsdl:input message="tns:CreateToJsonHttpPostIn" />
+      <wsdl:output message="tns:CreateToJsonHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <wsdl:input message="tns:CreatePreToJsonHttpPostIn" />
+      <wsdl:output message="tns:CreatePreToJsonHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <wsdl:input message="tns:CreateUPSHttpPostIn" />
+      <wsdl:output message="tns:CreateUPSHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <wsdl:input message="tns:UpdateHttpPostIn" />
+      <wsdl:output message="tns:UpdateHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <wsdl:input message="tns:DeleteHttpPostIn" />
+      <wsdl:output message="tns:DeleteHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <wsdl:input message="tns:CutOffHttpPostIn" />
+      <wsdl:output message="tns:CutOffHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <wsdl:input message="tns:PackingSlipAndInvoiceHttpPostIn" />
+      <wsdl:output message="tns:PackingSlipAndInvoiceHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <wsdl:input message="tns:GetPackingSlipAndInvoiceForExcelHttpPostIn" />
+      <wsdl:output message="tns:GetPackingSlipAndInvoiceForExcelHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <wsdl:input message="tns:GetPdfHttpPostIn" />
+      <wsdl:output message="tns:GetPdfHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <wsdl:input message="tns:GetUPSPdfHttpPostIn" />
+      <wsdl:output message="tns:GetUPSPdfHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <wsdl:input message="tns:GetPdfPreHttpPostIn" />
+      <wsdl:output message="tns:GetPdfPreHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <wsdl:input message="tns:GetBalanceHttpPostIn" />
+      <wsdl:output message="tns:GetBalanceHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <wsdl:input message="tns:GetScanFormHttpPostIn" />
+      <wsdl:output message="tns:GetScanFormHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <wsdl:input message="tns:GetOrderQueryHttpPostIn" />
+      <wsdl:output message="tns:GetOrderQueryHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <wsdl:input message="tns:LoginHttpPostIn" />
+      <wsdl:output message="tns:LoginHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <wsdl:input message="tns:DHLinkOutOrderHttpPostIn" />
+      <wsdl:output message="tns:DHLinkOutOrderHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Create">
+      <soap:operation soapAction="http://tempuri.org/Create" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <soap:operation soapAction="http://tempuri.org/CreatePre" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <soap:operation soapAction="http://tempuri.org/CreateToJson" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <soap:operation soapAction="http://tempuri.org/CreatePreToJson" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <soap:operation soapAction="http://tempuri.org/CreateUPS" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <soap:operation soapAction="http://tempuri.org/Update" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <soap:operation soapAction="http://tempuri.org/Delete" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <soap:operation soapAction="http://tempuri.org/CutOff" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <soap:operation soapAction="http://tempuri.org/PackingSlipAndInvoice" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <soap:operation soapAction="http://tempuri.org/GetPackingSlipAndInvoiceForExcel" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <soap:operation soapAction="http://tempuri.org/GetPdf" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <soap:operation soapAction="http://tempuri.org/GetUPSPdf" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <soap:operation soapAction="http://tempuri.org/GetPdfPre" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <soap:operation soapAction="http://tempuri.org/GetBalance" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <soap:operation soapAction="http://tempuri.org/GetScanForm" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <soap:operation soapAction="http://tempuri.org/GetOrderQuery" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <soap:operation soapAction="http://tempuri.org/Login" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <soap:operation soapAction="http://tempuri.org/DHLinkOutOrder" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceSoap12" type="tns:ServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="Create">
+      <soap12:operation soapAction="http://tempuri.org/Create" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <soap12:operation soapAction="http://tempuri.org/CreatePre" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <soap12:operation soapAction="http://tempuri.org/CreateToJson" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <soap12:operation soapAction="http://tempuri.org/CreatePreToJson" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <soap12:operation soapAction="http://tempuri.org/CreateUPS" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <soap12:operation soapAction="http://tempuri.org/Update" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <soap12:operation soapAction="http://tempuri.org/Delete" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <soap12:operation soapAction="http://tempuri.org/CutOff" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <soap12:operation soapAction="http://tempuri.org/PackingSlipAndInvoice" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <soap12:operation soapAction="http://tempuri.org/GetPackingSlipAndInvoiceForExcel" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <soap12:operation soapAction="http://tempuri.org/GetPdf" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <soap12:operation soapAction="http://tempuri.org/GetUPSPdf" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <soap12:operation soapAction="http://tempuri.org/GetPdfPre" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <soap12:operation soapAction="http://tempuri.org/GetBalance" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <soap12:operation soapAction="http://tempuri.org/GetScanForm" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <soap12:operation soapAction="http://tempuri.org/GetOrderQuery" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <soap12:operation soapAction="http://tempuri.org/Login" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <soap12:operation soapAction="http://tempuri.org/DHLinkOutOrder" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceHttpGet" type="tns:ServiceHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="Create">
+      <http:operation location="/Create" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <http:operation location="/CreatePre" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <http:operation location="/CreateToJson" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <http:operation location="/CreatePreToJson" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <http:operation location="/CreateUPS" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <http:operation location="/Update" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <http:operation location="/Delete" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <http:operation location="/CutOff" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <http:operation location="/PackingSlipAndInvoice" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <http:operation location="/GetPackingSlipAndInvoiceForExcel" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <http:operation location="/GetPdf" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <http:operation location="/GetUPSPdf" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <http:operation location="/GetPdfPre" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <http:operation location="/GetBalance" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <http:operation location="/GetScanForm" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <http:operation location="/GetOrderQuery" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <http:operation location="/Login" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <http:operation location="/DHLinkOutOrder" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceHttpPost" type="tns:ServiceHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="Create">
+      <http:operation location="/Create" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePre">
+      <http:operation location="/CreatePre" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateToJson">
+      <http:operation location="/CreateToJson" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreatePreToJson">
+      <http:operation location="/CreatePreToJson" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CreateUPS">
+      <http:operation location="/CreateUPS" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Update">
+      <http:operation location="/Update" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Delete">
+      <http:operation location="/Delete" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="CutOff">
+      <http:operation location="/CutOff" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="PackingSlipAndInvoice">
+      <http:operation location="/PackingSlipAndInvoice" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPackingSlipAndInvoiceForExcel">
+      <http:operation location="/GetPackingSlipAndInvoiceForExcel" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdf">
+      <http:operation location="/GetPdf" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetUPSPdf">
+      <http:operation location="/GetUPSPdf" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetPdfPre">
+      <http:operation location="/GetPdfPre" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetBalance">
+      <http:operation location="/GetBalance" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetScanForm">
+      <http:operation location="/GetScanForm" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetOrderQuery">
+      <http:operation location="/GetOrderQuery" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="Login">
+      <http:operation location="/Login" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="DHLinkOutOrder">
+      <http:operation location="/DHLinkOutOrder" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Service">
+    <wsdl:port name="ServiceSoap" binding="tns:ServiceSoap">
+      <soap:address location="https://services.frayun.com/Service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceSoap12" binding="tns:ServiceSoap12">
+      <soap12:address location="https://services.frayun.com/Service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceHttpGet" binding="tns:ServiceHttpGet">
+      <http:address location="https://services.frayun.com/Service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceHttpPost" binding="tns:ServiceHttpPost">
+      <http:address location="https://services.frayun.com/Service.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
