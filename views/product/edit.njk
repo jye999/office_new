@@ -118,7 +118,7 @@
                 <input id="main_image" name = "main_image" type="hidden" class="form-control" value="{{ product.main_image | safe }}">
             </div>
             <div class="form-group col-md-2">
-                <img id="main_image_show" src="{{ url('/storage/product_images_icon/') }}{{ product.main_image }}" />
+                <img id="main_image_show" src="{{ url('/storage/product_images_icon/') }}/{{ product.main_image }}" />
             </div>
             <div class="form-group col-md-4">
                 <label for="UPC">UPC</label>

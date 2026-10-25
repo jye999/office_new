@@ -250,30 +250,27 @@ function b64urlDecode(segment: string): Buffer {
   return Buffer.from(segment.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
 }
 
-// Verifies a passport RS256 JWT and loads the unrevoked token's user.
-export async function passportApiAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+// Verifies a passport RS256 JWT and loads the unrevoked token's user (null when absent/invalid).
+async function passportUser(req: FastifyRequest): Promise<ApiUser | null> {
   const header = req.headers['authorization'];
   const token =
     typeof header === 'string' && header.toLowerCase().startsWith('bearer ')
       ? header.slice(7).trim()
       : null;
-  const unauthenticated = (): void => {
-    reply.code(401).send({ message: 'Unauthenticated' });
-  };
-  if (!token) return unauthenticated();
+  if (!token) return null;
   const parts = token.split('.');
   const publicKey = oauthPublicKey();
-  if (parts.length !== 3 || !publicKey) return unauthenticated();
+  if (parts.length !== 3 || !publicKey) return null;
   let payload: { psp?: string; id?: string; sub?: string; alg?: string };
   try {
     payload = JSON.parse(b64urlDecode(parts[1]).toString('utf8'));
   } catch {
-    return unauthenticated();
+    return null;
   }
   const verify = createVerify('RSA-SHA256').update(`${parts[0]}.${parts[1]}`);
-  if (!verify.verify(publicKey, b64urlDecode(parts[2]))) return unauthenticated();
+  if (!verify.verify(publicKey, b64urlDecode(parts[2]))) return null;
   if (payload.psp !== 'passport' || typeof payload.id !== 'string' || typeof payload.sub !== 'string') {
-    return unauthenticated();
+    return null;
   }
   const row = await db
     .selectFrom('os_oauth_access_tokens')
@@ -281,14 +278,14 @@ export async function passportApiAuth(req: FastifyRequest, reply: FastifyReply):
     .where('id', '=', payload.id)
     .where('revoked', '=', 0)
     .executeTakeFirst();
-  if (!row) return unauthenticated();
+  if (!row) return null;
   const user = await db
     .selectFrom('os_users')
     .selectAll()
     .where('id', '=', Number(payload.sub))
     .executeTakeFirst();
-  if (!user) return unauthenticated();
-  (req as { apiUser?: ApiUser })['apiUser'] = {
+  if (!user) return null;
+  return {
     id: user.id,
     username: user.username,
     email: user.email,
@@ -299,6 +296,21 @@ export async function passportApiAuth(req: FastifyRequest, reply: FastifyReply):
     company_id: user.company_id,
     name: user.name,
   };
+}
+
+// `auth:api`: 401 {"message":"Unauthenticated"} unless a valid bearer token resolves a user.
+export async function passportApiAuth(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const user = await passportUser(req);
+  if (!user) {
+    reply.code(401).send({ message: 'Unauthenticated' });
+    return;
+  }
+  (req as { apiUser?: ApiUser })['apiUser'] = user;
+}
+
+// `guest:api` (RedirectIfAuthenticated): a valid bearer token redirects to /home.
+export async function requireApiGuest(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (await passportUser(req)) lredirect(req, reply, '/home');
 }
 
 export type { TemplateValue };

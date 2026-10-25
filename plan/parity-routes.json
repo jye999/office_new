@@ -43,18 +43,18 @@
     "/itemimage/1/deleteMsg"
   ],
   "T19": [
-    "/FollowUps.show",
+    "/FollowUps.show?id=11",
     "/FollowUps.findOrder",
     "/FollowUps.ajax"
   ],
   "T20": [
-    "/Production.show",
+    "/Production.show?id=4",
     "/Production.ajax",
-    "/Purchase.show",
+    "/Purchase.show?id=1",
     "/Purchase.ajax"
   ],
   "T21": [
-    "/BulkProduction.show",
+    "/BulkProduction.show?id=9",
     "/BulkProduction.ajax"
   ],
   "T22a": [

@@ -137,6 +137,8 @@ describe('T28 product pages', () => {
     const res = await app.inject({ method: 'GET', url: '/product/2706/edit' });
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain('value="A004GD"');
+    // blade: url('/storage/product_images_icon/') . '/' . main_image -> slash kept for an empty image
+    expect(res.body).toMatch(/id="main_image_show" src="[^"]*\/storage\/product_images_icon\/[^"]*"/);
     // blade used single-quoted attributes
     expect(res.body).toContain(`action = '${BASE}/product/2706/update'`);
     const missing = await app.inject({ method: 'GET', url: '/product/999999/edit' });

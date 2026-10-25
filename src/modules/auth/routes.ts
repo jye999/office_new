@@ -1,16 +1,13 @@
 // Web auth routes: Route::auth() (Laravel 5.4) + HomeController@index for / and /home.
 // Views: auth/login, auth/register, auth/passwords/email, auth/passwords/reset, home.
 
-import { createHmac, randomBytes } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { config } from '../../config.js';
-import { db, nowDb } from '../../db.js';
+import { db } from '../../db.js';
 import { allInput, input, lredirect, redirectBack, sanitizeOldInput } from '../../http.js';
 import { registerRoute } from '../../router.js';
 import {
   currentUser,
   hasRole,
-  hashPassword,
   loginThrottleAvailableIn,
   loginThrottleClear,
   loginThrottleHit,
@@ -21,54 +18,7 @@ import {
   verifyPassword,
 } from '../../auth.js';
 import { render, trans } from '../../view.js';
-
-// ---------------------------------------------------------------- validation
-
-type Errors = Record<string, string[]>;
-
-function attr(name: string): string {
-  return name.replace(/_/g, ' ');
-}
-
-// filter_var(..., FILTER_VALIDATE_EMAIL) parity for the `email` rule.
-const EMAIL_RE = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
-
-function required(v: unknown): boolean {
-  return v !== null && v !== undefined && (typeof v !== 'string' || v.length > 0);
-}
-
-function loginValidation(email: unknown, password: unknown): Errors {
-  const errors: Errors = {};
-  if (!required(email)) errors['email'] = [trans('validation.required', { attribute: attr('email') })];
-  else if (typeof email !== 'string') errors['email'] = [trans('validation.string', { attribute: attr('email') })];
-  if (!required(password)) errors['password'] = [trans('validation.required', { attribute: attr('password') })];
-  else if (typeof password !== 'string') errors['password'] = [trans('validation.string', { attribute: attr('password') })];
-  return errors;
-}
-
-function registerValidation(data: Record<string, unknown>): Errors {
-  const errors: Errors = {};
-  if (!required(data['name'])) errors['name'] = [trans('validation.required', { attribute: attr('name') })];
-  else if (typeof data['name'] !== 'string' || data['name'].length > 255) errors['name'] = [trans('validation.max', { attribute: attr('name'), max: 255 })];
-  if (!required(data['email'])) errors['email'] = [trans('validation.required', { attribute: attr('email') })];
-  else if (typeof data['email'] !== 'string' || !EMAIL_RE.test(data['email'])) errors['email'] = [trans('validation.email', { attribute: attr('email') })];
-  else if (data['email'].length > 255) errors['email'] = [trans('validation.max', { attribute: attr('email'), max: 255 })];
-  if (!required(data['password'])) errors['password'] = [trans('validation.required', { attribute: attr('password') })];
-  else if (typeof data['password'] !== 'string' || data['password'].length < 6) errors['password'] = [trans('validation.min', { attribute: attr('password'), min: 6 })];
-  else if (data['password'] !== data['password_confirmation']) errors['password'] = [trans('validation.confirmed', { attribute: attr('password') })];
-  return errors;
-}
-
-function resetValidation(data: Record<string, unknown>): Errors {
-  const errors: Errors = {};
-  if (!required(data['token'])) errors['token'] = [trans('validation.required', { attribute: attr('token') })];
-  if (!required(data['email'])) errors['email'] = [trans('validation.required', { attribute: attr('email') })];
-  else if (typeof data['email'] !== 'string' || !EMAIL_RE.test(data['email'])) errors['email'] = [trans('validation.email', { attribute: attr('email') })];
-  if (!required(data['password'])) errors['password'] = [trans('validation.required', { attribute: attr('password') })];
-  else if (typeof data['password'] !== 'string' || data['password'].length < 6) errors['password'] = [trans('validation.min', { attribute: attr('password'), min: 6 })];
-  else if (data['password'] !== data['password_confirmation']) errors['password'] = [trans('validation.confirmed', { attribute: attr('password') })];
-  return errors;
-}
+import { emailValidation, loginValidation, registerValidation, resetPassword, resetValidation, sendResetLink, type Errors } from './shared.js';
 
 function wantsJson(req: FastifyRequest): boolean {
   return req.headers['x-requested-with'] === 'XMLHttpRequest';
@@ -131,48 +81,17 @@ function sessionIntendedOf(req: FastifyRequest): string | null {
 
 // ---------------------------------------------------------------- password reset
 
-// config('passwords.users'): table password_resets (os_ prefixed), expire 60 min.
-const RESET_EXPIRE_MINUTES = 60;
-
-function resetToken(): string {
-  // DatabaseTokenRepository::createNewToken(): hash_hmac('sha256', random 40, app key)
-  return createHmac('sha256', config.APP_KEY).update(randomBytes(20).toString('binary')).digest('hex');
-}
-
 async function handlePasswordEmail(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const email = input(req, 'email');
-  if (!required(email)) {
-    reply.withErrors({ email: trans('validation.required', { attribute: attr('email') }) }).withInput(sanitizeOldInput(allInput(req)));
+  const errors = emailValidation(email);
+  if (Object.keys(errors).length > 0) {
+    reply.withErrors(errors).withInput(sanitizeOldInput(allInput(req)));
     redirectBack(req, reply);
     return;
   }
-  if (typeof email !== 'string' || !EMAIL_RE.test(email)) {
-    reply.withErrors({ email: trans('validation.email', { attribute: attr('email') }) }).withInput(sanitizeOldInput(allInput(req)));
-    redirectBack(req, reply);
-    return;
-  }
-  const user = await db
-    .selectFrom('os_users')
-    .select('id')
-    .where('email', '=', email)
-    .executeTakeFirst();
-  if (!user) {
-    reply.withErrors({ email: trans('passwords.user') });
-    redirectBack(req, reply);
-    return;
-  }
-  const token = resetToken();
-  await db
-    .insertInto('os_password_resets')
-    // SAFETY: Kysely types this timestamp column as Date, but mysql2 sends the
-    // 'YYYY-MM-DD HH:mm:ss' string through unchanged (same value Laravel writes).
-    .values({ email, token, created_at: nowDb() as unknown as Date })
-    .execute();
-  if (process.env.MAIL_ENABLED === '1') {
-    // MAIL_ENABLED gates the send (default off). T04's mail.ts sends it; log for now.
-    console.log(`[mail] password reset link for ${email}: ${config.APP_URL}/password/reset/${token}?email=${encodeURIComponent(email)}`);
-  }
-  reply.flashStatus(trans('passwords.sent'));
+  const key = await sendResetLink(String(email));
+  if (key === 'passwords.sent') reply.flashStatus(trans(key));
+  else reply.withErrors({ email: trans(key) });
   redirectBack(req, reply);
 }
 
@@ -184,41 +103,16 @@ async function handlePasswordReset(req: FastifyRequest, reply: FastifyReply): Pr
     redirectBack(req, reply);
     return;
   }
-
-  const token = String(data['token']);
-  const email = String(data['email']);
-  const cutoff = new Date(Date.now() - RESET_EXPIRE_MINUTES * 60_000);
-  const row = await db
-    .selectFrom('os_password_resets')
-    .select('created_at')
-    .where('email', '=', email)
-    .where('token', '=', token)
-    .executeTakeFirst();
-  const user = await db
-    .selectFrom('os_users')
-    .select(['id', 'password', 'remember_token'])
-    .where('email', '=', email)
-    .executeTakeFirst();
-
-  // broker: exists() requires a live token row AND a user; any miss -> "invalid token"
-  const expiresAt = row ? new Date(String(row.created_at).replace(' ', 'T')) : null;
-  if (!row || !user || !expiresAt || expiresAt <= cutoff) {
-    reply.withErrors({ email: trans('passwords.token') }).withInput({ email });
+  const result = await resetPassword(data);
+  if (result.userId === undefined) {
+    reply.withErrors({ email: trans(result.key) }).withInput({ email: data['email'] });
     redirectBack(req, reply);
     return;
   }
-
-  const newHash = hashPassword(String(data['password']));
-  await db
-    .updateTable('os_users')
-    .set({ password: newHash, remember_token: randomBytes(30).toString('hex') })
-    .where('id', '=', user.id)
-    .execute();
-  await db.deleteFrom('os_password_resets').where('email', '=', email).where('token', '=', token).execute();
   const session = req.session as Record<string, unknown>;
-  session['user_id'] = user.id;
+  session['user_id'] = result.userId;
   (req as { saveSession?: () => Promise<void> }).saveSession?.();
-  reply.flashStatus(trans('passwords.reset'));
+  reply.flashStatus(trans(result.key));
   lredirect(req, reply, '/home');
 }
 
@@ -282,19 +176,9 @@ export function registerAuthRoutes(app: FastifyInstance): void {
 
   app.post('/register', { preHandler: [requireGuest] }, async (req, reply) => {
     const data = allInput(req);
-    const errors = registerValidation(data);
+    const errors = await registerValidation(data);
     if (Object.keys(errors).length > 0) {
       reply.withErrors(errors).withInput(sanitizeOldInput(data));
-      redirectBack(req, reply);
-      return;
-    }
-    const existing = await db
-      .selectFrom('os_users')
-      .select('id')
-      .where('email', '=', String(data['email']))
-      .executeTakeFirst();
-    if (existing) {
-      reply.withErrors({ email: trans('validation.unique', { attribute: attr('email') }) }).withInput(sanitizeOldInput(data));
       redirectBack(req, reply);
       return;
     }

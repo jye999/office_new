@@ -142,6 +142,15 @@ describe('T23 order module (fastify inject)', () => {
         'id', 'store', 'orderId', 'subOrderId', 'itemId', 'asin', 'name',
       ]);
     }
+    // reading $i->ProductMap loads the relation: `product_map` (null or object) is serialised
+    // exactly for details whose image is empty after the local-image/product-image fallback
+    for (const o of body.orders) {
+      for (const d of o.detail as Record<string, unknown>[]) {
+        if (d.image == null || d.image === '') expect(d.product_map === null || typeof d.product_map === 'object').toBe(true);
+        if ('product_map' in d && d.product_map === null) expect(d.image == null || d.image === '').toBe(true);
+      }
+    }
+    expect(JSON.stringify(body.orders)).toContain('"product_map":null');
     await app.close();
   });
 

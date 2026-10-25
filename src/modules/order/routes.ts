@@ -421,28 +421,30 @@ async function listOrders(req: FastifyRequest, reply: FastifyReply): Promise<voi
         await db.selectFrom('os_grant_orderdetail').selectAll().where('orderId', 'in', orders.map((o) => String(o.orderId))).execute(),
       )
     : [];
-  const byOrder = new Map<string, Row[]>();
-  for (const d of details) {
-    const k = String(d.orderId);
-    (byOrder.get(k) ?? byOrder.set(k, []).get(k)!).push(d);
-  }
   const maps = await loadProductMaps(details);
   const useLocalImage = !!config.USE_LOCAL_IMAGE; // env('USE_LOCAL_IMAGE', false)
-  const viewDetails: Row[] = [];
+  // Reading $i->ProductMap loads the relation, so it serialises as `product_map`
+  // (null, or the map + product [type/sku_num appends] + images) after the columns.
+  const byOrder = new Map<string, Row[]>();
   for (const d of details) {
-    const row = { ...d };
+    const row = detailRow(d);
     if (useLocalImage) row.image = `/images/${d.asin}.jpg`;
     if (row.image == null || row.image === '') {
       const map = maps.mapOf(d);
       const product = map ? maps.productOf(map) : undefined;
       const images = product ? maps.imagesOf(Number(product.id)) : [];
       if (images.length > 0) row.image = images[0].filename;
+      const chars = [...String(product?.sku ?? '')];
+      row.product_map = map
+        ? { ...map, product: product ? { ...product, type: chars[0] ?? '', sku_num: chars.slice(1).join(''), images } : null }
+        : null;
     }
-    viewDetails.push(row);
+    const k = String(d.orderId);
+    (byOrder.get(k) ?? byOrder.set(k, []).get(k)!).push(row);
   }
   reply.send({
     total: orders.length,
-    orders: orders.map((o) => ({ ...orderRow(o), detail: (byOrder.get(String(o.orderId)) ?? []).map(detailRow) })),
+    orders: orders.map((o) => ({ ...orderRow(o), detail: byOrder.get(String(o.orderId)) ?? [] })),
   });
 }
 
