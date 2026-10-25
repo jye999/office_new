@@ -175,8 +175,10 @@ The worker unit is identical except `Description=office_new worker`, `ExecStart=
   do the first live run with one order and compare with the old app. Under `DRY_RUN=1` they still only record the
   queue rows with status `dry-run` and skip every carrier call. Run them in only one stack (PHP worker OR this
   worker) per queue, or labels are bought twice.
-- **Faire image import is forced dry-run.** `pnpm faire:import-images` parses and plans but never downloads or replaces
-  files or DB rows.
+- **Faire image import downloads for real (L12).** `pnpm faire:import-images [--sku=X] [--dry-run]` now runs
+  FaireImageImporter's real path: it downloads the Faire URLs, deletes the product's existing `os_product_images` rows
+  and files, and writes new ones to `product_image_full` / `product_image_icon`. `--dry-run` (or `DRY_RUN=1`) stays
+  read-only. Rehearse with `--dry-run`, then `--sku=<one sku>` before a full run; only stubbed downloads were tested.
 - **Live integrations are unverified.** Every marketplace/carrier path (Amazon SP-API, eBay, Walmart, Shopify, Etsy,
   Houzz, Wayfair, Stamps, FedEx, UPS, Frayun, S3/SFTP, Pusher, OpenAI/MCP, real SMTP) was tested only against stubbed
   transports; no live write, tracking upload, purchase or mail was ever exercised. Compare the first live runs with the
