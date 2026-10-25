@@ -87,6 +87,16 @@ describe('token + headers', () => {
     expect(sent[sent.length - 1].headers['WM_SEC.ACCESS_TOKEN']).toBe('tok-2');
   });
 
+  it('accepts the live API token shape (access_token / expires_in), found by scripts/live-check.ts', async () => {
+    replies['POST /v3/token'] =
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><oAuthTokenDTO><access_token>tok-live</access_token><token_type>Bearer</token_type><expires_in>900</expires_in></oAuthTokenDTO>';
+    replies['GET /v3/orders'] = listXml('');
+    await new Walmart().getReleasedOrders('2024-01-02', 'Created');
+    expect(sent[1].headers['WM_SEC.ACCESS_TOKEN']).toBe('tok-live');
+    await new Walmart().getReleasedOrders('2024-01-02', 'Created');
+    expect(sent.filter((r) => r.url.endsWith('/token'))).toHaveLength(2); // separate instances; token not expired -> each fetched once
+  });
+
   it('an unparseable token reply throws (PHP: property of non-object ErrorException)', async () => {
     replies['POST /v3/token'] = '';
     await expect(new Walmart().getReleasedOrders('2024-01-02', 'Created')).rejects.toBeInstanceOf(WalmartError);

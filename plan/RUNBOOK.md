@@ -158,6 +158,9 @@ The worker unit is identical except `Description=office_new worker`, `ExecStart=
    - [ ] Jobs: open `/queue`, hit `/queue.ping`, confirm the worker adds the `os_queuejobs` ping row
    - [ ] First scheduled tick: check the worker log and `os_report_time`/order tables after the next `* * * * *` action;
          if unsure start with `DRY_RUN=1` for one cycle and watch the `[DRY_RUN] ... skipped` lines
+   - [ ] Integrations (read-only): `pnpm live:check` (all) or `pnpm live:check --only=ebay,walmart,...`; every row should be
+         PASS (a SKIP is a credential-less or write-only integration). It never calls a write endpoint (allow-listed GET/read
+         verbs only, see `scripts/liveCheckGuard.ts`) and redacts secrets. Known failures at the L13 run are in `plan/STATUS.md` `## Live check`.
    - [ ] Do NOT click: Buy Label, Mass Print, tracking upload, Create Scan Form, anything that emails
 6. **Rollback** (keep the PHP app installed and its `.env` untouched until sign-off):
    1. Set `SCHEDULER_ENABLED=0`, `systemctl stop office-new-worker office-new-web`

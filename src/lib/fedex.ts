@@ -90,7 +90,7 @@ function faultString(e: any): string {
   return e?.root?.Envelope?.Body?.Fault?.faultstring ?? e?.message ?? String(e);
 }
 
-const soapTransport: Transport = async (service, operation, params) => {
+export const soapTransport: Transport = async (service, operation, params) => {
   const client = await wsdlClient(service);
   client.setEndpoint(`${process.env.FEDEX_URL}${SERVICES[service].path}`);
   const desc = Object.values<any>(Object.values<any>(client.describe())[0])[0][operation].input;

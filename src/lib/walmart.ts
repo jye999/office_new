@@ -198,7 +198,7 @@ export class Walmart {
     return 'Basic ' + Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
   }
 
-  // OAuth token (always sent, also under DRY_RUN: it only reads). Reply: <OAuthTokenDTO><accessToken/><expiresIn/>.
+  // OAuth token (always sent, also under DRY_RUN: it only reads). Reply: <OAuthTokenDTO><accessToken/><expiresIn/> (live: access_token/expires_in).
   async getToken(): Promise<string> {
     const before = Date.now();
     const res = await request({
@@ -215,10 +215,11 @@ export class Walmart {
     });
     await sleep(pauseMs);
     const xml = text(res).trim().startsWith('<') ? parseXml(text(res).trim()) : null;
-    if (xml === null || typeof xml.accessToken !== 'string') throw new WalmartError('Trying to get property of non-object (Walmart token reply)');
-    const token: string = xml.accessToken;
+    // The live API now answers <access_token>/<expires_in> (live-check, 2026-10); the PHP read accessToken/expiresIn.
+    const token: unknown = xml?.accessToken ?? xml?.access_token;
+    if (typeof token !== 'string') throw new WalmartError('Trying to get property of non-object (Walmart token reply)');
     this.accessToken = token;
-    this.accessTokenExpire = before + Number(xml.expiresIn) * 1000;
+    this.accessTokenExpire = before + Number(xml.expiresIn ?? xml.expires_in) * 1000;
     return token;
   }
 

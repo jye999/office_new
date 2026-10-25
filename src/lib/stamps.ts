@@ -139,7 +139,7 @@ function faultString(e: any): string {
   return e?.root?.Envelope?.Body?.Fault?.faultstring ?? e?.message ?? String(e);
 }
 
-const soapTransport: Transport = async (operation, params) => {
+export const soapTransport: Transport = async (operation, params) => {
   const client = await wsdlClient();
   const fn = client[`${operation}Async`];
   if (typeof fn !== 'function') {
