@@ -94,7 +94,7 @@ export function routeUrl(name: string, params?: Record<string, unknown> | unknow
 // ---------------------------------------------------------------- path helpers
 
 // Laravel `{id}` -> fastify `:id`; `{id?}` -> register both /path and /path/:id.
-function toFastifyPath(laravelPath: string): string[] {
+export function toFastifyPath(laravelPath: string): string[] {
   const p = laravelPath.startsWith('/') ? laravelPath : `/${laravelPath}`;
   const m = p.match(/\{([A-Za-z_][A-Za-z0-9_]*)(\?)?\}/);
   if (!m) return [p.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g, ':$1')];

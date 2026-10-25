@@ -13,6 +13,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run --maxWorkers=1",
     "parity": "tsx scripts/parity.ts",
+    "routes:check": "tsx scripts/routes-check.ts",
     "db:types": "bash -c 'set -a; . ./.env; set +a; kysely-codegen --url \"mysql://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_DATABASE\" --out-file src/db/office.d.ts && kysely-codegen --url \"mysql://$DB_USERNAME:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_HWC_DATABASE\" --out-file src/db/hwc.d.ts'"
   },
   "dependencies": {

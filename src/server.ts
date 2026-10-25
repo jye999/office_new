@@ -54,7 +54,7 @@ import { registerSchedulerWhenEnabled } from './jobs/scheduler.js';
 
 import { parseLaravelQuery } from './http.js';
 
-const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true }, querystringParser: parseLaravelQuery });
+export const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true }, querystringParser: parseLaravelQuery });
 
 // T03: not-found handler (regex catch-alls + Laravel 404) must be installed
 // before any root-level route registration.
@@ -153,7 +153,10 @@ app.get('/__health', async () => {
   return { ok: true, db: rows[0]?.one };
 });
 
-app.listen({ port: config.PORT, host: '0.0.0.0' }).catch((err) => {
-  app.log.error(err);
-  process.exit(1);
-});
+// ROUTES_CHECK=1 (scripts/routes-check.ts) imports this module only to read the registered routes.
+if (process.env.ROUTES_CHECK !== '1') {
+  app.listen({ port: config.PORT, host: '0.0.0.0' }).catch((err) => {
+    app.log.error(err);
+    process.exit(1);
+  });
+}

@@ -175,5 +175,12 @@
   "U9": [],
   "U10": [
     "/getAmzImage"
+  ],
+  "C1": [
+    "/FollowUps.show?id=11",
+    "/Production.show?id=4",
+    "/Purchase.show?id=1",
+    "/BulkProduction.show?id=9",
+    "/LowInventoryReport/export"
   ]
 }
