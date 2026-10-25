@@ -194,3 +194,10 @@ The worker unit is identical except `Description=office_new worker`, `ExecStart=
 - **404/500 pages differ** from the old APP_DEBUG Symfony debug pages (production-style pages in the new app).
 - **Unowned api routes:** `POST /api/login`, `/api/register`, `/api/password/email`, `/api/password/reset` are in
   `routes/api.php` but not registered (see `pnpm routes:check`).
+
+## Cutover record (hogrider-web, 2026-10-25)
+
+- PHP `laravel-scheduler` / `laravel-worker` stopped in `laradock-php-worker-1` (supervisord; queue was empty first).
+- `office-new-web` / `office-new-worker` run as systemd user services with `SCHEDULER_ENABLED=1`, `APP_URL=https://office.angelisabella.com`; 17 BullMQ schedulers = the uncommented Kernel.php commands.
+- nginx: `~/nginx_sites/office.conf` and `office-new.conf` proxy to `172.20.0.1:7000`. Original PHP vhost saved at `~/office.conf.php-backup`.
+- **Rollback:** `cp ~/office.conf.php-backup ~/nginx_sites/office.conf && docker exec laradock-nginx-1 nginx -s reload`; `systemctl --user stop office-new-worker`, set `SCHEDULER_ENABLED=0`, restart web; `docker exec laradock-php-worker-1 supervisorctl start laravel-scheduler:laravel-scheduler_00 laravel-worker:laravel-worker_00`. Then check `os_queuejobs`/`os_trackings` for duplicates.
