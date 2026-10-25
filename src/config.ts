@@ -24,8 +24,8 @@ const EnvSchema = z.object({
   PUBLIC_DIR: z.string().min(1),
   OLD_APP_URL: z.string().url(),
   // Used only by scripts/parity.ts (T03); allowed to be empty until then.
-  PARITY_EMAIL: z.string(),
-  PARITY_PASSWORD: z.string(),
+  PARITY_EMAIL: z.string().default(''),
+  PARITY_PASSWORD: z.string().default(''),
   SCHEDULER_ENABLED: z.enum(['0', '1']).default('0'),
   // T23: /api/orders image fallback (old config/app.php use_local_image).
   USE_LOCAL_IMAGE: z.string().default(''),
