@@ -13,6 +13,7 @@ import { AmazonApi, pascalizeModel } from '../../lib/amazonApi.js';
 import { Houzz } from '../../lib/houzz.js';
 import { dispatchAmzMassPrintLabel, dispatchFrayunMassPrintLabel, ozPlusLbTimes16 } from '../../lib/queueJobs.js';
 import { saveChanges } from '../../lib/eloquent.js';
+import { storeAmazonLabel } from '../../lib/labels.js';
 import type { Row } from './service.js';
 
 const ROLES = ['admin', 'user', 'remote'];
@@ -151,15 +152,7 @@ export function registerLabelRoutes(app: FastifyInstance): void {
         console.error('GetAmazonShippingLabel');
         return json(reply, null);
       }
-      const labels = disk('labels');
-      const labelData = Buffer.from(String(result.label?.file_contents?.contents ?? ''), 'base64');
-      const prefix = labels.pathPrefix().replace(/\/?$/, '/'); // Flysystem getPathPrefix() ends with a slash
-      const { writeFileSync, mkdirSync } = await import('node:fs');
-      mkdirSync(`${prefix}labels`, { recursive: true });
-      writeFileSync(`${prefix}labels/${orderId}.gz`, labelData);
-      new AmazonApi().uncompress(`${prefix}labels/${orderId}.gz`, `${prefix}labels/${orderId}.png`);
-      // PHP deletes `<orderId>.gz` (no labels/ prefix), which does not exist: the .gz stays. Kept.
-      await labels.delete(`${orderId}.gz`);
+      await storeAmazonLabel(orderId, String(result.label?.file_contents?.contents ?? ''));
 
       const gorder = (await db.selectFrom('os_grant_order').selectAll().where('orderId', '=', orderId).limit(1).executeTakeFirst()) as Row | undefined;
       if (gorder) await saveChanges('os_grant_order', gorder, { status: 'Done', updated_at: nowDb() });

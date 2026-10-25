@@ -169,9 +169,12 @@ The worker unit is identical except `Description=office_new worker`, `ExecStart=
 
 ## Known residual risks (from plan/STATUS.md)
 
-- **Label/download jobs are dry-run stubs.** The queue handlers for `MassPrintLabel`, `AmzMassPrintLabel`,
-  `FrayunMassPrintLabel` and `DownloadLabel` only log `carrier purchase stubbed` / `download stubbed` (J1); mass label
-  printing via the queue does not actually buy or download labels. `QueuePing` is real.
+- **Label jobs are real but never run against a live carrier.** (L11) `MassPrintLabel`, `AmzMassPrintLabel`,
+  `FrayunMassPrintLabel` and `DownloadLabel` now buy/download labels through the Stamps/Amazon/Frayun libs and the
+  `labels` disk, exactly like the PHP jobs (legacy quirks kept, see STATUS L11). Only stubbed transports were tested:
+  do the first live run with one order and compare with the old app. Under `DRY_RUN=1` they still only record the
+  queue rows with status `dry-run` and skip every carrier call. Run them in only one stack (PHP worker OR this
+  worker) per queue, or labels are bought twice.
 - **Faire image import is forced dry-run.** `pnpm faire:import-images` parses and plans but never downloads or replaces
   files or DB rows.
 - **Live integrations are unverified.** Every marketplace/carrier path (Amazon SP-API, eBay, Walmart, Shopify, Etsy,

@@ -7,8 +7,8 @@
 // logged and NOT sent when DRY_RUN=1.
 
 import * as soap from 'soap';
-import { nowDb } from '../db.js';
-import { json_encode } from '../view.js';
+import { db, nowDb } from '../db.js';
+import { json_encode, substr } from '../view.js';
 
 type Params = Record<string, unknown>;
 type Transport = (operation: string, params: Params) => Promise<any>;
@@ -216,4 +216,58 @@ export class Frayun {
     const response = await request('GetPdfPre', { ...credentials(), DpdNo: dpdNo });
     return response.GetPdfPreResult;
   }
+}
+
+// Zone chart + discounted rate lookup shared by FrayunController::frayunBuyLabel and FrayunMassPrintLabel.
+export async function zoneAndDiscountedRate(
+  fromZip3: string, toZip: string, totalOz: number, serviceType: string,
+): Promise<{ zone: number; discountedRate: number | string }> {
+  let discountedRate: number | string = 0;
+  let zone = 0;
+  const zoneChartException = await db
+    .selectFrom('os_shipping_zone_charts_exception')
+    .selectAll()
+    .where('originalZip', '=', fromZip3)
+    .where('rangeFrom', '<=', substr(toZip, 0, 5))
+    .where('rangeTo', '>=', substr(toZip, 0, 5))
+    .executeTakeFirst();
+  if (zoneChartException === undefined) {
+    const zoneChart = await db
+      .selectFrom('os_shipping_zone_charts')
+      .selectAll()
+      .where('originalZip', '=', fromZip3)
+      .where('rangeFrom', '<=', substr(toZip, 0, 3))
+      .where('rangeTo', '>=', substr(toZip, 0, 3))
+      .executeTakeFirst();
+    if (zoneChart !== undefined) zone = zoneChart.zone;
+    // else: Log::info('no in zone chart')
+  } else {
+    zone = zoneChartException.zone;
+  }
+  if (zone !== 0) {
+    console.info(`to ${toZip} zone ${zone}`);
+    if (totalOz < 16 && serviceType === 'FIRST CLASS') {
+      const rateChart = await db
+        .selectFrom('os_shipping_rate_chart')
+        .selectAll()
+        .where('ServiceType', '=', 'F')
+        .where('StartWeight', '<=', String(totalOz)) // SAFETY: DECIMAL column; MySQL compares '5' == 5
+        .where('EndWeight', '>', String(totalOz)) // SAFETY: same
+        .where('Zone', '=', zone)
+        .executeTakeFirst();
+      if (rateChart !== undefined) discountedRate = rateChart.Price;
+    } else {
+      const totalLb = totalOz / 16.0;
+      const rateChart = await db
+        .selectFrom('os_shipping_rate_chart')
+        .selectAll()
+        .where('ServiceType', '=', 'P')
+        .where('StartWeight', '<=', String(totalLb)) // SAFETY: DECIMAL column; MySQL compares '1.5' == 1.5
+        .where('EndWeight', '>', String(totalLb)) // SAFETY: same
+        .where('Zone', '=', zone)
+        .executeTakeFirst();
+      if (rateChart !== undefined) discountedRate = rateChart.Price;
+    }
+  }
+  return { zone, discountedRate };
 }

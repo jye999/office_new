@@ -6,7 +6,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import { db } from '../../db.js';
 import { input } from '../../http.js';
 import { route } from '../../router.js';
-import { Frayun } from '../../lib/frayun.js';
+import { Frayun, zoneAndDiscountedRate } from '../../lib/frayun.js';
 import { json_encode, phpEmpty, render, round, substr } from '../../view.js';
 import { nowDb } from '../../db.js';
 
@@ -94,55 +94,7 @@ export function registerFrayunRoutes(app: FastifyInstance): void {
         }
       }
 
-      let discountedRate: number | string = 0;
-      let zone = 0;
-      const fromZip3 = substr(FROM_ADDRESS.ZIPCode, 0, 3);
-      const toZip = String(toAddress?.['ZIPCode'] ?? '');
-      const zoneChartException = await db
-        .selectFrom('os_shipping_zone_charts_exception')
-        .selectAll()
-        .where('originalZip', '=', fromZip3)
-        .where('rangeFrom', '<=', substr(toZip, 0, 5))
-        .where('rangeTo', '>=', substr(toZip, 0, 5))
-        .executeTakeFirst();
-      if (zoneChartException === undefined) {
-        const zoneChart = await db
-          .selectFrom('os_shipping_zone_charts')
-          .selectAll()
-          .where('originalZip', '=', fromZip3)
-          .where('rangeFrom', '<=', substr(toZip, 0, 3))
-          .where('rangeTo', '>=', substr(toZip, 0, 3))
-          .executeTakeFirst();
-        if (zoneChart !== undefined) zone = zoneChart.zone;
-        // else: Log::info('no in zone chart')
-      } else {
-        zone = zoneChartException.zone;
-      }
-      if (zone !== 0) {
-        console.info(`to ${toZip} zone ${zone}`);
-        if (totalOz < 16 && serviceType === 'FIRST CLASS') {
-          const rateChart = await db
-            .selectFrom('os_shipping_rate_chart')
-            .selectAll()
-            .where('ServiceType', '=', 'F')
-            .where('StartWeight', '<=', String(totalOz)) // SAFETY: DECIMAL column; MySQL compares '5' == 5
-            .where('EndWeight', '>', String(totalOz)) // SAFETY: same
-            .where('Zone', '=', zone)
-            .executeTakeFirst();
-          if (rateChart !== undefined) discountedRate = rateChart.Price;
-        } else {
-          const totalLb = totalOz / 16.0;
-          const rateChart = await db
-            .selectFrom('os_shipping_rate_chart')
-            .selectAll()
-            .where('ServiceType', '=', 'P')
-            .where('StartWeight', '<=', String(totalLb)) // SAFETY: DECIMAL column; MySQL compares '1.5' == 1.5
-            .where('EndWeight', '>', String(totalLb)) // SAFETY: same
-            .where('Zone', '=', zone)
-            .executeTakeFirst();
-          if (rateChart !== undefined) discountedRate = rateChart.Price;
-        }
-      }
+      const { zone, discountedRate } = await zoneAndDiscountedRate(substr(FROM_ADDRESS.ZIPCode, 0, 3), String(toAddress?.['ZIPCode'] ?? ''), totalOz, serviceType);
       console.info(`discountedRate ${discountedRate}`);
       if (totalOz < 16) {
         weightInKg = Math.floor(Number(totalOz) * 28.35) / 1000;
