@@ -187,8 +187,8 @@ The worker unit is identical except `Description=office_new worker`, `ExecStart=
   transports; no live write, tracking upload, purchase or mail was ever exercised. Compare the first live runs with the
   old app's logs before relying on them.
 - **Retired/absent pieces kept as in PHP:** Amazon MWS feed upload (`/UploadTracking`, `update-amz-shipped`) is not
-  ported (500 / no-op); the `SalesReport` stored procedure and several `hwc` tables are missing in the shared snapshot,
-  so `email-sales-report` and `windy`/`mermaid` fail exactly as the old app does there.
+  ported (500 / no-op); the `SalesReport` stored procedure (present in production, absent from the dev snapshot) and several
+  `hwc` tables are missing in the shared dev snapshot, so there `email-sales-report` and `windy`/`mermaid` fail exactly as the old app does.
 - **Sync actions with real writes** (`windy`, `mermaid`, `stats`, `shopify-products` truncate+refill, `get-walmart-items`
   truncate+insert) were only EXPLAIN/stub-verified. Run each once with a DB backup before leaving them scheduled.
 - **404/500 pages differ** from the old APP_DEBUG Symfony debug pages (production-style pages in the new app).

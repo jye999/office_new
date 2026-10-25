@@ -1,8 +1,5 @@
-// T22a: ReportController sales routes (/SalesReport, /SalesTaxReport,
-// /SalesSnapshotReport). The SalesReport stored procedure is missing from the
-// DB, so Sales() and SalesSnapshot() 500 on their first DB::select (reproduced
-// via sendServer500); SalesTax() calls the SalesTaxReport procedure, which
-// exists.
+// T22a: ReportController@SalesTax (/SalesTaxReport). /SalesReport and
+// /SalesSnapshotReport are covered in t22c.
 
 import Fastify from 'fastify';
 import formbody from '@fastify/formbody';
@@ -104,19 +101,6 @@ describe('T22a report sales routes (fastify inject)', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain("value='2017-09-20'");
     expect(res.body).toContain("value='2017-09-30'");
-    await app.close();
-  });
-
-  it('/SalesReport and /SalesSnapshotReport -> 500 (SalesReport procedure missing)', async () => {
-    const user = await userWithRole(['admin']);
-    if (!user) throw new Error('no admin user in DB');
-    const app = buildApp(user);
-    const a = await app.inject({ method: 'GET', url: '/SalesReport' });
-    expect(a.statusCode).toBe(500);
-    expect(a.body).toContain('Internal Server Error');
-    const b = await app.inject({ method: 'GET', url: '/SalesSnapshotReport' });
-    expect(b.statusCode).toBe(500);
-    expect(b.body).toContain('Internal Server Error');
     await app.close();
   });
 });

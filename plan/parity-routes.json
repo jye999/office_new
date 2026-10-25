@@ -60,6 +60,10 @@
   "T22a": [
     "/SalesTaxReport"
   ],
+  "T22c": [
+    "/SalesReport?start=2026-10-01&end=2026-10-24",
+    "/SalesSnapshotReport"
+  ],
   "T22b": [
     "/ProductSalesReport",
     "/LowInventoryReport",

@@ -59,7 +59,8 @@ describe('PHP-mimicking globals (known PHP output)', () => {
     expect(round(1.5)).toBe(2);
     expect(round(-1.5)).toBe(-2);
     expect(round(1.26, 2)).toBe(1.26);
-    expect(round(1.015, 2)).toBe(1.01); // float ulp drift below the half edge; noted in STATUS
+    expect(round(1.015, 2)).toBe(1.02); // PHP 7.4 pre-rounds to 15 digits (verified on php 7.4)
+    expect(round(1.005, 2)).toBe(1.01);
   });
 
   it('substr supports negative start and length', () => {

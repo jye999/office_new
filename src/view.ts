@@ -128,19 +128,29 @@ export function ucfirst(s: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-// PHP round(): half away from zero. toPrecision(15) removes float representation
-// noise (1.255 * 100 -> 125.5, not 125.4999...); exact decimal half-edges can still
-// drift a ulp (e.g. 1.005, 0.145) — same class of limitation as PHP's double math.
+// PHP 7.4 round() (_php_math_round, PHP_ROUND_HALF_UP): pre-rounds the value to 15 significant digits, then rounds
+// half away from zero.
 export function round(value: number, precision = 0): number {
-  const sign = value < 0 ? -1 : 1;
-  const scaled = Number(Number(Math.abs(value).toPrecision(15)) * 10 ** precision);
-  return sign * Math.round(scaled) / 10 ** precision;
+  if (!Number.isFinite(value) || value === 0) return value;
+  const half = (x: number) => (x >= 0 ? Math.floor(x + 0.5) : Math.ceil(x - 0.5));
+  const precisionPlaces = 14 - Math.floor(Math.log10(Math.abs(value)));
+  let tmp: number;
+  if (precisionPlaces > precision && precisionPlaces - 15 < precision) {
+    tmp = half(precisionPlaces >= 0 ? value * 10 ** precisionPlaces : value / 10 ** -precisionPlaces);
+    tmp /= 10 ** (precisionPlaces - precision);
+  } else {
+    tmp = precision >= 0 ? value * 10 ** precision : value / 10 ** -precision;
+    if (Math.abs(tmp) >= 1e15) return value;
+  }
+  tmp = half(tmp);
+  return precision > 0 ? tmp / 10 ** precision : tmp * 10 ** -precision;
 }
 
 // PHP number_format().
 export function number_format(value: number, dec = 0, decPoint = '.', thousandsSep = ','): string {
-  const neg = value < 0;
-  let s = Math.abs(value).toFixed(dec);
+  const rounded = round(value, dec); // PHP 7.4 rounds first, so -0.001 -> "0.00"
+  const neg = rounded < 0;
+  let s = Math.abs(rounded).toFixed(dec);
   let [int, frac] = s.split('.');
   int = int.replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSep);
   if (dec > 0 && frac === undefined) frac = '0'.repeat(dec);

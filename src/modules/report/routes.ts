@@ -1,17 +1,14 @@
 // ReportController (routes/web.php:52-54, web + role:admin).
 //
-// The `SalesReport` stored procedure does not exist in the shared DB (only
-// SalesTaxReport does — verified via information_schema and live on :6999),
-// so /SalesReport and /SalesSnapshotReport fatal on their very first
-// DB::select('call SalesReport(?,?)') -> 500 in the old app. Reproduced via
-// sendServer500 (T10/T11/T15 pattern); the dead aggregation code after that
-// line is not ported.
+// `call SalesReport(?,?)` / `SalesTaxReport(?,?)` are production stored procedures
+// (absent from the dev DB — tests mock the CALL). Raw DB::select is not os_-prefixed;
+// Eloquent (SalesSummary) is, so it is `os_SalesSummary` here.
 
 import type { FastifyInstance } from 'fastify';
 import { db, sql } from '../../db.js';
 import { input } from '../../http.js';
 import { route } from '../../router.js';
-import { date, render, sendServer500, strtotime } from '../../view.js';
+import { date, render, strtotime } from '../../view.js';
 
 // Blade inline <?php switch($s->store) ?> from report/productsales.blade.php.
 const STORE_LABELS: Record<string, string> = {
@@ -118,18 +115,135 @@ async function receivingHandler(req: Parameters<Parameters<typeof route>[1]['han
   });
 }
 
+// mysql2 returns [procedure result set, trailing OK packet] for CALL;
+// PHP's PDO only sees the result set.
+async function callSalesReport(start: string, end: string): Promise<Record<string, unknown>[]> {
+  const { rows } = await sql`call SalesReport(${start},${end})`.execute(db);
+  return (Array.isArray(rows[0]) ? rows[0] : []) as Record<string, unknown>[];
+}
+
+// PHP strtotime()-derived dates are all wall-clock calendar math; Date.UTC
+// normalises day overflow (Feb 29 - 1 year -> Mar 1) exactly like PHP.
+function ymd(y: number, m: number, d: number): string {
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${dt.getUTCFullYear()}-${p(dt.getUTCMonth() + 1)}-${p(dt.getUTCDate())}`;
+}
+
+type SummaryRow = { Channel: string; Fulfillment: string; Price: string };
+
+// SalesSummary::where('Date','>=',$from)[->where('Date','<',$to)]->selectRaw(...)->groupBy('Channel','Fulfillment').
+// The full select list is kept so MySQL returns groups in the same order as the old app.
+async function salesSummary(from: string, to: string | null): Promise<SummaryRow[]> {
+  const upper = to === null ? sql`` : sql`and \`Date\` < ${to}`;
+  const { rows } = await sql<SummaryRow>`select Channel, Fulfillment, SUM(\`Order\`) as \`Order\`, SUM(QTY) as QTY, SUM(Price) as Price, SUM(Tax) as Tax, SUM(Shipping) as Shipping
+    from os_SalesSummary where \`Date\` >= ${from} ${upper} group by Channel, Fulfillment`.execute(db);
+  return rows;
+}
+
+// The date()/strtotime() range strings of ReportController@SalesSnapshot for the app-timezone day y-m-d.
+export function snapshotDates(y: number, m: number, d: number) {
+  // PHP's "last week" (relative text + "week") snaps to Monday of the previous ISO week and keeps the time of day;
+  // "last week +6 days" is therefore that week's Sunday.
+  const dow = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  const lastweekMonday = d + (dow === 0 ? -6 : 1 - dow) - 7;
+  return {
+    thisyearFirstday: ymd(y, 1, 1),
+    todayStart: `${ymd(y, m, d)} 00:00:00`,
+    todayEnd: `${ymd(y, m, d)} 23:59:59`,
+    yesterdayStart: `${ymd(y, m, d - 1)} 00:00:00`,
+    yesterdayEnd: `${ymd(y, m, d - 1)} 23:59:59`,
+    lastweekStart: `${ymd(y, m, lastweekMonday)} 00:00:00`,
+    lastweekEnd: `${ymd(y, m, lastweekMonday + 6)} 23:59:59`,
+    thismonthStart: `${ymd(y, m, 1)} 00:00:00`,
+    lastyearFirstday: `${ymd(y - 1, 1, 1)} 00:00:00`,
+    lastyearStart: `${ymd(y - 1, m, 1)} 00:00:00`,
+    lastyearToday: `${ymd(y - 1, m, d)} 00:00:00`,
+    lastyearTodayEnd: `${ymd(y - 1, m, d)} 23:59:59`,
+    lastyearMonthEnd: `${ymd(y - 1, m + 1, 0)} 23:59:59`,
+  };
+}
+
+// ReportController@SalesSnapshot. Orders/qty accumulations in the PHP are never rendered, so only prices are kept.
+async function salesSnapshot() {
+  const [y, m, d] = date('Y-m-d').split('-').map(Number);
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const {
+    thisyearFirstday, todayStart, todayEnd, yesterdayStart, yesterdayEnd, lastweekStart, lastweekEnd,
+    thismonthStart, lastyearFirstday, lastyearStart, lastyearToday, lastyearTodayEnd, lastyearMonthEnd,
+  } = snapshotDates(y, m, d);
+
+  const sales = await callSalesReport(todayStart, todayEnd);
+  const ytd = await salesSummary(thisyearFirstday, null);
+  const yesterday = await salesSummary(yesterdayStart, yesterdayEnd);
+  const lastweek = await salesSummary(lastweekStart, lastweekEnd);
+  const thismonth = await salesSummary(thismonthStart, todayStart);
+  const lastytd = await salesSummary(lastyearFirstday, lastyearTodayEnd);
+  const lastyearTodate = await salesSummary(lastyearStart, lastyearTodayEnd);
+  const lastyearTodaySales = await salesSummary(lastyearToday, lastyearTodayEnd);
+  const lastyearMonth = await salesSummary(lastyearStart, lastyearMonthEnd);
+
+  const data: Record<string, string | number | null>[] = ytd.map((s) => ({ Channel: s.Channel, Fulfillment: s.Fulfillment }));
+  const total: Record<string, number> = {};
+  const addPrices = (key: string, rows: SummaryRow[], prediction = false) => {
+    total[key] = 0;
+    if (prediction) total.thismonth_prediction = 0;
+    for (const s of rows) {
+      for (const row of data) {
+        if (s.Channel !== row.Channel || s.Fulfillment !== row.Fulfillment) continue;
+        row[`${key}_price`] = Number(s.Price);
+        total[key] += Number(s.Price);
+        if (prediction) {
+          row.thismonth_prediction_price = (Number(s.Price) / d) * daysInMonth;
+          total.thismonth_prediction += (Number(s.Price) / d) * daysInMonth;
+        }
+      }
+    }
+  };
+  addPrices('ytd', ytd);
+  addPrices('lastytd', lastytd);
+  addPrices('lastyear_todate', lastyearTodate);
+  addPrices('lastyear_today', lastyearTodaySales);
+  addPrices('lastyear_month', lastyearMonth);
+  addPrices('thismonth', thismonth, true);
+  addPrices('lastweek', lastweek);
+  addPrices('yesterday', yesterday);
+
+  total.today = 0;
+  for (const s of sales) {
+    for (const row of data) {
+      if (s.channel !== row.Channel || s.fulfillment !== row.Fulfillment) continue;
+      const price = Number(s.price ?? 0);
+      row.today_price = s.price === null ? null : price;
+      total.today += price;
+      if (row.thismonth_price != null) row.thismonth_price = Number(row.thismonth_price) + price;
+      total.thismonth += price;
+      if (row.ytd_price != null) row.ytd_price = Number(row.ytd_price) + price;
+      total.ytd += price;
+    }
+  }
+  return { data, total, today_start: todayStart, today_end: todayEnd, lastyear_today: lastyearToday };
+}
+
 export function registerReportRoutes(app: FastifyInstance): void {
   const middleware = ['web', 'role:admin'];
 
-  // Route::get('/SalesReport') -> Sales. `call SalesReport(?,?)` throws
-  // (procedure missing) -> 500, always.
+  // Route::get('/SalesReport') -> Sales.
   route(app, {
     verb: 'get',
     path: '/SalesReport',
     name: 'SalesReport',
     middleware,
     handler: async (req, reply) => {
-      await sendServer500(req, reply);
+      // $request->has(): this Laravel treats an empty/blank value as absent.
+      const given = (key: string) => {
+        const v = input<string>(req, key);
+        return v !== null && String(v).trim() !== '' ? v : null;
+      };
+      const start = given('start') ?? dateSevenDaysAgo();
+      const end = given('end') ?? date('Y-m-d');
+      const sales = await callSalesReport(start, end);
+      await render(req, reply, 'report/sales', { sales, start, end });
     },
   });
 
@@ -144,22 +258,19 @@ export function registerReportRoutes(app: FastifyInstance): void {
       const end = input(req, 'end') ?? date('Y-m-d');
       // Raw SQL (DB::select) is not os_-prefixed by Laravel — copied unchanged.
       const { rows } = await sql`call SalesTaxReport(${start},${end})`.execute(db);
-      // mysql2 returns [procedure result set, trailing OK packet] for CALL;
-      // PHP's PDO only sees the result set.
       const sales = (Array.isArray(rows[0]) ? rows[0] : []) as Record<string, unknown>[];
       await render(req, reply, 'report/salestax', { sales, start, end });
     },
   });
 
-  // Route::get('/SalesSnapshotReport') -> SalesSnapshot. First statement is
-  // `DB::select('call SalesReport(?,?)')` -> 500, always (procedure missing).
+  // Route::get('/SalesSnapshotReport') -> SalesSnapshot.
   route(app, {
     verb: 'get',
     path: '/SalesSnapshotReport',
     name: 'SalesSnapshotReport',
     middleware,
     handler: async (req, reply) => {
-      await sendServer500(req, reply);
+      await render(req, reply, 'report/salessnapshot', await salesSnapshot());
     },
   });
 
