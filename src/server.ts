@@ -9,6 +9,7 @@ import { registerHttpHelpers } from './http.js';
 import { registerAuthRoutes } from './modules/auth/routes.js';
 import { registerApiAuthRoutes } from './modules/api/routes.js';
 import { registerApiGuestRoutes } from './modules/auth/apiRoutes.js';
+import { registerBroadcastingRoutes } from './modules/broadcasting.js';
 import { registerHomeRoutes } from './modules/home/routes.js';
 import { registerActionLogRoutes } from './modules/actionlog/routes.js';
 import { registerSettingsRoutes } from './modules/settings/routes.js';
@@ -55,7 +56,7 @@ import { registerSchedulerWhenEnabled } from './jobs/scheduler.js';
 
 import { parseLaravelQuery } from './http.js';
 
-export const app = Fastify({ logger: false, routerOptions: { ignoreTrailingSlash: true }, querystringParser: parseLaravelQuery });
+export const app = Fastify({ logger: false, rewriteUrl: (req) => (req.url ?? '/').replace(/^\/{2,}|(?<=^[^?]*)\/{2,}/g, '/'), routerOptions: { ignoreTrailingSlash: true }, querystringParser: parseLaravelQuery });
 
 // T03: not-found handler (regex catch-alls + Laravel 404) must be installed
 // before any root-level route registration.
@@ -82,6 +83,7 @@ app.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'buffer
 await app.register(registerHttpHelpers);
 await registerViewPlugins(app);
 registerAuthRoutes(app);
+registerBroadcastingRoutes(app);
 registerApiAuthRoutes(app);
 registerApiGuestRoutes(app);
 registerHomeRoutes(app);
