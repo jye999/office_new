@@ -1,11 +1,11 @@
 import { config } from '../config.js';
 import { officeQueue } from './queue.js';
 
+// Exactly the uncommented `$schedule->command(...)` lines of the old Kernel.php (houzz/windy/mermaid are commented out there).
 export const scheduledActions = [
   ['amazon', '30 * * * *'],
   ['get-walmart-items', '10 */2 * * *'],
   ['update-walmart-inventory', '5 */2 * * *'],
-  ['houzz', '19 */3 * * *'],
   ['upload-ebay-tracking', '21 * * * *'],
   ['upload-ray-ebay-tracking', '24 * * * *'],
   ['upload-walmart-tracking', '30 * * * *'],
@@ -19,12 +19,6 @@ export const scheduledActions = [
   ['email-sales-report', '15 3 * * *'],
   ['email-sales-tax-report', '0 6 1 * *'],
   ['wayfair-update-inventory', '*/52 * * * *'],
-  ['windy-0600', '0 6 * * *'],
-  ['windy-1830', '30 18 * * *'],
-  ['windy-2030', '30 20 * * *'],
-  ['mermaid-0602', '2 6 * * *'],
-  ['mermaid-1832', '32 18 * * *'],
-  ['mermaid-2032', '32 20 * * *'],
   ['stats', '0 * * * *'],
 ] as const;
 

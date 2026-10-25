@@ -33,7 +33,8 @@ describe('J1 BullMQ jobs', () => {
       options: expect.objectContaining({ pattern: '0 6 1 * *' }),
       template: { name: 'sync', data: { action: 'email-sales-tax-report' } },
     }));
-    expect(registered.filter((job) => (job as { template: { data: { action: string } } }).template.data.action === 'windy')).toHaveLength(3);
+    expect(scheduledActions).toHaveLength(17);
+    expect(scheduledActions.map(([id]) => id)).not.toContain('houzz');
   });
 
   it('matches Runner.php: an unknown sync action succeeds with no output', async () => {

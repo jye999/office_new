@@ -103,7 +103,7 @@ async function reportFile(req: FastifyRequest): Promise<Buffer | null> {
 
 // getTokenFromDB(): a WayfairToken setting refreshed within the last 10h is
 // reused; otherwise fetch a fresh token (external) and upsert the setting.
-async function getTokenFromDB(): Promise<Wayfair> {
+export async function getTokenFromDB(): Promise<Wayfair> {
   const tenHours = date('Y-m-d H:i:s', new Date(Date.now() - 10 * 3600 * 1000).getTime());
   // SAFETY: Kysely types the datetime column as Date; the 'YYYY-MM-DD HH:mm:ss' string compares correctly.
   const tenHoursDate = tenHours as unknown as Date;
