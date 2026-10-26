@@ -165,8 +165,8 @@
                             <tr>
                                 <td>{{ v.itemSku }}</td>
                                 <td><img src="{{ v.image }}" style="width:100px;height:100px;"/></td>
-                                <td><b style="font-size: 16px;">{{ v.neededQty }}</b></td>
-                                <td class="pick-locs{{ ' pick-locs-open' if v.locsOpen else '' }}" data-sku="{{ e(v.itemSku) }}" data-needed="{{ v.neededQty }}" data-order-id="{{ e(order.order_id) }}" data-loc-count="{{ v.locCount }}">
+                                <td><b style="font-size: 16px;">{{ v.neededQty }}</b>{% if v.hasTester %}<div><span class="label label-info">has tester</span></div>{% endif %}</td>
+                                <td class="pick-locs{{ ' pick-locs-open' if v.locsOpen else '' }}" data-sku="{{ e(v.itemSku) }}" data-needed="{{ v.pullTarget }}" data-order-id="{{ e(order.order_id) }}" data-loc-count="{{ v.locCount }}">
                                     {% for lq in v.visible %}
                                     <div class="pick-bin{{ ' is-default' if lq.isDefault else '' }}" data-pull="{{ lq.pullQty }}" data-location="{{ e(lq.location) }}">
                                         <span class="pick-loc-label">{{ lq.location }} -- {{ lq.quantity }}</span>
@@ -200,7 +200,7 @@
                                             {% endfor %}
                                         </div>
                                     {% endif %}
-                                    <div class="pull-mismatch no-print" {% if v.hidePullMismatch or v.pullSum === v.neededQty %}style="display:none;" {% endif %}>Pull {{ v.pullSum }} does not match order qty {{ v.neededQty }}</div>
+                                    <div class="pull-mismatch no-print" {% if v.hidePullMismatch or v.pullSum === v.pullTarget %}style="display:none;" {% endif %}>Pull {{ v.pullSum }} does not match order qty {{ v.pullTarget }}{{ ' (incl. tester)' if v.hasTester else '' }}</div>
                                 </td>
                                 <td>{{ item.variant_name if (isset(item.variant_name) and item.variant_name != 'default') else '' }}</td>
                                 <td>{{ item.product_name if isset(item.product_name) else '' }}</td>

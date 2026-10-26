@@ -39,6 +39,7 @@ const PICK_LIST_SQL = String.raw`SELECT DISTINCT
     jt.product_id,
     jt.sku,
     jt.quantity,
+    jt.has_tester,
     jt.product_name,
     jt.variant_name,
     jt.variant_id,
@@ -58,6 +59,7 @@ LEFT JOIN JSON_TABLE(
         sku VARCHAR(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci PATH '$.sku',
         variant_id VARCHAR(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci PATH '$.variant_id',
         quantity INT PATH '$.quantity',
+        has_tester TINYINT(1) PATH '$.includes_tester' DEFAULT '0' ON EMPTY DEFAULT '0' ON ERROR,
         product_name VARCHAR(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci PATH '$.product_name',
         variant_name VARCHAR(255) CHARACTER SET utf8mb3 COLLATE utf8mb3_unicode_ci PATH '$.variant_name'
     )
@@ -106,6 +108,7 @@ GROUP BY
     jt.product_id,
     jt.sku,
     jt.quantity,
+    jt.has_tester,
     jt.product_name,
     jt.variant_name,
     jt.variant_id,
@@ -158,7 +161,10 @@ function groupPickListItems(items: PickItem[], savedBySku: Record<string, Record
     const key = `${item.sku ?? ''}|${item.variant_id ?? ''}|${item.product_id ?? ''}`;
     const g = grouped.get(key);
     if (!g) grouped.set(key, { ...item, location_quantities: [...(item.location_quantities ?? [])] });
-    else g.location_quantities = g.location_quantities.concat(item.location_quantities ?? []);
+    else {
+      g.location_quantities = g.location_quantities.concat(item.location_quantities ?? []);
+      if (phpInt(item.has_tester) > 0) g.has_tester = 1;
+    }
   }
   for (const gi of grouped.values()) {
     const byLocation = new Map<string, { location_id: number; location: string; quantity: number }>();
@@ -170,7 +176,9 @@ function groupPickListItems(items: PickItem[], savedBySku: Record<string, Record
       else cur.quantity += phpInt(lq.quantity);
     }
     gi.location_quantities = [...byLocation.values()];
-    let picked = suggestedPulls(gi.location_quantities, gi.quantity != null ? phpInt(gi.quantity) : 0, gi.default_location ?? '');
+    // The free tester unit is pulled from stock too, so it counts toward the pull target.
+    const pullTarget = (gi.quantity != null ? phpInt(gi.quantity) : 0) + (phpInt(gi.has_tester) > 0 ? 1 : 0);
+    let picked = suggestedPulls(gi.location_quantities, pullTarget, gi.default_location ?? '');
     const sku = gi.sku != null ? String(gi.sku) : '';
     const saved = sku !== '' && savedBySku[sku] != null ? savedBySku[sku] : null;
     picked = applySavedPulls(picked, saved);
@@ -242,7 +250,9 @@ async function ensureFaireOrderAllocations(order: { order_id: string; content: u
   for (const it of rawItems ?? []) {
     const sku = it['sku'] != null ? str(it['sku']) : '';
     if (sku === '') continue;
-    qtyBySku.set(sku, (qtyBySku.get(sku) ?? 0) + (it['quantity'] != null ? phpInt(it['quantity']) : 0));
+    // includes_tester: Faire ships one extra free tester unit that is not in `quantity`.
+    const tester = it['includes_tester'] === true ? 1 : 0;
+    qtyBySku.set(sku, (qtyBySku.get(sku) ?? 0) + (it['quantity'] != null ? phpInt(it['quantity']) : 0) + tester);
   }
   const items: Array<{ sku: string; quantity: number } & Picked & { visible_locations: Bin[]; extra_locations: Bin[] }> = [];
   for (const [sku, qty] of qtyBySku) {
@@ -303,6 +313,7 @@ export async function prepareFairePickList(): Promise<{ orders: Row[]; quickSear
       product_id: row['product_id'],
       sku: row['sku'],
       quantity: row['quantity'],
+      has_tester: row['has_tester'],
       product_name: row['product_name'],
       variant_name: row['variant_name'],
       variant_id: row['variant_id'],
@@ -371,6 +382,8 @@ function decorateForView(order: Row & { items: PickItem[] }): void {
     item['view'] = {
       itemSku: item.sku != null ? String(item.sku) : '',
       neededQty: item.quantity != null ? phpInt(item.quantity) : 0,
+      hasTester: phpInt(item.has_tester) > 0,
+      pullTarget: (item.quantity != null ? phpInt(item.quantity) : 0) + (phpInt(item.has_tester) > 0 ? 1 : 0),
       visible: shape(visible),
       extra: shape(extra),
       pullSum,

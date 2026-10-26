@@ -130,6 +130,18 @@ describe('U4 temp-order lifecycle', () => {
     expect(page.body).toContain('zz note 1 (updated)');
     expect(page.body).not.toContain('zz note 2');
     expect(page.body).toContain('Add Note');
+    const testerBadges = page.body.split('has tester').length - 1; // other live orders may already have one
+
+    // includes_tester: shown as a badge (no qty change); the free unit adds 1 to the pull allocation.
+    const tRow = (await db.selectFrom('os_faire_orders').select('content').where('order_id', '=', 'ZZU4').executeTakeFirst()) as { content: string | object };
+    const tContent = (typeof tRow.content === 'string' ? JSON.parse(tRow.content) : tRow.content) as { items: Array<Record<string, unknown>> };
+    tContent.items[0]['includes_tester'] = true;
+    await db.updateTable('os_faire_orders').set({ content: JSON.stringify(tContent) as never }).where('order_id', '=', 'ZZU4').execute();
+    await db.deleteFrom('os_order_pick_allocations').where('order_id', '=', 'ZZU4').execute();
+    const tPage = await app.inject({ method: 'GET', url: '/fairePickList' });
+    expect(tPage.body.split('has tester').length - 1).toBe(testerBadges + 1);
+    const tAlloc = await db.selectFrom('os_order_pick_allocations').select('pull_qty').where('order_id', '=', 'ZZU4').execute();
+    expect(tAlloc.reduce((n, r) => n + Number(r.pull_qty), 0)).toBe(7);
     await app.close();
   });
 });
