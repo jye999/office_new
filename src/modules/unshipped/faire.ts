@@ -27,6 +27,7 @@ const PICK_LIST_SQL = String.raw`SELECT DISTINCT
     o.packer,
     o_name.address_name,
     JSON_UNQUOTE(JSON_EXTRACT(o.content, '$.expected_ship_date')) AS expected_ship_date,
+    MAX(JSON_UNQUOTE(JSON_EXTRACT(o.content, '$.note'))) AS order_note,
 
     -- ✅ add sort keys so ORDER BY is compatible with DISTINCT
     STR_TO_DATE(JSON_UNQUOTE(JSON_EXTRACT(o.content, '$.expected_ship_date')), '%Y-%m-%d') AS sort_expected_ship_date,
@@ -229,7 +230,13 @@ async function ensureFaireOrderAllocations(order: { order_id: string; content: u
   const orderId = order.order_id ?? '';
   if (orderId === '') return;
   let content = order.content as Row | string | null;
-  if (typeof content === 'string') content = JSON.parse(content) as Row;
+  if (typeof content === 'string') {
+    try {
+      content = JSON.parse(content) as Row;
+    } catch {
+      content = null; // corrupt JSON: nothing to seed, same as no items
+    }
+  }
   const rawItems = (content != null && typeof content === 'object' ? (content as Row)['items'] : null) as Row[] | null;
   const qtyBySku = new Map<string, number>();
   for (const it of rawItems ?? []) {
@@ -275,6 +282,7 @@ export async function prepareFairePickList(): Promise<{ orders: Row[]; quickSear
         packer: row['packer'],
         address_name: row['address_name'],
         expected_ship_date: row['expected_ship_date'],
+        note: parseNote(row['order_note']),
         items: [],
       });
     }
@@ -375,6 +383,11 @@ function decorateForView(order: Row & { items: PickItem[] }): void {
   }
 }
 
+// content.note is a single JSON string (per-order note) set by /saveFaireOrderNotes.
+function parseNote(v: unknown): string {
+  return v == null ? '' : String(v);
+}
+
 export function registerFaireRoutes(app: FastifyInstance): void {
   route(app, {
     verb: 'get',
@@ -420,6 +433,38 @@ export function registerFaireRoutes(app: FastifyInstance): void {
         .updateTable('os_faire_orders')
         .set({ [field]: value == null ? null : String(value) } as never)
         .where('display_id', '=', String(input(req, 'display_id') ?? ''))
+        .execute();
+      return reply.send({ success: true });
+    },
+  });
+
+  route(app, {
+    verb: 'post',
+    path: '/saveFaireOrderNotes',
+    name: 'saveFaireOrderNotes',
+    roles: ROLES,
+    handler: async (req, reply) => {
+      const displayId = str(input(req, 'display_id'));
+      const note = str(input(req, 'note'));
+      if (displayId === '') return reply.send({ success: false, message: 'display_id is required' });
+      const row = await db.selectFrom('os_faire_orders').select(['display_id', 'content']).where('display_id', '=', displayId).limit(1).executeTakeFirst();
+      if (!row) return reply.code(404).send({ success: false, message: 'order not found' });
+      let content: Row = {};
+      try {
+        const c = row.content;
+        if (typeof c === 'string') content = JSON.parse(c) as Row;
+        else if (c != null && typeof c === 'object') content = c as Row;
+      } catch {
+        content = {};
+      }
+      // One note per order: overwrite it; empty note clears it.
+      if (note === '') delete content['note'];
+      else content['note'] = note;
+      // Same display_id may span several rows (same as updateFaireWarehouseStatus).
+      await db
+        .updateTable('os_faire_orders')
+        .set({ content: JSON.stringify(content) as never, updated_at: nowDb() as never })
+        .where('display_id', '=', displayId)
         .execute();
       return reply.send({ success: true });
     },

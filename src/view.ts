@@ -37,7 +37,9 @@ if (typeof njkLib.escape === 'function') {
 // The autoescape option is normalized to a boolean by nunjucks, so override
 // env.escape — the function render() actually applies per value.
 export function createViewEnv(viewsRoot: string = viewsDir): nunjucks.Environment {
-  return new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsRoot), {
+  // noCache: reload .njk files on change (FileSystemLoader otherwise keeps the
+  // first-rendered template for the process lifetime, serving stale pages after edits).
+  return new nunjucks.Environment(new nunjucks.FileSystemLoader(viewsRoot, { noCache: true }), {
     autoescape: true,
     throwOnUndefined: false,
   });

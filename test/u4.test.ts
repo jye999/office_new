@@ -92,6 +92,8 @@ describe('U4 guards + validation', () => {
     expect(await j('/updateProductDefaultLocation', { sku: 'NOSUCHSKU-ZZ', location: 'a' })).toEqual([404, { success: false, message: 'sku not found' }]);
     expect(await j('/saveOrderPickAllocation', { order_id: '', sku: 'a', location_id: '1' })).toEqual([422, { success: false, message: 'order_id, sku, and location_id are required' }]);
     expect(await j('/saveOrderPickAllocation', { order_id: 'o', sku: 'a', location_id: '1', pull_qty: '-1' })).toEqual([422, { success: false, message: 'pull_qty must be 0 or more' }]);
+    expect(await j('/saveFaireOrderNotes', { display_id: '', note: 'n' })).toEqual([200, { success: false, message: 'display_id is required' }]);
+    expect(await j('/saveFaireOrderNotes', { display_id: 'NOSUCH', note: 'n' })).toEqual([404, { success: false, message: 'order not found' }]);
     await app.close();
   });
 });
@@ -114,10 +116,20 @@ describe('U4 temp-order lifecycle', () => {
     expect((await post(app, '/updateProductDefaultLocation', { sku: 'ZZU4SKU', location: 'a1b1l2' })).json()).toEqual({ success: true, sku: 'ZZU4SKU', default_location: 'A1B1L2' });
     expect((await post(app, '/updateProductDefaultLocation', { sku: 'ZZU4SKU', location: 'nowhere' })).statusCode).toBe(404);
 
+    expect((await post(app, '/saveFaireOrderNotes', { display_id: 'ZZU4D', note: 'zz note 1' })).json()).toEqual({ success: true });
+    // One note per order: the second save overwrites the first.
+    expect((await post(app, '/saveFaireOrderNotes', { display_id: 'ZZU4D', note: 'zz note 1 (updated)' })).json()).toEqual({ success: true });
+    const contentRow = (await db.selectFrom('os_faire_orders').select('content').where('order_id', '=', 'ZZU4').executeTakeFirst()) as { content: string | object | null };
+    const content = (typeof contentRow.content === 'string' ? JSON.parse(contentRow.content) : contentRow.content) as { note?: unknown };
+    expect(content.note).toBe('zz note 1 (updated)');
+
     const page = await app.inject({ method: 'GET', url: '/fairePickList' });
     expect(page.statusCode).toBe(200);
     expect(page.body).toContain('data-order-id="ZZU4"');
     expect(page.body).toContain('class="pick-bin is-default" data-pull="3" data-location="A1B1L2"');
+    expect(page.body).toContain('zz note 1 (updated)');
+    expect(page.body).not.toContain('zz note 2');
+    expect(page.body).toContain('Add Note');
     await app.close();
   });
 });

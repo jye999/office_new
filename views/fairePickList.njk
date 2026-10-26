@@ -72,6 +72,14 @@
         font-size: 12px;
         margin-top: 4px;
     }
+    .order-notes {
+        margin-top: 8px;
+        padding: 6px 8px;
+        border: 1px solid #b8860b;
+        border-radius: 3px;
+        background-color: #fff8dc;
+        font-size: 12px;
+    }
 </style>
 
 <table class="table table-bordered table-condensed" id="orders" style="width:100%">
@@ -116,6 +124,12 @@
                                         <option value="{{ name }}" {{ 'selected' if (order.packer or '') == name else '' }}>{{ name }}</option>
                                     {% endfor %}
                                 </select>
+                            </div>
+                            <div class="no-print" style="margin-top: 10px;">
+                                <button type="button" onclick="openOrderNoteModal('{{ order.display_id }}')" class="btn btn-secondary btn-xs">Add Note</button>
+                            </div>
+                            <div class="order-notes" {% if not order.note %}style="display:none;"{% endif %}>
+                                <div class="order-note">{{ order.note }}</div>
                             </div>
                         </div>
                     </div>
@@ -209,6 +223,24 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div class="modal fade" id="noteModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Order Note</h4>
+            </div>
+            <div class="modal-body">
+                <textarea id="note-input" class="form-control" rows="3" placeholder="Add a note..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" id="note-save-btn" class="btn btn-primary" onclick="saveOrderNote()">Save Note</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     var ORDER_DETAILS_HEADERS = ['SKU', 'Image', 'Quantity', 'Location', 'Variant Name', 'Product Name'];
@@ -454,6 +486,46 @@
         setTimeout(function() { el.style.backgroundColor = orig; }, 600);
     }
 
+    var noteModalOrderId = '';
+    // One note per order: the modal edits the existing note (or creates it).
+    function openOrderNoteModal(display_id) {
+        noteModalOrderId = display_id;
+        var $rowNote = $(document).find('span[data-display-id="' + display_id + '"]').closest('tr').find('.order-note');
+        $('#note-input').val($rowNote.first().text());
+        $('#note-save-btn').text($rowNote.length ? 'Update Note' : 'Save Note');
+        $('#noteModal').modal('show');
+    }
+
+    function saveOrderNote() {
+        var note = String($('#note-input').val() || '').trim();
+        $.ajax({
+            url: '{{ route('saveFaireOrderNotes') }}',
+            type: 'POST',
+            data: {
+                display_id: noteModalOrderId,
+                note: note,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(resp) {
+                if (resp && resp.success) {
+                    var $rowNotes = $(document).find('span[data-display-id="' + noteModalOrderId + '"]').closest('tr').find('.order-notes');
+                    if (note === '') {
+                        $rowNotes.hide().find('.order-note').text('');
+                    } else {
+                        $rowNotes.show().find('.order-note').text(note);
+                    }
+                    $('#note-input').val('');
+                    $('#noteModal').modal('hide');
+                } else {
+                    alert((resp && resp.message) || 'Failed to save note.');
+                }
+            },
+            error: function() {
+                alert('Failed to save note.');
+            }
+        });
+    }
+
     function updatePickerPacker(display_id, field, selectEl) {
         $.ajax({
             url: '{{ route('updateFairePickerPacker') }}',
@@ -504,7 +576,7 @@
         printWindow.document.write('<link rel="stylesheet" type="text/css" href="{{ asset('css/app.css') }}">');
         printWindow.document.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">');
         // The print window doesn't inherit this page's print styles, so hide the editing controls here too
-        printWindow.document.write('<style>.no-print, .pick-extra .pick-bin[data-pull="0"], .set-default-loc, .toggle-extra-locs, .pull-qty-input, .pull-mismatch { display: none !important; } .pull-print { display: inline !important; }</style>');
+        printWindow.document.write('<style>.no-print, .pick-extra .pick-bin[data-pull="0"], .set-default-loc, .toggle-extra-locs, .pull-qty-input, .pull-mismatch { display: none !important; } .pull-print { display: inline !important; } .order-notes { margin-top: 8px; padding: 6px 8px; border: 1px solid #b8860b; border-radius: 3px; background-color: #fff8dc; font-size: 12px; }</style>');
         printWindow.document.write('</head><body>');
         printWindow.document.write(orderInfoContent);
         printWindow.document.write('</body></html>');
