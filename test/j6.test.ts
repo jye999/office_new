@@ -97,14 +97,14 @@ describe('J6 report/sync actions', () => {
       },
       '2026-10-26',
     );
-    for (const h of ['Yesterday (2026-10-26)', 'Same day last year (2025-10-26)', 'Last Week', 'This Month Prediction', 'YTD', 'Last YTD']) expect(html).toContain(h);
+    for (const h of ['Yesterday', 'Oct 26, 2026', 'Same day last year', 'Oct 26, 2025', 'Month prediction', 'YTD', 'Last YTD', 'Monday, October 26, 2026']) expect(html).toContain(h);
     expect(html).toContain('Shopify');
     expect(html).toContain('1,234.50');
-    expect(html).toContain('50.00 %'); // (150-100)/100
+    expect(html).toContain('+50.00%'); // (150-100)/100
     expect(html).toContain('X&lt;');
     expect(html).toContain('N/A'); // lastytd total is 0
-    expect(html).not.toContain('Today (');
-    expect(html).not.toContain('Yesterday (2026-10-25)');
+    expect(html).not.toContain('Last Week');
+    expect(html).not.toContain('Today');
   });
 
 

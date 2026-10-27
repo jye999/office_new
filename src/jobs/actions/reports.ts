@@ -370,44 +370,61 @@ const SNAPSHOT_CHANNELS: Record<string, string> = { E: 'Ebay', R: 'R Store', S: 
 
 type Snapshot = Awaited<ReturnType<typeof salesSnapshot>>;
 
-// views/report/salessnapshot.njk as an email table, minus its Yesterday column: the snapshot is built for the
-// previous day (snap's "today"), which leads as "Yesterday", followed by the same date last year.
+// views/report/salessnapshot.njk as an email, minus its Yesterday and Last Week columns: the snapshot is built for
+// the previous day (snap's "today"), which leads as "Yesterday", followed by the same date last year.
+// Inline styles only (mail clients drop <style>); columns grouped Day / Month / Year.
 export function salesSnapshotHtml(snap: Snapshot, day: string): string {
   const money = (v: unknown) => (Number(v ?? 0) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const val = (v: unknown) => (v === undefined || v === null ? '0' : money(v));
+  const val = (v: unknown) => (v === undefined || v === null || Number(v) === 0 ? '<span style="color:#b0b7c3;">&ndash;</span>' : '$' + money(v));
+  const longDate = (ymd: string) => new Date(`${ymd.slice(0, 10)}T00:00:00Z`).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+  const shortDate = (ymd: string) => new Date(`${ymd.slice(0, 10)}T00:00:00Z`).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+  // % change, green up / red down; `blank` when there is no baseline.
   const pct = (cur: unknown, prev: unknown, blank: string) => {
-    if (cur === undefined || cur === null || prev === undefined || prev === null) return blank;
-    return Number(prev) > 0 ? `${money(((Number(cur) - Number(prev)) / Number(prev)) * 100)} %` : blank;
+    if (cur === undefined || cur === null || prev === undefined || prev === null || !(Number(prev) > 0)) return blank;
+    const p = ((Number(cur) - Number(prev)) / Number(prev)) * 100;
+    return `<span style="color:${p >= 0 ? '#15803d' : '#b91c1c'};">${p >= 0 ? '+' : '&minus;'}${money(Math.abs(p))}%</span>`;
   };
-  const td = (v: unknown, bold = false) => `<td style="border: 1px solid black; padding: 2px 8px;">${bold ? '<strong>' : ''}${e(v)}${bold ? '</strong>' : ''}</td>`;
-  const heads = ['Channel', 'Fulfillment', `Yesterday (${day})`, `Same day last year (${snap.lastyear_today.slice(0, 10)})`, 'Last Week', 'This Month', 'Last Year month to date', 'Change', 'Last Year this month', 'This Month Prediction', 'YTD', 'Last YTD', 'Change'];
+  const font = "font-family:-apple-system,'Segoe UI',Helvetica,Arial,sans-serif;";
+  const cell = (html: string, extra = '') => `<td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:right;white-space:nowrap;${extra}">${html}</td>`;
+  const th = (label: string, sub = '', extra = '') =>
+    `<th style="padding:8px 12px;background:#1f2937;color:#ffffff;font-size:12px;font-weight:600;text-align:right;white-space:nowrap;${extra}">${e(label)}${sub ? `<div style="font-weight:400;color:#cbd5e1;font-size:11px;">${e(sub)}</div>` : ''}</th>`;
+  const group = (label: string, span: number) => `<th colspan="${span}" style="padding:6px 12px;background:#374151;color:#e5e7eb;font-size:11px;letter-spacing:1px;text-transform:uppercase;text-align:center;border-left:2px solid #111827;">${label}</th>`;
+
+  const groupRow = `<tr><th colspan="2" style="background:#374151;"></th>${group('Day', 2)}${group('Month', 5)}${group('Year', 3)}</tr>`;
+  const headRow = `<tr>${th('Channel', '', 'text-align:left;')}${th('Fulfillment', '', 'text-align:left;')}${th('Yesterday', shortDate(day), 'border-left:2px solid #111827;')}${th('Same day last year', shortDate(snap.lastyear_today))}${th('This month', '', 'border-left:2px solid #111827;')}${th('Last year MTD')}${th('Change')}${th('Last year month')}${th('Month prediction')}${th('YTD', '', 'border-left:2px solid #111827;')}${th('Last YTD')}${th('Change')}</tr>`;
+
   const rows = snap.data
-    .map((s) => {
+    .map((s, i) => {
+      const bg = i % 2 ? 'background:#f9fafb;' : '';
       const channel = SNAPSHOT_CHANNELS[String(s['Channel'])] ?? s['Channel'];
-      return `<tr>${[
-        channel,
-        s['Fulfillment'],
-        val(s['today_price']),
-        val(s['lastyear_today_price']),
-        val(s['lastweek_price']),
-        val(s['thismonth_price']),
-        val(s['lastyear_todate_price']),
-        pct(s['thismonth_price'], s['lastyear_todate_price'], ''),
-        val(s['lastyear_month_price']),
-        val(s['thismonth_prediction_price']),
-        val(s['ytd_price']),
-        val(s['lastytd_price']),
-        pct(s['ytd_price'], s['lastytd_price'], ''),
-      ]
-        .map((v) => td(v))
-        .join('')}</tr>`;
+      return `<tr>${cell(e(channel), `${bg}text-align:left;font-weight:600;`)}${cell(e(s['Fulfillment']), `${bg}text-align:left;color:#4b5563;`)}${cell(val(s['today_price']), `${bg}border-left:2px solid #e5e7eb;font-weight:600;`)}${cell(val(s['lastyear_today_price']), bg)}${cell(val(s['thismonth_price']), `${bg}border-left:2px solid #e5e7eb;`)}${cell(val(s['lastyear_todate_price']), bg)}${cell(pct(s['thismonth_price'], s['lastyear_todate_price'], ''), bg)}${cell(val(s['lastyear_month_price']), bg)}${cell(val(s['thismonth_prediction_price']), bg)}${cell(val(s['ytd_price']), `${bg}border-left:2px solid #e5e7eb;`)}${cell(val(s['lastytd_price']), bg)}${cell(pct(s['ytd_price'], s['lastytd_price'], ''), bg)}</tr>`;
     })
     .join('\n');
+
   const t = snap.total;
-  const totalCells = [money(t['today']), money(t['lastyear_today']), money(t['lastweek']), money(t['thismonth']), money(t['lastyear_todate']), pct(t['thismonth'], t['lastyear_todate'], 'N/A'), money(t['lastyear_month']), money(t['thismonth_prediction']), money(t['ytd']), money(t['lastytd']), pct(t['ytd'], t['lastytd'], 'N/A')];
-  const foot = `<tr><td colspan="2" style="border: 1px solid black; padding: 2px 8px;"><strong>Total</strong></td>${totalCells.map((v) => td(v, true)).join('')}</tr>`;
-  const head = heads.map((h) => `<td style="border: 1px solid black; padding: 2px 8px;"><strong>${e(h)}</strong></td>`).join('');
-  return `<!DOCTYPE html>\n<html>\n<body>\n<div style="font-size: 14pt;">${e(snap.today_start)} to ${e(snap.today_end)}</div>\n<table style="border: 1px solid black; border-collapse: collapse; font-size: 12pt;">\n<thead><tr>${head}</tr></thead>\n<tbody>\n${rows}\n</tbody>\n<tfoot>${foot}</tfoot>\n</table>\n</body>\n</html>`;
+  const tot = (html: string, extra = '') => `<td style="padding:10px 12px;background:#e5e7eb;font-weight:700;text-align:right;white-space:nowrap;border-top:2px solid #1f2937;${extra}">${html}</td>`;
+  const totalRow = `<tr><td colspan="2" style="padding:10px 12px;background:#e5e7eb;font-weight:700;border-top:2px solid #1f2937;">Total</td>${tot('$' + money(t['today']), 'border-left:2px solid #9ca3af;')}${tot('$' + money(t['lastyear_today']))}${tot('$' + money(t['thismonth']), 'border-left:2px solid #9ca3af;')}${tot('$' + money(t['lastyear_todate']))}${tot(pct(t['thismonth'], t['lastyear_todate'], 'N/A'))}${tot('$' + money(t['lastyear_month']))}${tot('$' + money(t['thismonth_prediction']))}${tot('$' + money(t['ytd']), 'border-left:2px solid #9ca3af;')}${tot('$' + money(t['lastytd']))}${tot(pct(t['ytd'], t['lastytd'], 'N/A'))}</tr>`;
+
+  const yoy = pct(t['today'], t['lastyear_today'], '');
+  const summary = `<div style="font-size:28px;font-weight:700;color:#111827;">$${money(t['today'])}</div><div style="font-size:13px;color:#6b7280;">yesterday${yoy ? ` &middot; ${yoy} vs same day last year ($${money(t['lastyear_today'])})` : ''}</div>`;
+  return `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:24px;background:#f3f4f6;${font}">
+<div style="background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:20px 24px;display:inline-block;max-width:100%;">
+<div style="font-size:12px;letter-spacing:1px;text-transform:uppercase;color:#6b7280;">Angel Isabella &middot; Daily sales</div>
+<div style="font-size:20px;font-weight:700;color:#111827;margin:2px 0 14px;">${e(longDate(day))}</div>
+${summary}
+<table cellspacing="0" cellpadding="0" style="margin-top:18px;border-collapse:collapse;font-size:13px;color:#111827;${font}">
+<thead>${groupRow}${headRow}</thead>
+<tbody>
+${rows}
+${totalRow}
+</tbody>
+</table>
+<div style="margin-top:12px;font-size:11px;color:#9ca3af;">Amazon.ca is in CAD. This month and YTD include yesterday. Prediction = month-to-date pace projected over the full month.</div>
+</div>
+</body>
+</html>`;
 }
 
 // Runs at 03:15 app time: the SalesSnapshot table with the whole previous calendar day as its "Today" column.
