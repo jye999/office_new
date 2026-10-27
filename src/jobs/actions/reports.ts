@@ -365,13 +365,47 @@ export async function emailSalesTaxReport(): Promise<void> {
   });
 }
 
-// SalesNotification's constructor starts with `DB::select('call SalesReport(?,?)')` for yesterday. That procedure is
-// absent from the shared DB (see report/routes.ts), so the command fails there in the old app and no mail is ever
-// sent; the dead aggregation/template code after it is not ported.
+const SALES_CHANNELS: Record<string, string> = { E: 'Ebay', R: '6 - R Store', S: 'Shopify', T: 'Etsy', T2: 'Etsy2', T3: 'Etsy3 - Rental', H: 'Houzz', W: 'Walmart' };
+
+// Same table as views/report/sales.njk (Total = price + tax + shipping), with a totals row.
+export function salesReportHtml(sales: Record<string, unknown>[], day: string): string {
+  const num = (v: unknown) => Number(v ?? 0) || 0;
+  const money = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const cell = (v: unknown, right = false) => `<td style="border: 1px solid black; padding: 2px 8px;${right ? ' text-align: right;' : ''}">${e(v)}</td>`;
+  let orders = 0;
+  let qty = 0;
+  let total = 0;
+  const rows = sales
+    .map((s) => {
+      const rowTotal = num(s.price) + num(s.tax) + num(s.shipping);
+      orders += num(s.orderNumber);
+      qty += num(s.qty);
+      total += rowTotal;
+      const channel = SALES_CHANNELS[String(s.channel)] ?? s.channel;
+      return `<tr>${cell(channel)}${cell(s.fulfillment)}${cell(s.orderNumber, true)}${cell(s.qty, true)}${cell(money(rowTotal), true)}</tr>`;
+    })
+    .join('\n');
+  const head = ['Channel', 'Fulfillment', 'Orders', 'Qty', 'Total'].map((h) => `<td style="border: 1px solid black; padding: 2px 8px;"><strong>${h}</strong></td>`).join('');
+  const foot = `<tr><td colspan="2" style="border: 1px solid black; padding: 2px 8px;"><strong>Total</strong></td>${[String(orders), String(qty), money(total)].map((v) => `<td style="border: 1px solid black; padding: 2px 8px; text-align: right;"><strong>${v}</strong></td>`).join('')}</tr>`;
+  const body =
+    sales.length < 1
+      ? '<div>There were no sales on this day.</div>'
+      : `<table style="border: 1px solid black; border-collapse: collapse; font-size: 14pt;">\n<thead><tr>${head}</tr></thead>\n<tbody>\n${rows}\n</tbody>\n<tfoot>${foot}</tfoot>\n</table>`;
+  return `<!DOCTYPE html>\n<html>\n<body>\n<strong>Sales report for ${e(day)}</strong>\n<div style="color: red; font-size: 10pt;">Amazon.ca $ is in CAD, not USD</div>\n${body}\n</body>\n</html>`;
+}
+
+// Runs at 03:15 app time: report the whole previous calendar day (00:00:00-23:59:59).
 export async function emailSalesReport(): Promise<void> {
   const yesterday = date('Y-m-d', strtotime('yesterday'));
-  await sql`call SalesReport(${yesterday + ' 00:00:00'},${yesterday + ' 23:59:59'})`.execute(db);
-  throw new Error('SalesReport exists now; the SalesNotification mail body is not ported');
+  const { rows } = await sql`call SalesReport(${yesterday + ' 00:00:00'},${yesterday + ' 23:59:59'})`.execute(db);
+  // mysql2 returns [procedure result set, trailing OK packet] for CALL.
+  const sales = (Array.isArray(rows[0]) ? rows[0] : []) as Record<string, unknown>[];
+  await sendMail({
+    from: 'johnny@angelisabella.com',
+    to: ['johnny@angelisabella.com', 'angela@angelisabella.com'],
+    subject: `Angel Isabella sales ${yesterday}`,
+    html: salesReportHtml(sales, yesterday),
+  });
 }
 
 export const reportActions: Record<string, (arg1?: string) => Promise<number>> = {
