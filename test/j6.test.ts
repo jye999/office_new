@@ -5,7 +5,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db, sql } from '../src/db.js';
 import { actions, runSyncAction } from '../src/jobs/actions.js';
-import { emailSalesReport, emailSalesTaxReport, salesReportHtml, hwcShipStatements, statsStatements } from '../src/jobs/actions/reports.js';
+import { emailSalesReport, emailSalesTaxReport, salesSnapshotHtml, hwcShipStatements, statsStatements } from '../src/jobs/actions/reports.js';
 
 describe('J6 report/sync actions', () => {
   beforeEach(() => {
@@ -86,21 +86,26 @@ describe('J6 report/sync actions', () => {
     );
   });
 
-  it('salesReportHtml totals price+tax+shipping per row and escapes values', () => {
-    const html = salesReportHtml(
-      [
-        { channel: 'S', fulfillment: 'FBM', orderNumber: 2, qty: 5, price: '100.50', tax: '5.00', shipping: '10.00' },
-        { channel: 'X<', fulfillment: null, orderNumber: 1, qty: 1, price: '1000.00', tax: null, shipping: null },
-      ],
+  it('salesSnapshotHtml mirrors the SalesSnapshot columns, formats money/percent and escapes values', () => {
+    const html = salesSnapshotHtml(
+      {
+        data: [{ Channel: 'S', Fulfillment: 'FBM', yesterday_price: 100.5, today_price: 1234.5, thismonth_price: 150, lastyear_todate_price: 100, ytd_price: 5, lastytd_price: 0 }, { Channel: 'X<', Fulfillment: null }],
+        total: { yesterday: 100.5, today: 1234.5, lastyear_today: 0, lastweek: 0, thismonth: 150, lastyear_todate: 100, lastyear_month: 0, thismonth_prediction: 0, ytd: 5, lastytd: 0 },
+        today_start: '2026-10-26 00:00:00',
+        today_end: '2026-10-26 23:59:59',
+        lastyear_today: '2025-10-26 00:00:00',
+      },
       '2026-10-26',
+      '2026-10-25',
     );
-    expect(html).toContain('Sales report for 2026-10-26');
+    for (const h of ['Yesterday (2026-10-25)', 'Today (2026-10-26)', 'Last Week', 'This Month Prediction', 'YTD', 'Last YTD']) expect(html).toContain(h);
     expect(html).toContain('Shopify');
-    expect(html).toContain('115.50');
+    expect(html).toContain('1,234.50');
+    expect(html).toContain('50.00 %'); // (150-100)/100
     expect(html).toContain('X&lt;');
-    expect(html).toContain('1,115.50');
-    expect(salesReportHtml([], '2026-10-26')).toContain('no sales');
+    expect(html).toContain('N/A'); // lastytd total is 0
   });
+
 
   it('DRY_RUN=1 skips all five actions without touching the DB or mail', async () => {
     process.env.DRY_RUN = '1';

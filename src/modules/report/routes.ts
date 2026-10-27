@@ -165,8 +165,9 @@ export function snapshotDates(y: number, m: number, d: number) {
 }
 
 // ReportController@SalesSnapshot. Orders/qty accumulations in the PHP are never rendered, so only prices are kept.
-async function salesSnapshot() {
-  const [y, m, d] = date('Y-m-d').split('-').map(Number);
+// `day` is the report's "today" (y-m-d, app timezone); the 03:15 email passes yesterday so its Today column is a full day.
+export async function salesSnapshot(day: string = date('Y-m-d')) {
+  const [y, m, d] = day.split('-').map(Number);
   const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
   const {
     thisyearFirstday, todayStart, todayEnd, yesterdayStart, yesterdayEnd, lastweekStart, lastweekEnd,
