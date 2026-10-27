@@ -370,9 +370,9 @@ const SNAPSHOT_CHANNELS: Record<string, string> = { E: 'Ebay', R: 'R Store', S: 
 
 type Snapshot = Awaited<ReturnType<typeof salesSnapshot>>;
 
-// views/report/salessnapshot.njk as an email table. In the email "Today" is the reported (previous) day and
-// "Yesterday" the day before it, so those two headers carry their dates.
-export function salesSnapshotHtml(snap: Snapshot, day: string, dayBefore: string): string {
+// views/report/salessnapshot.njk as an email table, minus its Yesterday column: the snapshot is built for the
+// previous day (snap's "today"), which leads as "Yesterday", followed by the same date last year.
+export function salesSnapshotHtml(snap: Snapshot, day: string): string {
   const money = (v: unknown) => (Number(v ?? 0) || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   const val = (v: unknown) => (v === undefined || v === null ? '0' : money(v));
   const pct = (cur: unknown, prev: unknown, blank: string) => {
@@ -380,14 +380,13 @@ export function salesSnapshotHtml(snap: Snapshot, day: string, dayBefore: string
     return Number(prev) > 0 ? `${money(((Number(cur) - Number(prev)) / Number(prev)) * 100)} %` : blank;
   };
   const td = (v: unknown, bold = false) => `<td style="border: 1px solid black; padding: 2px 8px;">${bold ? '<strong>' : ''}${e(v)}${bold ? '</strong>' : ''}</td>`;
-  const heads = ['Channel', 'Fulfillment', `Yesterday (${dayBefore})`, `Today (${day})`, `${snap.lastyear_today.slice(0, 10)}`, 'Last Week', 'This Month', 'Last Year month to date', 'Change', 'Last Year this month', 'This Month Prediction', 'YTD', 'Last YTD', 'Change'];
+  const heads = ['Channel', 'Fulfillment', `Yesterday (${day})`, `Same day last year (${snap.lastyear_today.slice(0, 10)})`, 'Last Week', 'This Month', 'Last Year month to date', 'Change', 'Last Year this month', 'This Month Prediction', 'YTD', 'Last YTD', 'Change'];
   const rows = snap.data
     .map((s) => {
       const channel = SNAPSHOT_CHANNELS[String(s['Channel'])] ?? s['Channel'];
       return `<tr>${[
         channel,
         s['Fulfillment'],
-        val(s['yesterday_price']),
         val(s['today_price']),
         val(s['lastyear_today_price']),
         val(s['lastweek_price']),
@@ -405,7 +404,7 @@ export function salesSnapshotHtml(snap: Snapshot, day: string, dayBefore: string
     })
     .join('\n');
   const t = snap.total;
-  const totalCells = [money(t['yesterday']), money(t['today']), money(t['lastyear_today']), money(t['lastweek']), money(t['thismonth']), money(t['lastyear_todate']), pct(t['thismonth'], t['lastyear_todate'], 'N/A'), money(t['lastyear_month']), money(t['thismonth_prediction']), money(t['ytd']), money(t['lastytd']), pct(t['ytd'], t['lastytd'], 'N/A')];
+  const totalCells = [money(t['today']), money(t['lastyear_today']), money(t['lastweek']), money(t['thismonth']), money(t['lastyear_todate']), pct(t['thismonth'], t['lastyear_todate'], 'N/A'), money(t['lastyear_month']), money(t['thismonth_prediction']), money(t['ytd']), money(t['lastytd']), pct(t['ytd'], t['lastytd'], 'N/A')];
   const foot = `<tr><td colspan="2" style="border: 1px solid black; padding: 2px 8px;"><strong>Total</strong></td>${totalCells.map((v) => td(v, true)).join('')}</tr>`;
   const head = heads.map((h) => `<td style="border: 1px solid black; padding: 2px 8px;"><strong>${e(h)}</strong></td>`).join('');
   return `<!DOCTYPE html>\n<html>\n<body>\n<div style="font-size: 14pt;">${e(snap.today_start)} to ${e(snap.today_end)}</div>\n<table style="border: 1px solid black; border-collapse: collapse; font-size: 12pt;">\n<thead><tr>${head}</tr></thead>\n<tbody>\n${rows}\n</tbody>\n<tfoot>${foot}</tfoot>\n</table>\n</body>\n</html>`;
@@ -414,13 +413,12 @@ export function salesSnapshotHtml(snap: Snapshot, day: string, dayBefore: string
 // Runs at 03:15 app time: the SalesSnapshot table with the whole previous calendar day as its "Today" column.
 export async function emailSalesReport(): Promise<void> {
   const yesterday = date('Y-m-d', strtotime('yesterday'));
-  const dayBefore = date('Y-m-d', strtotime('2 days ago'));
   const snap = await salesSnapshot(yesterday);
   await sendMail({
     from: 'johnny@angelisabella.com',
     to: ['johnny@angelisabella.com', 'angela@angelisabella.com'],
     subject: `Angel Isabella sales ${yesterday}`,
-    html: salesSnapshotHtml(snap, yesterday, dayBefore),
+    html: salesSnapshotHtml(snap, yesterday),
   });
 }
 
