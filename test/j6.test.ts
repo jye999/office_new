@@ -109,7 +109,8 @@ describe('J6 report/sync actions', () => {
     expect(html).toContain('Shopify');
     expect(html).toContain('1,234.50');
     expect(html).toContain('+50.00%'); // (150-100)/100
-    expect(html).toContain('X&lt;');
+    expect(html).not.toContain('X&lt;'); // all-empty row is left out
+    expect(html).toContain('Shopify');
     expect(html).toContain('N/A'); // lastytd total is 0
     expect(html).not.toContain('Last Week');
     expect(html).not.toContain('Today');

@@ -393,7 +393,11 @@ export function salesSnapshotHtml(snap: Snapshot, day: string): string {
   const groupRow = `<tr><th colspan="2" style="background:#374151;"></th>${group('Day', 2)}${group('Month', 5)}${group('Year', 3)}</tr>`;
   const headRow = `<tr>${th('Channel', '', 'text-align:left;')}${th('Fulfillment', '', 'text-align:left;')}${th('Yesterday', shortDate(day), 'border-left:2px solid #111827;')}${th('Same day last year', shortDate(snap.lastyear_today))}${th('This month', '', 'border-left:2px solid #111827;')}${th('Last year MTD')}${th('Change')}${th('Last year month')}${th('Month prediction')}${th('YTD', '', 'border-left:2px solid #111827;')}${th('Last YTD')}${th('Change')}</tr>`;
 
+  // Rows with no number in any column are noise: leave them out.
+  const NUMBER_KEYS = ['today_price', 'lastyear_today_price', 'thismonth_price', 'lastyear_todate_price', 'lastyear_month_price', 'thismonth_prediction_price', 'ytd_price', 'lastytd_price'];
+  const hasNumber = (s: Snapshot['data'][number]) => NUMBER_KEYS.some((k) => Number(s[k] ?? 0) !== 0);
   const rows = snap.data
+    .filter(hasNumber)
     .map((s, i) => {
       const bg = i % 2 ? 'background:#f9fafb;' : '';
       const channel = SNAPSHOT_CHANNELS[String(s['Channel'])] ?? s['Channel'];
