@@ -428,8 +428,13 @@ ${totalRow}
 }
 
 // Runs at 03:15 app time: the SalesSnapshot table with the whole previous calendar day as its "Today" column.
+// view.ts strtotime() has no 'yesterday' keyword (it returns 0 = 1969-12-31), only relative '-N day' offsets.
+export function previousDay(): string {
+  return date('Y-m-d', strtotime('-1 day'));
+}
+
 export async function emailSalesReport(): Promise<void> {
-  const yesterday = date('Y-m-d', strtotime('yesterday'));
+  const yesterday = previousDay();
   const snap = await salesSnapshot(yesterday);
   await sendMail({
     from: 'johnny@angelisabella.com',

@@ -5,7 +5,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { db, sql } from '../src/db.js';
 import { actions, runSyncAction } from '../src/jobs/actions.js';
-import { emailSalesReport, emailSalesTaxReport, salesSnapshotHtml, hwcShipStatements, statsStatements } from '../src/jobs/actions/reports.js';
+import { date } from '../src/view.js';
+import { emailSalesReport, emailSalesTaxReport, salesSnapshotHtml, previousDay, hwcShipStatements, statsStatements } from '../src/jobs/actions/reports.js';
 
 describe('J6 report/sync actions', () => {
   beforeEach(() => {
@@ -84,6 +85,13 @@ describe('J6 report/sync actions', () => {
     expect(String(log.mock.calls[0][0])).toMatch(
       /^\[mail disabled\] to=johnny@angelisabella\.com,angela@angelisabella\.com subject="Angel Isabella sales \d{4}-\d{2}-\d{2}"/,
     );
+  });
+
+  it('previousDay is the calendar day before today in the app timezone (not 1969-12-31)', () => {
+    const today = date('Y-m-d');
+    const prev = previousDay();
+    expect(prev).toMatch(/^20\d\d-\d\d-\d\d$/);
+    expect(Date.parse(`${today}T00:00:00Z`) - Date.parse(`${prev}T00:00:00Z`)).toBe(86400000);
   });
 
   it('salesSnapshotHtml mirrors the SalesSnapshot columns, formats money/percent and escapes values', () => {
