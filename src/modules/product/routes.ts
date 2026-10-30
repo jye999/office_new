@@ -120,7 +120,24 @@ async function productsWithRelations(rows: Row[]): Promise<Row[]> {
   const lm = group(locs);
   const im = group(imgs); // SAFETY: product_id coerced via Number() (varchar column)
 
-  return rows.map((r) => productToJson(r, lm.get(r['id'] as number) ?? [], im.get(r['id'] as number) ?? []));
+  // Vendor assignment (os_sku_vendors, one per SKU) for the ListProducts vendor column.
+  const skus = [...new Set(rows.map((r) => r['sku']).filter((x): x is string => typeof x === 'string' && x !== ''))];
+  const vendorBySku = new Map<string, { vendor_id: number; vendor_name: string }>();
+  if (skus.length > 0) {
+    const vs = await db
+      .selectFrom('os_sku_vendors')
+      .innerJoin('os_vendors', 'os_vendors.id', 'os_sku_vendors.vendor_id')
+      .select(['os_sku_vendors.sku as sku', 'os_vendors.id as vendor_id', 'os_vendors.name as vendor_name'])
+      .where('os_sku_vendors.sku', 'in', skus)
+      .execute();
+    for (const v of vs) vendorBySku.set(v.sku, { vendor_id: Number(v.vendor_id), vendor_name: v.vendor_name });
+  }
+
+  return rows.map((r) => ({
+    ...productToJson(r, lm.get(r['id'] as number) ?? [], im.get(r['id'] as number) ?? []),
+    vendor_id: vendorBySku.get(String(r['sku']))?.vendor_id ?? null,
+    vendor_name: vendorBySku.get(String(r['sku']))?.vendor_name ?? null,
+  }));
 }
 
 // response()->json('ok') / json('<str>'): Laravel JSON-encodes the string, but
