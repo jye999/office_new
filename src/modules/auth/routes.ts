@@ -1,5 +1,5 @@
 // Web auth routes: Route::auth() (Laravel 5.4) + HomeController@index for / and /home.
-// Views: auth/login, auth/register, auth/passwords/email, auth/passwords/reset, home.
+// Views: auth/login, home. No self-service registration or password reset (admins manage users).
 
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { db } from '../../db.js';
@@ -18,7 +18,7 @@ import {
   verifyPassword,
 } from '../../auth.js';
 import { render, trans } from '../../view.js';
-import { emailValidation, loginValidation, registerValidation, resetPassword, resetValidation, sendResetLink, type Errors } from './shared.js';
+import { loginValidation, type Errors } from './shared.js';
 
 function wantsJson(req: FastifyRequest): boolean {
   return req.headers['x-requested-with'] === 'XMLHttpRequest';
@@ -61,7 +61,7 @@ async function handleLogin(req: FastifyRequest, reply: FastifyReply): Promise<vo
     const session = req.session as Record<string, unknown>;
     const intended = sessionIntendedOf(req); // read before clearing (Laravel order)
     session['user_id'] = user.id;
-    delete session['intended'];
+    session['intended'] = null; // `delete session[k]` is a no-op on the session proxy
     (req as { saveSession?: () => Promise<void> }).saveSession?.();
     lredirect(req, reply, intended ?? '/home');
     return;
@@ -77,43 +77,6 @@ async function handleLogin(req: FastifyRequest, reply: FastifyReply): Promise<vo
 function sessionIntendedOf(req: FastifyRequest): string | null {
   const v = (req.session as Record<string, unknown> | undefined)?.['intended'];
   return typeof v === 'string' && v ? v : null;
-}
-
-// ---------------------------------------------------------------- password reset
-
-async function handlePasswordEmail(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const email = input(req, 'email');
-  const errors = emailValidation(email);
-  if (Object.keys(errors).length > 0) {
-    reply.withErrors(errors).withInput(sanitizeOldInput(allInput(req)));
-    redirectBack(req, reply);
-    return;
-  }
-  const key = await sendResetLink(String(email));
-  if (key === 'passwords.sent') reply.flashStatus(trans(key));
-  else reply.withErrors({ email: trans(key) });
-  redirectBack(req, reply);
-}
-
-async function handlePasswordReset(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const data = allInput(req);
-  const validationErrors = resetValidation(data);
-  if (Object.keys(validationErrors).length > 0) {
-    reply.withErrors(validationErrors).withInput(sanitizeOldInput(data));
-    redirectBack(req, reply);
-    return;
-  }
-  const result = await resetPassword(data);
-  if (result.userId === undefined) {
-    reply.withErrors({ email: trans(result.key) }).withInput({ email: data['email'] });
-    redirectBack(req, reply);
-    return;
-  }
-  const session = req.session as Record<string, unknown>;
-  session['user_id'] = result.userId;
-  (req as { saveSession?: () => Promise<void> }).saveSession?.();
-  reply.flashStatus(trans(result.key));
-  lredirect(req, reply, '/home');
 }
 
 // ---------------------------------------------------------------- routes
@@ -161,48 +124,10 @@ export function registerAuthRoutes(app: FastifyInstance): void {
 
   // logout is the one auth route not behind `guest`.
   app.post('/logout', async (req, reply) => {
-    const session = req.session as Record<string, unknown>;
-    delete session['user_id'];
-    delete session['intended'];
-    (req as { saveSession?: () => Promise<void> }).saveSession?.();
+    // The session proxy has no delete trap (`delete session[k]` is a silent no-op and leaves the user logged in);
+    // Session#delete() expires the whole cookie, like Laravel's flush() on logout.
+    (req.session as unknown as { delete: () => void }).delete();
     lredirect(req, reply, '/');
   });
   registerRoute('logout', '/logout');
-
-  app.get('/register', { preHandler: [requireGuest] }, async (req, reply) => {
-    await render(req, reply, 'auth/register');
-  });
-  registerRoute('register', '/register');
-
-  app.post('/register', { preHandler: [requireGuest] }, async (req, reply) => {
-    const data = allInput(req);
-    const errors = await registerValidation(data);
-    if (Object.keys(errors).length > 0) {
-      reply.withErrors(errors).withInput(sanitizeOldInput(data));
-      redirectBack(req, reply);
-      return;
-    }
-    // parity quirk: RegisterController::create() is commented out in the old app,
-    // so $user is null and the framework's typed guard->login(null) throws a
-    // TypeError -> 500. Plan: NOTES.md T02.
-    reply.code(500).type('text/html; charset=UTF-8').send('500 | Server Error');
-  });
-
-  app.get('/password/reset', { preHandler: [requireGuest] }, async (req, reply) => {
-    await render(req, reply, 'auth/passwords/email');
-  });
-  registerRoute('password.request', '/password/reset');
-
-  app.post('/password/email', { preHandler: [requireGuest] }, handlePasswordEmail);
-  registerRoute('password.email', '/password/email');
-
-  app.get<{ Params: { token: string } }>('/password/reset/:token', { preHandler: [requireGuest] }, async (req, reply) => {
-    await render(req, reply, 'auth/passwords/reset', {
-      token: req.params.token,
-      email: input(req, 'email') ?? '',
-    });
-  });
-  registerRoute('password.reset', '/password/reset/:token');
-
-  app.post('/password/reset', { preHandler: [requireGuest] }, handlePasswordReset);
 }

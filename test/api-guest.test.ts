@@ -1,4 +1,4 @@
-// guest:api routes (POST /api/login, /api/register, /api/password/email, /api/password/reset).
+// guest:api routes (POST /api/login only; registration and password reset were removed).
 // DB tests use AG-prefixed temp rows deleted in afterEach; MAIL_ENABLED stays unset (no mail).
 
 import Fastify from 'fastify';
@@ -79,121 +79,17 @@ describe('POST /api/login', () => {
   });
 });
 
-describe('POST /api/register', () => {
-  it('validation errors incl. unique:users and confirmed/min', async () => {
+describe('removed guest endpoints', () => {
+  it('has no /api/register or /api/password/* (admins manage users; no self-service reset)', async () => {
     await insertUser();
     const app = buildApp();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/register',
-      headers: JSON_HEADERS,
-      payload: { name: 'A', email: EMAIL, password: 'abc', password_confirmation: 'xyz' },
-    });
-    expect(res.statusCode).toBe(422);
-    expect(res.json()).toEqual({
-      email: ['The email has already been taken.'],
-      password: ['The password must be at least 6 characters.', 'The password confirmation does not match.'],
-    });
-    const bad = await app.inject({ method: 'POST', url: '/api/register', headers: JSON_HEADERS, payload: { email: 'not-an-email' } });
-    expect(bad.json()).toEqual({
-      name: ['The name field is required.'],
-      email: ['The email must be a valid email address.'],
-      password: ['The password field is required.'],
-    });
-    await app.close();
-  });
-
-  it('valid input: 500 (create() is commented out) and no user row is written', async () => {
-    const app = buildApp();
-    const res = await app.inject({
-      method: 'POST',
-      url: '/api/register',
-      payload: { name: 'A', email: `${PREFIX}new@x.test`, password: 'secret1', password_confirmation: 'secret1' },
-    });
-    expect(res.statusCode).toBe(500);
-    expect(await userByEmail(`${PREFIX}new@x.test`)).toBeUndefined();
-    await app.close();
-  });
-});
-
-describe('POST /api/password/email', () => {
-  it('validation 422 JSON; unknown email 302 back without a token row', async () => {
-    const app = buildApp();
-    const bad = await app.inject({ method: 'POST', url: '/api/password/email', headers: JSON_HEADERS, payload: { email: 'x' } });
-    expect(bad.statusCode).toBe(422);
-    expect(bad.json()).toEqual({ email: ['The email must be a valid email address.'] });
-    const unknown = await app.inject({ method: 'POST', url: '/api/password/email', headers: { ...JSON_HEADERS, referer: REFERER }, payload: { email: EMAIL } });
-    expect(unknown.statusCode).toBe(302);
-    expect(unknown.headers['location']).toBe(REFERER);
-    expect(await db.selectFrom('os_password_resets').select('email').where('email', '=', EMAIL).execute()).toHaveLength(0);
-    await app.close();
-  });
-
-  it('known email: 302 back, one bcrypt-hashed token row replacing the old one, no mail', async () => {
-    await insertUser();
-    const old = hashPassword('old-token');
-    await db.insertInto('os_password_resets').values({ email: EMAIL, token: old, created_at: nowDb() as never } as never).execute();
-    const app = buildApp();
-    const res = await app.inject({ method: 'POST', url: '/api/password/email', headers: { referer: REFERER }, payload: { email: EMAIL } });
-    expect(res.statusCode).toBe(302);
-    expect(res.headers['location']).toBe(REFERER);
-    const rows = await db.selectFrom('os_password_resets').selectAll().where('email', '=', EMAIL).execute();
-    expect(rows).toHaveLength(1);
-    expect(rows[0].token).not.toBe(old);
-    expect(rows[0].token).toMatch(/^\$2[aby]\$10\$/);
-    await app.close();
-  });
-});
-
-describe('POST /api/password/reset', () => {
-  const TOKEN = 'a-reset-token';
-  const payload = (over: Record<string, unknown> = {}) => ({
-    email: EMAIL, token: TOKEN, password: 'newpass1', password_confirmation: 'newpass1', ...over,
-  });
-  const seedToken = (createdAt = nowDb()) =>
-    db.insertInto('os_password_resets').values({ email: EMAIL, token: hashPassword(TOKEN), created_at: createdAt as never } as never).execute();
-
-  it('validation: confirmed before min, token/email required', async () => {
-    const app = buildApp();
-    const res = await app.inject({ method: 'POST', url: '/api/password/reset', headers: JSON_HEADERS, payload: { password: 'abc' } });
-    expect(res.statusCode).toBe(422);
-    expect(res.json()).toEqual({
-      token: ['The token field is required.'],
-      email: ['The email field is required.'],
-      password: ['The password confirmation does not match.', 'The password must be at least 6 characters.'],
-    });
-    await app.close();
-  });
-
-  it('valid token: 302 /home, password changed, token rows deleted', async () => {
-    await insertUser();
-    await seedToken();
-    const app = buildApp();
-    const res = await app.inject({ method: 'POST', url: '/api/password/reset', payload: payload() });
-    expect(res.statusCode).toBe(302);
-    expect(res.headers['location']).toMatch(/\/home$/);
-    const user = await userByEmail(EMAIL);
-    expect(verifyPassword('newpass1', user!.password)).toBe(true);
-    expect(user!.remember_token).toHaveLength(60);
-    expect(await db.selectFrom('os_password_resets').select('email').where('email', '=', EMAIL).execute()).toHaveLength(0);
-    await app.close();
-  });
-
-  it('wrong/expired token or unknown user: 302 back, nothing changed', async () => {
-    await insertUser();
-    await seedToken();
-    const app = buildApp();
-    const headers = { referer: REFERER };
-    for (const body of [payload({ token: 'wrong' }), payload({ email: `${PREFIX}nobody@x.test` })]) {
-      const res = await app.inject({ method: 'POST', url: '/api/password/reset', headers, payload: body });
-      expect(res.statusCode).toBe(302);
-      expect(res.headers['location']).toBe(REFERER);
+    for (const url of ['/api/register', '/api/password/email', '/api/password/reset']) {
+      const res = await app.inject({ method: 'POST', url, headers: JSON_HEADERS, payload: { name: 'A', email: EMAIL, password: 'secret1', password_confirmation: 'secret1', token: 'x' } });
+      expect(res.statusCode, url).toBe(404);
     }
-    await db.updateTable('os_password_resets').set({ created_at: '2020-01-01 00:00:00' as never }).where('email', '=', EMAIL).execute();
-    const expired = await app.inject({ method: 'POST', url: '/api/password/reset', headers, payload: payload() });
-    expect(expired.headers['location']).toBe(REFERER);
-    expect(verifyPassword('oldpass1', (await userByEmail(EMAIL))!.password)).toBe(true);
-    expect(await db.selectFrom('os_password_resets').select('email').where('email', '=', EMAIL).execute()).toHaveLength(1);
+    // nothing was created or changed, and no reset token row was written
+    expect(await db.selectFrom('os_password_resets').select('email').where('email', '=', EMAIL).execute()).toHaveLength(0);
+    expect(verifyPassword('oldpass1', String((await userByEmail(EMAIL))?.password))).toBe(true);
     await app.close();
   });
 });

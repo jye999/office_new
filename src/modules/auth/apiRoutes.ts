@@ -1,12 +1,11 @@
-// guest:api group from routes/api.php: POST /api/login, /api/register,
-// /api/password/email, /api/password/reset. Same Laravel 5.4 auth-trait
-// controllers as the web routes, but the api middleware group has no session:
+// guest:api group from routes/api.php: POST /api/login only (registration and password reset were removed on
+// purpose; admins manage users). Same Laravel 5.4 auth-trait controller as the web route, but the api middleware group has no session:
 // failures answer 422/423 JSON when the client expects JSON, else 302 back.
 
 import { randomBytes } from 'node:crypto';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { db } from '../../db.js';
-import { allInput, input, lredirect, redirectBack } from '../../http.js';
+import { input, redirectBack } from '../../http.js';
 import {
   loginThrottleAvailableIn,
   loginThrottleHit,
@@ -16,7 +15,7 @@ import {
   verifyPassword,
 } from '../../auth.js';
 import { trans } from '../../view.js';
-import { emailValidation, loginValidation, registerValidation, resetPassword, resetValidation, sendResetLink, type Errors } from './shared.js';
+import { loginValidation, type Errors } from './shared.js';
 
 // Request::expectsJson(): ajax (non-pjax) or an Accept header whose first type is json.
 function expectsJson(req: FastifyRequest): boolean {
@@ -71,36 +70,7 @@ async function handleLogin(req: FastifyRequest, reply: FastifyReply): Promise<vo
   else redirectBack(req, reply);
 }
 
-async function handleRegister(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const errors = await registerValidation(allInput(req));
-  if (Object.keys(errors).length > 0) return failValidation(req, reply, errors);
-  // RegisterController::create() is commented out in the old app, so $user is null and
-  // guard->login(null) throws a TypeError -> 500 (same quirk as web POST /register).
-  serverError(reply);
-}
-
-async function handlePasswordEmail(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const email = input(req, 'email');
-  const errors = emailValidation(email);
-  if (Object.keys(errors).length > 0) return failValidation(req, reply, errors);
-  await sendResetLink(String(email));
-  // sent and invalid-user both answer back()->with(...): 302, never JSON
-  redirectBack(req, reply);
-}
-
-async function handlePasswordReset(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  const data = allInput(req);
-  const errors = resetValidation(data);
-  if (Object.keys(errors).length > 0) return failValidation(req, reply, errors);
-  const result = await resetPassword(data);
-  if (result.userId === undefined) redirectBack(req, reply);
-  else lredirect(req, reply, '/home');
-}
-
 export function registerApiGuestRoutes(app: FastifyInstance): void {
   const guest = { preHandler: [requireApiGuest] };
   app.post('/api/login', guest, handleLogin);
-  app.post('/api/register', guest, handleRegister);
-  app.post('/api/password/email', guest, handlePasswordEmail);
-  app.post('/api/password/reset', guest, handlePasswordReset);
 }

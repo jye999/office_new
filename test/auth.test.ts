@@ -17,6 +17,7 @@ import {
 } from '../src/auth.js';
 import { registerHttpHelpers } from '../src/http.js';
 import { registerAuthRoutes } from '../src/modules/auth/routes.js';
+import { installRouter } from '../src/router.js';
 import { registerViewPlugins } from '../src/view.js';
 
 // ---------------------------------------------------------------- bcrypt $2y$
@@ -227,25 +228,21 @@ describe('auth routes (fastify inject)', () => {
     await app.close();
   });
 
-  it('GET /password/reset and /register render their forms', async () => {
+  it('has no self-service registration or password reset (admins manage users)', async () => {
     const app = Fastify();
     await app.register(formbody);
     await app.register(registerHttpHelpers);
     await registerViewPlugins(app);
     registerAuthRoutes(app);
-
-    const email = await app.inject({ method: 'GET', url: '/password/reset' });
-    expect(email.statusCode).toBe(200);
-    expect(email.body).toContain('Send Password Reset Link');
-
-    const register = await app.inject({ method: 'GET', url: '/register' });
-    expect(register.statusCode).toBe(200);
-    expect(register.body).toContain('panel-heading">Register');
-
-    const reset = await app.inject({ method: 'GET', url: '/password/reset/TOKEN123?email=a@b.c' });
-    expect(reset.statusCode).toBe(200);
-    expect(reset.body).toContain('name="token" value="TOKEN123"');
-    expect(reset.body).toContain('value="a@b.c"');
+    installRouter(app);
+    for (const [method, url] of [['GET', '/register'], ['POST', '/register'], ['GET', '/password/reset'], ['POST', '/password/email'], ['POST', '/password/reset'], ['GET', '/password/reset/TOKEN123']] as const) {
+      const res = await app.inject({ method, url });
+      expect(res.statusCode, `${method} ${url}`).toBe(404);
+    }
+    // and the login page no longer links to them
+    const login = await app.inject({ method: 'GET', url: '/login' });
+    expect(login.body).not.toContain('/password/reset');
+    expect(login.body).not.toContain('/register');
     await app.close();
   });
 });

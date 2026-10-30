@@ -192,8 +192,9 @@ The worker unit is identical except `Description=office_new worker`, `ExecStart=
 - **Sync actions with real writes** (`windy`, `mermaid`, `stats`, `shopify-products` truncate+refill, `get-walmart-items`
   truncate+insert) were only EXPLAIN/stub-verified. Run each once with a DB backup before leaving them scheduled.
 - **404/500 pages differ** from the old APP_DEBUG Symfony debug pages (production-style pages in the new app).
-- **Unowned api routes:** `POST /api/login`, `/api/register`, `/api/password/email`, `/api/password/reset` are in
-  `routes/api.php` but not registered (see `pnpm routes:check`).
+- **Unowned api routes:** `POST /api/login` is in `routes/api.php` but not registered (see `pnpm routes:check`).
+- **No self-service accounts:** `/register`, `/password/*` and `POST /api/register`, `/api/password/*` were removed on purpose
+  (registration never worked; password reset is replaced by admin-managed users: `/Users`, admin only).
 
 ## Cutover record (hogrider-web, 2026-10-25)
 
