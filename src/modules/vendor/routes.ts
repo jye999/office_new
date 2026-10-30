@@ -1,4 +1,4 @@
-// Vendors: manage the vendor list (/Vendors page + /api/vendors) and assign one vendor to a product (SKU).
+// Vendors: manage the vendor list (/api/vendors; the /Vendors page is the Vue SPA, see product routes) and assign one vendor to a product (SKU).
 // os_vendors(name unique) / os_sku_vendors(sku unique -> one vendor per SKU, vendor_id FK ON DELETE RESTRICT).
 // Not a port of the old app: new feature, session-auth like the other product APIs.
 
@@ -7,7 +7,6 @@ import { sql } from 'kysely';
 import { db, nowDb } from '../../db.js';
 import { input } from '../../http.js';
 import { route } from '../../router.js';
-import { render } from '../../view.js';
 
 const ROLES = ['admin', 'user', 'remote'];
 
@@ -26,10 +25,6 @@ async function nameTaken(name: string, exceptId = 0): Promise<boolean> {
   // Unique key uses a case/accent-insensitive collation, so compare the same way.
   const row = await db.selectFrom('os_vendors').select('id').where('name', '=', name).where('id', '!=', exceptId).executeTakeFirst();
   return row != null;
-}
-
-async function vendorsPage(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  await render(req, reply, 'vendor/index', { vendors: await listVendors() });
 }
 
 async function apiList(_req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -96,7 +91,6 @@ async function assignVendor(req: FastifyRequest, reply: FastifyReply): Promise<v
 }
 
 export function registerVendorRoutes(app: FastifyInstance): void {
-  route(app, { verb: 'get', path: '/Vendors', name: 'Vendors', roles: ROLES, handler: vendorsPage });
   route(app, { verb: 'get', path: '/api/vendors', roles: ROLES, handler: apiList });
   route(app, { verb: 'post', path: '/api/vendors', roles: ROLES, handler: apiCreate });
   route(app, { verb: 'post', path: '/api/vendors/{id}', roles: ROLES, handler: apiUpdate });

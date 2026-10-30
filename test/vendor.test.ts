@@ -83,9 +83,7 @@ describe('vendors', () => {
     // list + page
     const list = (await app.inject({ method: 'GET', url: '/api/vendors' })).json() as Array<{ id: number; name: string; sku_count: number }>;
     expect(list.find((v) => v.id === aId)).toMatchObject({ name: 'ZZ Vendor A2', sku_count: 0 });
-    const page = await app.inject({ method: 'GET', url: '/Vendors' });
-    expect(page.statusCode).toBe(200);
-    expect(page.body).toContain('ZZ Vendor A2');
+    expect((await app.inject({ method: 'GET', url: '/Vendors' })).statusCode).toBe(200); // Vue SPA shell
 
     // assign; reassigning moves it (one vendor per SKU)
     expect((await post(app, `/api/product/${PID}/vendor`, { vendor_id: String(aId) })).json()).toEqual({ success: true, vendor_id: aId, vendor_name: 'ZZ Vendor A2' });
@@ -97,6 +95,10 @@ describe('vendors', () => {
     // vendor shows up on the Products list API
     const products = (await app.inject({ method: 'GET', url: `/api/products?filter=${SKU}` })).json() as { products: Array<{ sku: string; vendor_id: number | null; vendor_name: string | null }> };
     expect(products.products.find((p) => p.sku === SKU)).toMatchObject({ vendor_id: bId, vendor_name: 'ZZ Vendor B' });
+
+    // single-product API (product modal) carries the vendor too
+    const single = (await app.inject({ method: 'GET', url: `/api/product/${PID}` })).json() as { vendor_id: number | null; vendor_name: string | null };
+    expect(single).toMatchObject({ vendor_id: bId, vendor_name: 'ZZ Vendor B' });
 
     // cannot delete an assigned vendor; can after clearing the assignment
     const blocked = await app.inject({ method: 'DELETE', url: `/api/vendors/${bId}` });

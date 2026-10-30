@@ -86,7 +86,17 @@ async function productWithRelations(id: number): Promise<Row> {
     .selectAll()
     .where('product_id', '=', String(id))
     .execute()) as unknown as Row[]; // SAFETY: full rows (see above)
-  return productToJson(row, locations, images);
+  // Vendor assignment (os_sku_vendors, one per SKU) for the product modal's vendor select.
+  const vendor =
+    typeof row['sku'] === 'string' && row['sku'] !== ''
+      ? await db
+          .selectFrom('os_sku_vendors')
+          .innerJoin('os_vendors', 'os_vendors.id', 'os_sku_vendors.vendor_id')
+          .select(['os_vendors.id as vendor_id', 'os_vendors.name as vendor_name'])
+          .where('os_sku_vendors.sku', '=', row['sku'])
+          .executeTakeFirst()
+      : undefined;
+  return { ...productToJson(row, locations, images), vendor_id: vendor ? Number(vendor.vendor_id) : null, vendor_name: vendor?.vendor_name ?? null };
 }
 
 // Eloquent `with('locations','images')`: one IN query per relation, grouped per
@@ -1323,6 +1333,8 @@ export function registerProductRoutes(app: FastifyInstance): void {
   registerFallback('InventoryCount', vue);
   registerFallback('InventoryConsolidation', vue);
   registerFallback('Orders', vue);
+  // Vendors list: a page of the same Vue SPA (Vendors.vue), API in modules/vendor.
+  route(app, { verb: 'get', path: '/Vendors', name: 'Vendors', roles: ROLES, handler: vue });
   // web.php:414 — any verbs; the resource's /product/{id} (lowercase, T27) is a
   // different path, so this owns /Product/{id} for all verbs, like the old app.
   any(app, { path: '/Product/{id}', roles: ROLES, handler: vue });
