@@ -13,12 +13,13 @@ const ROLES = ['admin', 'user', 'remote'];
 const clean = (v: unknown): string => String(v ?? '').trim();
 
 // Vendors with how many SKUs use each one.
-async function listVendors(): Promise<Array<{ id: number; name: string; notes: string | null; sku_count: number }>> {
-  const { rows } = await sql<{ id: number; name: string; notes: string | null; sku_count: number }>`
-    select v.id, v.name, v.notes, count(sv.id) as sku_count
+async function listVendors(): Promise<Array<{ id: number; name: string; notes: string | null; sku_count: number; user_count: number }>> {
+  const { rows } = await sql<{ id: number; name: string; notes: string | null; sku_count: number; user_count: number }>`
+    select v.id, v.name, v.notes, count(sv.id) as sku_count,
+      (select count(*) from os_vendor_users vu where vu.vendor_id = v.id) as user_count
     from os_vendors v left join os_sku_vendors sv on sv.vendor_id = v.id
     group by v.id, v.name, v.notes order by v.name`.execute(db);
-  return rows.map((r) => ({ ...r, id: Number(r.id), sku_count: Number(r.sku_count) }));
+  return rows.map((r) => ({ ...r, id: Number(r.id), sku_count: Number(r.sku_count), user_count: Number(r.user_count) }));
 }
 
 async function nameTaken(name: string, exceptId = 0): Promise<boolean> {
@@ -39,7 +40,7 @@ async function apiCreate(req: FastifyRequest, reply: FastifyReply): Promise<void
   if (await nameTaken(name)) return reply.code(409).send({ success: false, message: `Vendor "${name}" already exists` });
   const now = nowDb();
   const res = await db.insertInto('os_vendors').values({ name, notes: notes === '' ? null : notes, created_at: now, updated_at: now } as never).executeTakeFirst();
-  reply.code(201).send({ success: true, id: Number(res.insertId), name, notes: notes === '' ? null : notes, sku_count: 0 });
+  reply.code(201).send({ success: true, id: Number(res.insertId), name, notes: notes === '' ? null : notes, sku_count: 0, user_count: 0 });
 }
 
 async function apiUpdate(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -64,6 +65,8 @@ async function apiDelete(req: FastifyRequest, reply: FastifyReply): Promise<void
   const used = await db.selectFrom('os_sku_vendors').select(sql<number>`count(*)`.as('n')).where('vendor_id', '=', id).executeTakeFirst();
   const n = Number(used?.n ?? 0);
   if (n > 0) return reply.code(409).send({ success: false, message: `"${existing.name}" is assigned to ${n} product${n === 1 ? '' : 's'}; unassign them first` });
+  const users = await db.selectFrom('os_vendor_users').select(sql<number>`count(*)`.as('n')).where('vendor_id', '=', id).executeTakeFirst();
+  if (Number(users?.n ?? 0) > 0) return reply.code(409).send({ success: false, message: `"${existing.name}" still has vendor logins; delete them first` });
   await db.deleteFrom('os_vendors').where('id', '=', id).execute();
   reply.send({ success: true });
 }

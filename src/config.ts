@@ -21,6 +21,8 @@ const EnvSchema = z.object({
   OPENAI_MODEL: z.string().default('gpt-4o'),
   OPENAI_TRANSCRIPTION_MODEL: z.string().default('gpt-4o-mini-transcribe'),
   N8N_MCP_URL: z.string().default(''),
+  // The only account allowed to manage other admins on the Users page (matched by login email).
+  SUPER_ADMIN_EMAIL: z.string().default('johnny@angelisabella.com'),
   PUBLIC_DIR: z.string().min(1),
   OLD_APP_URL: z.string().url(),
   // Used only by scripts/parity.ts (T03); allowed to be empty until then.

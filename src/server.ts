@@ -37,6 +37,10 @@ import { registerInventoryRoutes } from './modules/inventory/routes.js';
 import { registerOrderRoutes } from './modules/order/routes.js';
 import { registerProductRoutes } from './modules/product/routes.js';
 import { registerVendorRoutes } from './modules/vendor/routes.js';
+import { registerVendorUserRoutes } from './modules/vendor/users.js';
+import { registerUsersRoutes } from './modules/users/routes.js';
+import { registerVendorPortalRoutes } from './modules/vendor/portal.js';
+import { vendorLockdown } from './vendorAccess.js';
 import { registerSupplierRoutes } from './modules/supplier/routes.js';
 import { registerProductImageRoutes } from './modules/productimage/routes.js';
 import { registerFaireImportRoutes } from './modules/faireimport/routes.js';
@@ -83,6 +87,8 @@ app.addContentTypeParser('application/x-www-form-urlencoded', { parseAs: 'buffer
 // (onSend hooks are FIFO) so flashed errors/old input are consumed once.
 await app.register(registerHttpHelpers);
 await registerViewPlugins(app);
+// Vendor users are confined to /vendor/*; must be registered before the route modules so it covers every route.
+app.addHook('preHandler', vendorLockdown);
 registerAuthRoutes(app);
 registerBroadcastingRoutes(app);
 registerApiAuthRoutes(app);
@@ -114,6 +120,9 @@ registerInventoryRoutes(app);
 registerOrderRoutes(app);
 registerProductRoutes(app);
 registerVendorRoutes(app);
+registerVendorUserRoutes(app);
+registerUsersRoutes(app);
+registerVendorPortalRoutes(app);
 registerSupplierRoutes(app);
 registerProductImageRoutes(app);
 registerFaireImportRoutes(app);

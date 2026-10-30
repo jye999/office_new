@@ -96,6 +96,15 @@ describe('vendors', () => {
     const products = (await app.inject({ method: 'GET', url: `/api/products?filter=${SKU}` })).json() as { products: Array<{ sku: string; vendor_id: number | null; vendor_name: string | null }> };
     expect(products.products.find((p) => p.sku === SKU)).toMatchObject({ vendor_id: bId, vendor_name: 'ZZ Vendor B' });
 
+    // vendor filter on the list API: by vendor id, and 'none' (no vendor)
+    const byVendor = (await app.inject({ method: 'GET', url: `/api/products?vendor_id=${bId}` })).json() as { total: number; products: Array<{ sku: string }> };
+    expect(byVendor.products.map((p) => p.sku)).toEqual([SKU]);
+    expect(byVendor.total).toBe(1);
+    const otherVendor = (await app.inject({ method: 'GET', url: `/api/products?vendor_id=${aId}` })).json() as { total: number; products: unknown[] };
+    expect(otherVendor).toEqual({ total: 0, products: [] });
+    const unassigned = (await app.inject({ method: 'GET', url: '/api/products?vendor_id=none&filter=zz vendor product' })).json() as { products: unknown[] };
+    expect(unassigned.products).toHaveLength(0);
+
     // single-product API (product modal) carries the vendor too
     const single = (await app.inject({ method: 'GET', url: `/api/product/${PID}` })).json() as { vendor_id: number | null; vendor_name: string | null };
     expect(single).toMatchObject({ vendor_id: bId, vendor_name: 'ZZ Vendor B' });
@@ -105,6 +114,8 @@ describe('vendors', () => {
     expect(blocked.statusCode).toBe(409);
     expect(blocked.json().message).toContain('assigned to 1 product');
     expect((await post(app, `/api/product/${PID}/vendor`, { vendor_id: '' })).json()).toEqual({ success: true, vendor_id: null, vendor_name: null });
+    const nowUnassigned = (await app.inject({ method: 'GET', url: `/api/products?vendor_id=none&filter=${SKU}` })).json() as { products: Array<{ sku: string }> };
+    expect(nowUnassigned.products.map((p) => p.sku)).toEqual([SKU]);
     expect((await app.inject({ method: 'DELETE', url: `/api/vendors/${bId}` })).json()).toEqual({ success: true });
     expect((await app.inject({ method: 'DELETE', url: `/api/vendors/${bId}` })).statusCode).toBe(404);
     await app.close();

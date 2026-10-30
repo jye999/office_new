@@ -69,6 +69,7 @@
               <!--<li id="purchase"><a href="{{ route('Purchase.index') }}">Purchase</a></li>-->
               <li id="products"><a href="/ListProducts">Products</a></li>
               <li id="vendors"><a href="/Vendors">Vendors</a></li>
+              {% if hasRole(['admin']) %}<li id="users"><a href="/Users">Users</a></li>{% endif %}
               <!--<li id="inventory"><a href="{{ route('inventory') }}">Inventory</a></li>-->
 
               <li id="getRefreshAmz"><a href="{{ url('refreshAmzImg') }}">Refresh Amazon Image</a></li>

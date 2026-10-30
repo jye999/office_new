@@ -1231,6 +1231,18 @@ async function listProducts(req: FastifyRequest, reply: FastifyReply): Promise<v
       ]),
     );
   }
+  // Vendor filter: a vendor id, or 'none' for products with no vendor (os_sku_vendors, one vendor per SKU).
+  // SKU lists are fetched first (not a subquery): os_sku_vendors and os_products use different collations.
+  const vendorFilter = input(req, 'vendor_id');
+  if (vendorFilter !== null && vendorFilter !== '') {
+    if (String(vendorFilter) === 'none') {
+      const assigned = (await db.selectFrom('os_sku_vendors').select('sku').execute()).map((r) => r.sku);
+      if (assigned.length > 0) q = q.where('sku', 'not in', assigned);
+    } else {
+      const skus = (await db.selectFrom('os_sku_vendors').select('sku').where('vendor_id', '=', Number(vendorFilter)).execute()).map((r) => r.sku);
+      q = skus.length > 0 ? q.where('sku', 'in', skus) : q.where(sql<boolean>`1 = 0`);
+    }
+  }
   const [{ total }] = (await q.clearSelect().select(sql`count(*)`.as('total')).execute()) as { total: number }[];
   const sort = input(req, 'sort');
   const order = input(req, 'order');

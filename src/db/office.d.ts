@@ -2000,6 +2000,14 @@ export interface OsUsers {
   username: string;
 }
 
+export interface OsVendorUsers {
+  created_at: Generated<Date | null>;
+  id: Generated<number>;
+  updated_at: Generated<Date | null>;
+  user_id: number;
+  vendor_id: number;
+}
+
 export interface OsVendors {
   created_at: Generated<Date | null>;
   id: Generated<number>;
@@ -2470,6 +2478,7 @@ export interface DB {
   os_user_has_roles: OsUserHasRoles;
   os_user_message: OsUserMessage;
   os_users: OsUsers;
+  os_vendor_users: OsVendorUsers;
   os_vendors: OsVendors;
   os_vwShopifyProducts: OsVwShopifyProducts;
   os_vwSummary: OsVwSummary;
