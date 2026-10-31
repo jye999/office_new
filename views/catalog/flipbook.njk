@@ -128,25 +128,25 @@
     .item.half .shot { flex: 0 0 48%; align-self: stretch; }
     .item.half .copy { flex: 1 1 auto; min-width: 0; }
     /* Titles are labels, not headlines: small, spaced display caps. Descriptions are set in full. */
-    .item h3 { font-family: var(--serif); font-weight: 600; font-size: 1.02em; text-transform: none; line-height: 1.15; letter-spacing: 0.005em; margin: 0.75em 0 0.35em; text-wrap: balance; }
-    .item p { font-family: var(--serif); font-style: normal; font-weight: 400; font-size: 0.8em; line-height: 1.36; color: #4A4640; margin: 0 0 0.7em; max-width: 46ch; }
+    .item h3 { font-family: var(--serif); font-weight: 600; font-size: 0.86em; text-transform: none; line-height: 1.15; letter-spacing: 0; font-variant-numeric: lining-nums; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; margin: 0.75em 0 0.35em; text-wrap: balance; }
+    .item p { font-family: var(--serif); font-style: normal; font-weight: 400; font-size: 0.64em; line-height: 1.34; color: #4A4640; font-variant-numeric: lining-nums; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 6; overflow: hidden; margin: 0 0 0.7em; max-width: 46ch; }
     .item .specs { border-top: 1px solid var(--hair); padding-top: 0.55em; }
     /* Label/value pairs in one aligned column: SKU, Colors, Size, Min qty. */
     .specs { display: grid; grid-template-columns: max-content 1fr; gap: 0.22em 0.8em; align-items: baseline; font-size: 0.47em; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
     .specs .k { color: var(--mute); }
-    .specs .v { color: var(--ink); min-width: 0; }
-    .specs .price { font-family: var(--serif); font-size: 1.9em; letter-spacing: 0.02em; line-height: 1; }
+    .specs .v { color: var(--ink); min-width: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+    .specs .price { font-family: Inter, system-ui, sans-serif; font-weight: 500; font-size: 1.5em; letter-spacing: 0; line-height: 1; }
     /* Dimensions are reference data, so they sit a step smaller. */
     .specs .small { font-size: 0.86em; }
-    .item.full h3 { font-size: 1.5em; margin: 0.9em 0 0.45em; }
-    .item.full p { font-size: 0.95em; }
+    .item.full h3 { font-size: 1.2em; margin: 0.9em 0 0.45em; }
+    .item.full p { font-size: 0.8em; -webkit-line-clamp: 10; }
     .item.full .specs { font-size: 0.58em; gap: 0.3em 1em; }
     .item.full .extras img { width: 4em; height: 4em; }
-    .item.half h3 { font-size: 0.98em; margin: 0.4em 0 0.3em; }
-    .item.half p { font-size: 0.74em; line-height: 1.32; margin-bottom: 0.55em; }
+    .item.half h3 { font-size: 0.8em; -webkit-line-clamp: 3; margin: 0.4em 0 0.3em; }
+    .item.half p { font-size: 0.58em; -webkit-line-clamp: 4; line-height: 1.32; margin-bottom: 0.55em; }
     .item.half .specs { font-size: 0.42em; gap: 0.2em 0.6em; }
     /* A quarter cell has room for the name and the numbers only. */
-    .item.quarter h3 { font-size: 0.9em; margin: 0.5em 0 0.25em; }
+    .item.quarter h3 { font-size: 0.76em; -webkit-line-clamp: 2; margin: 0.5em 0 0.25em; }
     .item.quarter .specs { font-size: 0.44em; gap: 0.3em 0.6em; }
     .item.quarter .specs .opt, .item.quarter p, .item.quarter .extras, .item.half .extras { display: none; }
     .extras { display: flex; gap: 5px; margin-top: 0.6em; }
@@ -302,7 +302,7 @@
               <h3>{{ item.name }}</h3>
               {% if item.text %}<p>{{ item.text }}</p>{% endif %}
               <div class="specs">
-                {% if item.wholesale %}<span class="k">Wholesale</span><span class="v price">{{ item.wholesale }}</span>{% endif %}
+                {% if item.wholesale %}<span class="k">Price</span><span class="v price">{{ item.wholesale }}</span>{% endif %}
                 {% if item.sku %}<span class="k">SKU</span><span class="v">{{ item.skus.slice(0, 3) | join(' · ') }}{% if item.skus.length > 3 %} +{{ item.skus.length - 3 }}{% endif %}</span>{% endif %}
                 {% if item.colors.length > 1 %}
                   <span class="k opt">{{ item.variantLabel }}</span>
