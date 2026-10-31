@@ -58,8 +58,6 @@
     .face {
       position: absolute; inset: 0; overflow: hidden;
       background: #fff;
-      /* Paper on a table: a hairline shadow only, no frame around the leaf. */
-      box-shadow: 0 1px 3px rgba(46, 43, 39, 0.12);
       backface-visibility: hidden;
     }
     .face.back { transform: rotateY(180deg); }
@@ -72,7 +70,9 @@
     .zone.l:hover { background: linear-gradient(90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0)); }
     .zone.r:hover { background: linear-gradient(-90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0)); }
 
-    .page { position: absolute; inset: 0; font-size: calc(var(--pw) / 22); background: var(--page); }
+    /* The page edge is drawn inside the page: a shadow on every stacked sheet would add up to a dark frame. */
+    .page { position: absolute; inset: 0; font-size: calc(var(--pw) / 22); background: var(--page); box-shadow: inset 0 0 0 1px rgba(46, 43, 39, 0.1); }
+    .sheet.far { display: none; }
     .folio { position: absolute; bottom: 1.1em; right: 1.3em; font-family: var(--display); font-size: 0.5em; letter-spacing: 0.14em; color: var(--mute); }
     .face.back .folio { right: auto; left: 1.3em; }
 
@@ -341,20 +341,44 @@
   var pages = Array.prototype.slice.call(pool.querySelectorAll('.page'));
   pool.parentNode.removeChild(pool);
 
+  // A big catalog is hundreds of pages: only the sheets near the open spread hold their pages,
+  // the rest stay empty and hidden so a phone is not asked to keep every page and 3D layer alive.
+  var NEAR = 2;
   var sheets = [];
+  var faces = [];
   for (var i = 0; i < Math.ceil(pages.length / 2); i++) {
     var sheet = document.createElement('div');
-    sheet.className = 'sheet';
+    sheet.className = 'sheet far';
     var front = document.createElement('div');
     front.className = 'face front';
     var back = document.createElement('div');
     back.className = 'face back';
-    if (pages[i * 2]) front.appendChild(pages[i * 2]);
-    if (pages[i * 2 + 1]) back.appendChild(pages[i * 2 + 1]);
     sheet.appendChild(back);
     sheet.appendChild(front);
     book.appendChild(sheet);
     sheets.push(sheet);
+    faces.push({ front: front, back: back, mounted: false });
+  }
+  function mount(k, on) {
+    var f = faces[k];
+    if (f.mounted === on) return;
+    f.mounted = on;
+    if (on) {
+      if (pages[k * 2]) f.front.appendChild(pages[k * 2]);
+      if (pages[k * 2 + 1]) f.back.appendChild(pages[k * 2 + 1]);
+    } else {
+      if (pages[k * 2] && pages[k * 2].parentNode) f.front.removeChild(pages[k * 2]);
+      if (pages[k * 2 + 1] && pages[k * 2 + 1].parentNode) f.back.removeChild(pages[k * 2 + 1]);
+    }
+  }
+  function pageImages(pid) {
+    var found = [];
+    pages.forEach(function (page) {
+      Array.prototype.forEach.call(page.querySelectorAll('img[data-pid]'), function (img) {
+        if (!pid || img.dataset.pid === pid) found.push(img);
+      });
+    });
+    return found;
   }
 
   var spread = 0;
@@ -364,6 +388,9 @@
   function go(next) {
     spread = Math.max(0, Math.min(last, next));
     sheets.forEach(function (sheet, k) {
+      var near = Math.abs(k - spread) <= NEAR;
+      mount(k, near);
+      sheet.classList.toggle('far', !near);
       var flipped = k < spread;
       sheet.classList.toggle('flipped', flipped);
       sheet.style.zIndex = flipped ? k + 1 : sheets.length - k;
@@ -395,13 +422,20 @@
 
   // ---- PDF: print every page at its own size; the browser's "Save as PDF" does the rest ----
   var pdfBtn = document.getElementById('pdfBtn');
+  // Faire's image CDN resizes on request; a 1000px photo is plenty at 7in and keeps the PDF small.
+  function forPrint(src) {
+    return /^https:\/\/cdn\.faire\.com\/[^?]*$/.test(src || '') ? src + '?width=1000' : src;
+  }
   pdfBtn.addEventListener('click', function () {
     var root = document.getElementById('printRoot');
     root.innerHTML = '';
     pages.forEach(function (page, i) {
       var copy = page.cloneNode(true);
       if (i % 2 === 1) copy.classList.add('verso');
-      Array.prototype.forEach.call(copy.querySelectorAll('img'), function (img) { img.loading = 'eager'; });
+      Array.prototype.forEach.call(copy.querySelectorAll('img'), function (img) {
+        img.loading = 'eager';
+        img.src = forPrint(img.getAttribute('src'));
+      });
       root.appendChild(copy);
     });
     var imgs = Array.prototype.slice.call(root.querySelectorAll('img'));
@@ -453,9 +487,7 @@
 
   // Every place a product's photo shows (page, cover, opener, thumbnail) follows the swap.
   function applyImage(pid, url) {
-    Array.prototype.forEach.call(document.querySelectorAll('img[data-pid]'), function (img) {
-      if (img.dataset.pid === pid) img.src = url;
-    });
+    pageImages(pid).forEach(function (img) { img.src = url; });
     Array.prototype.forEach.call(document.querySelectorAll('#thumbPane li'), function (li) {
       var page = pages[Number(li.dataset.page)];
       var first = page && page.querySelector('img[data-pid]');
@@ -465,7 +497,7 @@
   }
   // The server already renders saved choices; remember what each product shows right now.
   var shown = {};
-  Array.prototype.forEach.call(document.querySelectorAll('img[data-pid]'), function (img) {
+  pageImages('').forEach(function (img) {
     if (!(img.dataset.pid in shown)) shown[img.dataset.pid] = img.getAttribute('src');
   });
 
