@@ -31,7 +31,7 @@ beforeAll(async () => {
     .innerJoin('os_user_has_roles', 'os_user_has_roles.user_id', 'os_users.id')
     .innerJoin('os_roles', 'os_roles.id', 'os_user_has_roles.role_id')
     .select('os_users.id')
-    .where('os_roles.name', 'in', ['admin', 'user', 'remote'])
+    .where('os_roles.name', 'in', ['admin'])
     .executeTakeFirst();
   adminId = user?.id ?? 0;
   const products = await db.selectFrom('os_faire_products').select(['id']).where('lifecycle_state', '=', 'PUBLISHED').limit(3).execute();
@@ -39,6 +39,26 @@ beforeAll(async () => {
 });
 
 afterAll(async () => { await db.destroy(); });
+
+describe('/catalog access', () => {
+  it('refuses a signed-in user who is not an admin', async () => {
+    const other = await db
+      .selectFrom('os_users')
+      .innerJoin('os_user_has_roles', 'os_user_has_roles.user_id', 'os_users.id')
+      .innerJoin('os_roles', 'os_roles.id', 'os_user_has_roles.role_id')
+      .select('os_users.id')
+      .where('os_roles.name', 'in', ['user', 'remote'])
+      .where('os_users.id', 'not in', db.selectFrom('os_user_has_roles').innerJoin('os_roles', 'os_roles.id', 'os_user_has_roles.role_id').select('os_user_has_roles.user_id').where('os_roles.name', '=', 'admin'))
+      .executeTakeFirst();
+    if (!other) return;
+    const app = buildApp();
+    app.addHook('preHandler', async (req) => { (req.session as Record<string, unknown>)['user_id'] = other.id; });
+    for (const url of ['/catalog', '/catalog/view']) {
+      const res = await app.inject({ method: 'GET', url });
+      expect(res.statusCode).toBe(403);
+    }
+  });
+});
 
 describe('/catalog', () => {
   it('lists published Faire products with a title field', async () => {

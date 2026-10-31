@@ -12,7 +12,7 @@ import { curationTodo } from '../../lib/catalogCurateRun.js';
 import { route } from '../../router.js';
 import { render } from '../../view.js';
 
-const ROLES = ['admin', 'user', 'remote'];
+const ROLES = ['admin'];
 const DEFAULT_TITLE = 'Wholesale Catalog';
 const DEFAULT_BRAND = 'Enfloral';
 
