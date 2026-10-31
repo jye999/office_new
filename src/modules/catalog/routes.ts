@@ -12,8 +12,6 @@ import { route } from '../../router.js';
 import { render } from '../../view.js';
 
 const ROLES = ['admin', 'user', 'remote'];
-// shortcut: URL-length guard on the ?ids= list; raise if a catalog ever needs more.
-const MAX_ITEMS = 250;
 const DEFAULT_TITLE = 'Wholesale Catalog';
 const DEFAULT_BRAND = 'Enfloral';
 
@@ -28,7 +26,7 @@ interface PickerItem extends CatalogItem {
 function idList(value: unknown): string[] {
   const values = Array.isArray(value) ? value : value === null || value === undefined ? [] : String(value).split(',');
   const unique = [...new Set(values.map((v) => String(v).trim()).filter(Boolean))];
-  return unique.slice(0, MAX_ITEMS);
+  return unique;
 }
 
 async function text(req: FastifyRequest, key: string, fallback: string): Promise<string> {
@@ -209,7 +207,7 @@ async function saveDraft(req: FastifyRequest, reply: FastifyReply): Promise<void
   return void reply.send({ ok: true, id: Number(res.insertId) });
 }
 
-// The picker posts its selection (a GET with 250 ids overflows nginx's URL limit), keeps
+// The picker posts its selection (a GET with hundreds of ids overflows nginx's URL limit), keeps
 // it as a draft and sends the browser to the short ?draft= link.
 async function openSelection(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const ids = idList(input(req, 'ids') ?? input(req, 'ids[]'));
