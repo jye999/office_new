@@ -92,3 +92,22 @@ describe('catalog drafts', () => {
     }
   });
 });
+
+describe('/catalog/open', () => {
+  it('turns a posted selection into a short ?draft= link that renders', async () => {
+    const app = buildApp();
+    const payload = `title=Spring&${ids.map((id) => `ids[]=${id}`).join('&')}`;
+    const res = await app.inject({ method: 'POST', url: '/catalog/open', headers: { 'content-type': 'application/x-www-form-urlencoded' }, payload });
+    expect(res.statusCode).toBe(302);
+    const loc = String(res.headers.location);
+    const id = Number(/draft=(\d+)/.exec(loc)?.[1]);
+    try {
+      expect(loc.length).toBeLessThan(120);
+      const page = await app.inject({ method: 'GET', url: `/catalog/view?draft=${id}` });
+      expect(page.statusCode).toBe(200);
+      expect(page.body).toContain('Spring');
+    } finally {
+      await db.deleteFrom('os_catalog_drafts').where('id', '=', id).execute();
+    }
+  });
+});

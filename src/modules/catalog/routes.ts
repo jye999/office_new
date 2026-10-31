@@ -209,6 +209,29 @@ async function saveDraft(req: FastifyRequest, reply: FastifyReply): Promise<void
   return void reply.send({ ok: true, id: Number(res.insertId) });
 }
 
+// The picker posts its selection (a GET with 250 ids overflows nginx's URL limit), keeps
+// it as a draft and sends the browser to the short ?draft= link.
+async function openSelection(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const ids = idList(input(req, 'ids') ?? input(req, 'ids[]'));
+  if (ids.length === 0) {
+    return void lredirect(req, reply.withErrors({ ids: 'Pick at least one product first.' }), '/catalog');
+  }
+  const title = (await text(req, 'title', DEFAULT_TITLE)).slice(0, 160);
+  const stamp = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  const res = await db
+    .insertInto('os_catalog_drafts')
+    .values({
+      name: `${title} ${stamp}`.slice(0, 160),
+      title,
+      brand: (await text(req, 'brand', DEFAULT_BRAND)).slice(0, 80),
+      subtitle: (await text(req, 'subtitle', '')).slice(0, 200),
+      ids: JSON.stringify(ids),
+      overrides: '{}',
+    })
+    .executeTakeFirst();
+  return void lredirect(req, reply, `/catalog/view?draft=${Number(res.insertId)}`);
+}
+
 async function deleteDraft(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   const draft = await loadDraft(input(req, 'draft'));
   if (draft) await db.deleteFrom('os_catalog_drafts').where('id', '=', draft.id).execute();
@@ -258,6 +281,7 @@ async function viewer(req: FastifyRequest, reply: FastifyReply): Promise<void> {
 export function registerCatalogRoutes(app: FastifyInstance): void {
   route(app, { verb: 'get', path: '/catalog', name: 'catalog', roles: ROLES, handler: picker });
   route(app, { verb: 'get', path: '/catalog/view', name: 'catalog.view', roles: ROLES, handler: viewer });
+  route(app, { verb: 'post', path: '/catalog/open', name: 'catalog.open', roles: ROLES, handler: openSelection });
   route(app, { verb: 'post', path: '/catalog/drafts', name: 'catalog.drafts.save', roles: ROLES, handler: saveDraft });
   route(app, { verb: 'post', path: '/catalog/drafts/delete', name: 'catalog.drafts.delete', roles: ROLES, handler: deleteDraft });
   route(app, { verb: 'post', path: '/catalog/curate', name: 'catalog.curate', roles: ROLES, handler: curate });
