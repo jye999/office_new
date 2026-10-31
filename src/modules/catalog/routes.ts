@@ -91,6 +91,12 @@ async function curateStatus(req: FastifyRequest, reply: FastifyReply): Promise<v
   return void reply.send({ ok: true, status });
 }
 
+// The mysql driver hands timestamps as Date or as 'YYYY-MM-DD HH:MM:SS' depending on dateStrings.
+function stamp(value: Date | string | null): string {
+  if (!value) return '';
+  return (value instanceof Date ? value.toISOString() : String(value)).slice(0, 16).replace('T', ' ');
+}
+
 async function picker(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   // Unpublished Faire products are hidden unless ?all=1 asks for them.
   const showAll = String(input(req, 'all') ?? '') === '1';
@@ -122,7 +128,7 @@ async function picker(req: FastifyRequest, reply: FastifyReply): Promise<void> {
     subtitle: await text(req, 'subtitle', ''),
     showAll,
     drafts: (await db.selectFrom('os_catalog_drafts').select(['id', 'name', 'updated_at']).orderBy('updated_at', 'desc').limit(20).execute())
-      .map((d) => ({ id: d.id, name: d.name, updated: d.updated_at ? d.updated_at.toISOString().slice(0, 16).replace('T', ' ') : '' })),
+      .map((d) => ({ id: d.id, name: d.name, updated: stamp(d.updated_at) })),
   });
 }
 

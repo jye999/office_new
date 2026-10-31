@@ -111,3 +111,18 @@ describe('/catalog/open', () => {
     }
   });
 });
+
+describe('/catalog with saved drafts', () => {
+  it('lists a saved draft on the picker', async () => {
+    const app = buildApp();
+    const res = await app.inject({ method: 'POST', url: '/catalog/drafts', headers: { 'content-type': 'application/x-www-form-urlencoded' }, payload: `name=Listed+draft&ids=${ids.join(',')}` });
+    const { id } = res.json() as { id: number };
+    try {
+      const page = await app.inject({ method: 'GET', url: '/catalog' });
+      expect(page.statusCode).toBe(200);
+      expect(page.body).toContain('Listed draft');
+    } finally {
+      await db.deleteFrom('os_catalog_drafts').where('id', '=', id).execute();
+    }
+  });
+});
