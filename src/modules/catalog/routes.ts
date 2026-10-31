@@ -6,7 +6,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { db } from '../../db.js';
 import { input, lredirect } from '../../http.js';
-import { buildCatalog, catalogItem, asJson, FAIRE_COLUMNS, type CatalogItem, type CatalogLayout, type FaireRow, type ItemPick } from '../../lib/catalog.js';
+import { buildCatalog, catalogItem, dedupeRows, asJson, FAIRE_COLUMNS, type CatalogItem, type CatalogLayout, type FaireRow, type ItemPick } from '../../lib/catalog.js';
 import { catalogJobStatus, dispatchCatalogCurate } from '../../jobs/queue.js';
 import { curationTodo } from '../../lib/catalogCurateRun.js';
 import { route } from '../../router.js';
@@ -98,24 +98,21 @@ function stamp(value: Date | string | null): string {
 }
 
 async function picker(req: FastifyRequest, reply: FastifyReply): Promise<void> {
-  // Unpublished Faire products are hidden unless ?all=1 asks for them.
-  const showAll = String(input(req, 'all') ?? '') === '1';
-  const rows = (await db
+  // Only published products are catalog material; Faire's repeat listings of one product count once.
+  const all = (await db
     .selectFrom('os_faire_products')
-    .select([...COLUMNS, 'lifecycle_state'])
+    .select(COLUMNS)
+    .where('lifecycle_state', '=', 'PUBLISHED')
     .orderBy('name', 'asc')
-    .execute()) as (FaireRow & { lifecycle_state: string | null })[];
+    .execute()) as FaireRow[];
+  const rows = dedupeRows(all).rows.sort((a, b) => String(a.name).localeCompare(String(b.name)));
 
   const skus = await skusByFaireId(rows.map((r) => r.id));
   const picks = await picksByFaireId(rows.map((r) => r.id));
   const items: PickerItem[] = [];
   for (const row of rows) {
     const item = catalogItem(row, skus[row.id] ?? [], picks[row.id] ?? {});
-    if (!item) continue;
-    // Paused stock is still a product the shop sells; DRAFT/UNPUBLISHED is not,
-    // and those come in only with ?all=1.
-    const published = row.lifecycle_state === 'PUBLISHED';
-    if (published || showAll) items.push({ ...item, id: row.id, published });
+    if (item) items.push({ ...item, id: row.id, published: true });
   }
 
   // Chrome would otherwise keep a heuristic copy of the HTML and show stale styling.
@@ -126,7 +123,6 @@ async function picker(req: FastifyRequest, reply: FastifyReply): Promise<void> {
     brand: await text(req, 'brand', DEFAULT_BRAND),
     title: await text(req, 'title', DEFAULT_TITLE),
     subtitle: await text(req, 'subtitle', ''),
-    showAll,
     drafts: (await db.selectFrom('os_catalog_drafts').select(['id', 'name', 'updated_at']).orderBy('updated_at', 'desc').limit(20).execute())
       .map((d) => ({ id: d.id, name: d.name, updated: stamp(d.updated_at) })),
   });
@@ -227,14 +223,26 @@ async function viewer(req: FastifyRequest, reply: FastifyReply): Promise<void> {
     return void lredirect(req, reply.withErrors({ ids: 'Pick at least one product first.' }), '/catalog');
   }
 
-  const rows = (await db
+  const chosen = (await db
     .selectFrom('os_faire_products')
     .select(COLUMNS)
     .where('id', 'in', ids)
+    .where('lifecycle_state', '=', 'PUBLISHED')
     .execute()) as FaireRow[];
+  // The other listings Faire holds for the same products fold into them (their colours and sizes count).
+  const names = [...new Set(chosen.map((r) => r.name).filter((n): n is string => Boolean(n)))];
+  const twins = names.length === 0 ? [] : ((await db
+    .selectFrom('os_faire_products')
+    .select(COLUMNS)
+    .where('name', 'in', names)
+    .where('id', 'not in', ids)
+    .where('lifecycle_state', '=', 'PUBLISHED')
+    .execute()) as FaireRow[]);
+  const rows = [...chosen, ...twins];
+  const allIds = rows.map((r) => r.id);
 
-  const skus = await skusByFaireId(ids);
-  const picks = await picksByFaireId(ids);
+  const skus = await skusByFaireId(allIds);
+  const picks = await picksByFaireId(allIds);
 
   const model = buildCatalog(rows, {
     title: draft?.title ?? (await text(req, 'title', DEFAULT_TITLE)),

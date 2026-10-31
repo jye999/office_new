@@ -215,6 +215,37 @@ function unique(values: string[]): string[] {
   return [...new Set(values.filter(Boolean))];
 }
 
+// Faire keeps several listings (different ids) for one product. They are one product in a
+// catalog: group by name, keep the listing with the most variants, and fold the variants of
+// the others into it so no colour or size is lost.
+export function dedupeRows(rows: FaireRow[]): { rows: FaireRow[]; groups: Record<string, string[]> } {
+  const key = (r: FaireRow): string => oneLine(String(r.name ?? '')).toLowerCase();
+  const byName = new Map<string, FaireRow[]>();
+  for (const r of rows) {
+    const k = key(r);
+    if (!k) continue;
+    byName.set(k, [...(byName.get(k) ?? []), r]);
+  }
+  const groups: Record<string, string[]> = {};
+  const out: FaireRow[] = [];
+  for (const list of byName.values()) {
+    const variantsOf = (r: FaireRow): FaireVariant[] => asJson<FaireVariant[]>(r.variants) ?? [];
+    const ranked = [...list].sort((a, b) => variantsOf(b).length - variantsOf(a).length || a.id.localeCompare(b.id));
+    const rep = ranked[0];
+    const seen = new Set<string>();
+    const merged: FaireVariant[] = [];
+    for (const v of ranked.flatMap(variantsOf)) {
+      const id = oneLine(String(v.sku ?? v.name ?? '')).toLowerCase();
+      if (id && seen.has(id)) continue;
+      if (id) seen.add(id);
+      merged.push(v);
+    }
+    out.push(ranked.length > 1 ? { ...rep, variants: merged } : rep);
+    groups[rep.id] = ranked.map((r) => r.id);
+  }
+  return { rows: out, groups };
+}
+
 export function catalogItem(row: FaireRow, fallbackSkus: string[] = [], pick: ItemPick = {}): CatalogItem | null {
   const name = oneLine(String(row.name ?? ''));
   if (!name) return null;
@@ -254,9 +285,16 @@ export function catalogItem(row: FaireRow, fallbackSkus: string[] = [], pick: It
   };
 }
 
-export function buildCatalog(rows: FaireRow[], opts: BuildOptions): CatalogModel {
+export function buildCatalog(allRows: FaireRow[], opts: BuildOptions): CatalogModel {
+  const { rows, groups } = dedupeRows(allRows);
+  // A duplicate's house skus and curated picks count for the product they were folded into.
+  const skusFor = (id: string): string[] => [...new Set((groups[id] ?? [id]).flatMap((g) => opts.skus?.[g] ?? []))];
+  const pickFor = (id: string): ItemPick => {
+    const found = (groups[id] ?? [id]).map((g) => opts.picks?.[g]).filter((p): p is ItemPick => Boolean(p));
+    return found.find((p) => p.hero) ?? {};
+  };
   const items = rows
-    .map((row) => catalogItem(row, opts.skus?.[row.id] ?? [], opts.picks?.[row.id] ?? {}))
+    .map((row) => catalogItem(row, skusFor(row.id), pickFor(row.id)))
     .filter((i): i is CatalogItem => i !== null);
   for (const item of items) {
     const chosen = opts.overrides?.[item.id];

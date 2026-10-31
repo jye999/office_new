@@ -48,10 +48,13 @@ describe('/catalog', () => {
     expect(res.body).toContain('name="ids[]"');
   });
 
-  it('adds unpublished products with ?all=1', async () => {
-    const some = await buildApp().inject({ method: 'GET', url: '/catalog' });
-    const all = await buildApp().inject({ method: 'GET', url: '/catalog?all=1' });
-    expect((all.body.match(/name="ids\[\]"/g) ?? []).length).toBeGreaterThan((some.body.match(/name="ids\[\]"/g) ?? []).length);
+  it('lists only published products, each product once', async () => {
+    const res = await buildApp().inject({ method: 'GET', url: '/catalog' });
+    const shown = [...res.body.matchAll(/name="ids\[\]" value="([^"]+)"/g)].map((m) => m[1]);
+    const rows = await db.selectFrom('os_faire_products').select(['id', 'name', 'lifecycle_state']).where('id', 'in', shown).execute();
+    expect(rows.every((r) => r.lifecycle_state === 'PUBLISHED')).toBe(true);
+    const names = rows.map((r) => String(r.name).trim().toLowerCase());
+    expect(new Set(names).size).toBe(names.length);
   });
 });
 

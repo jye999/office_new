@@ -1,6 +1,6 @@
 // Catalog builder: pure page-composition checks. No DB, no templates.
 import { describe, expect, it } from 'vitest';
-import { buildCatalog, catalogItem, type FaireRow } from '../src/lib/catalog.js';
+import { buildCatalog, catalogItem, dedupeRows, type FaireRow } from '../src/lib/catalog.js';
 
 function row(over: Partial<FaireRow>): FaireRow {
   return {
@@ -110,5 +110,25 @@ describe('buildCatalog', () => {
     const model = buildCatalog([row({ variants: [] })], { title: 'T', subtitle: '' });
     expect(model.pages.map((p) => p.kind)).toEqual(['cover', 'contents', 'category', 'products', 'back', 'blank']);
     expect(model.pages[3].items?.[0]).toMatchObject({ wholesale: '', moq: '' });
+  });
+});
+
+describe('dedupeRows', () => {
+  const v = (sku: string) => ({ sku, wholesale_price_cents: 500, lifecycle_state: 'PUBLISHED', sale_state: 'FOR_SALE' });
+
+  it('folds listings with the same name into one, keeping the one with most variants and every variant', () => {
+    const a = row({ id: 'p_a', name: 'Fern  Bush', variants: [v('F1'), v('F2')] });
+    const b = row({ id: 'p_b', name: 'fern bush', variants: [v('F2'), v('F3')] });
+    const c = row({ id: 'p_c', name: 'Other', variants: [v('O1')] });
+    const { rows, groups } = dedupeRows([b, c, a]);
+    expect(rows.map((r) => r.id).sort()).toEqual(['p_a', 'p_c']);
+    expect(groups['p_a']).toEqual(['p_a', 'p_b']);
+    const fern = rows.find((r) => r.id === 'p_a')!;
+    expect((fern.variants as { sku: string }[]).map((x) => x.sku).sort()).toEqual(['F1', 'F2', 'F3']);
+  });
+
+  it('shows a product once in the built catalog', () => {
+    const model = buildCatalog([row({ id: 'p_a', name: 'Fern' }), row({ id: 'p_b', name: 'Fern' })], { title: 'T', subtitle: '' });
+    expect(model.count).toBe(1);
   });
 });

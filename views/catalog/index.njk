@@ -73,7 +73,7 @@
   <div class="cat-sheet">
     <div class="cat-head">
       <h1>Catalog</h1>
-      <div class="cat-unpub">{{ items | length }} Faire products{% if showAll %} (including unpublished){% endif %} · all selected to start</div>
+      <div class="cat-unpub">{{ items | length }} Faire products · all selected to start</div>
     </div>
     <div class="cat-bar">
       <input class="form-control" type="text" name="title" value="{{ title }}" placeholder="Catalog title" style="width:220px">
@@ -87,9 +87,6 @@
       <button type="button" class="btn btn-default" id="selVis">Select visible</button>
       <button type="button" class="btn btn-default" id="clr">Clear</button>
       <button type="button" class="btn btn-default" id="curate" title="Ask a vision model which photo best represents each selected product">Curate images (AI)</button>
-      <a class="btn btn-default" href="{{ url('/catalog') }}{% if showAll %}{% else %}?all=1{% endif %}">
-        {% if showAll %}Only published{% else %}Show unpublished{% endif %}
-      </a>
       <span class="cat-count" id="count">0 selected</span>
       <span class="cat-unpub" id="curateMsg"></span>
       <button type="submit" class="btn btn-primary">Generate catalog</button>
