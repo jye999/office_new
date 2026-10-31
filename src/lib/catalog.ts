@@ -76,6 +76,8 @@ export interface CatalogItem {
   // list all the sellable ones, sku is the first of them.
   skus: string[];
   colors: string[];
+  // What `colors` lists: 'Colors', 'Sizes' or 'Options'.
+  variantLabel: string;
   wholesale: string;
   dimensions: string[];
   weights: string[];
@@ -199,15 +201,24 @@ function clip(text: string, max: number): string {
 // '4 pcs per style' when Faire sets a per-style minimum, '4 pcs' otherwise.
 function moqOf(row: FaireRow): string {
   const qty = Number(row.minimum_order_quantity) || 0;
-  if (qty <= 0) return '';
+  if (qty <= 1) return '1 pc';
   const perStyle = Number(row.per_style_minimum_order_quantity) || 0;
   return `${qty} pcs${perStyle > 0 ? ' per style' : ''}`;
 }
 
-// Colour name: Faire's option list, else the variant's own name.
+// What a variant is: its colour when it has one, else its size (or other option), else its name.
 function colorOf(v: FaireVariant): string {
-  const color = v.options?.find((o) => /colou?r/i.test(String(o.name ?? '')))?.value;
-  return oneLine(String(color ?? v.name ?? ''));
+  const opts = v.options ?? [];
+  const pick = opts.find((o) => /colou?r/i.test(String(o.name ?? ''))) ?? opts.find((o) => o.value);
+  return oneLine(String(pick?.value ?? v.name ?? ''));
+}
+
+// Label for the variant row: "Colors", "Sizes", or plain "Options".
+function variantLabelOf(variants: FaireVariant[]): string {
+  const names = variants.flatMap((v) => v.options ?? []).map((o) => String(o.name ?? ''));
+  if (names.some((n) => /colou?r/i.test(n))) return 'Colors';
+  if (names.some((n) => /size|height|length|width|dimension/i.test(n))) return 'Sizes';
+  return names.length ? 'Options' : 'Colors';
 }
 
 // Distinct non-empty values, in variant order.
@@ -278,6 +289,7 @@ export function catalogItem(row: FaireRow, fallbackSkus: string[] = [], pick: It
     sku: skus[0] ?? '',
     skus,
     colors: unique(sellable.map(colorOf)),
+    variantLabel: variantLabelOf(sellable),
     wholesale: priceRange(whMin, whMax),
     dimensions: unique(sellable.map(dimsOf)).slice(0, 3),
     weights: unique(sellable.map(weightOf)).slice(0, 3),

@@ -88,6 +88,7 @@
       <button type="button" class="btn btn-default" id="clr">Clear</button>
       <button type="button" class="btn btn-default" id="curate" title="Ask a vision model which photo best represents each selected product">Curate images (AI)</button>
       <span class="cat-count" id="count">0 selected</span>
+      <label class="cat-unpub"><input type="checkbox" id="curateRedo"> Redo ones already curated</label>
       <span class="cat-unpub" id="curateMsg"></span>
       <button type="submit" class="btn btn-primary">Generate catalog</button>
     </div>
@@ -195,7 +196,7 @@
     fetch(urlCurate, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: ids.map(function (id) { return 'ids[]=' + encodeURIComponent(id); }).join('&'),
+      body: ids.map(function (id) { return 'ids[]=' + encodeURIComponent(id); }).join('&') + (document.getElementById('curateRedo').checked ? '&force=1' : ''),
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {

@@ -28,6 +28,14 @@ describe('catalogItem', () => {
     });
   });
 
+  it('labels size variants as Sizes and colour variants as Colors', () => {
+    const v = (name: string, value: string) => ({ sku: value, wholesale_price_cents: 100, lifecycle_state: 'PUBLISHED', options: [{ name, value }] });
+    const sized = catalogItem(row({ variants: [v('Size', '24 inch'), v('Size', '36 inch')] }));
+    expect(sized).toMatchObject({ variantLabel: 'Sizes', colors: ['24 inch', '36 inch'] });
+    const colored = catalogItem(row({ variants: [v('Color', 'Red'), v('Color', 'Blue')] }));
+    expect(colored).toMatchObject({ variantLabel: 'Colors', colors: ['Red', 'Blue'] });
+  });
+
   it('keeps dimensions, weight and the minimum order as separate facts', () => {
     const item = catalogItem(row({
       minimum_order_quantity: 4,
@@ -42,7 +50,7 @@ describe('catalogItem', () => {
     }));
     expect(item).toMatchObject({ dimensions: ['21" L × 8" W × 3" H'], weights: ['5 oz'], moq: '4 pcs' });
     expect(catalogItem(row({ minimum_order_quantity: 6, per_style_minimum_order_quantity: 2 }))?.moq).toBe('6 pcs per style');
-    expect(catalogItem(row({ minimum_order_quantity: 0 }))?.moq).toBe('');
+    expect(catalogItem(row({ minimum_order_quantity: 0 }))?.moq).toBe('1 pc');
   });
 
   it('lists every sellable colour and sku of a multi-variant product', () => {
@@ -109,7 +117,7 @@ describe('buildCatalog', () => {
   it('still builds a usable book when nothing is sellable', () => {
     const model = buildCatalog([row({ variants: [] })], { title: 'T', subtitle: '' });
     expect(model.pages.map((p) => p.kind)).toEqual(['cover', 'contents', 'category', 'products', 'back', 'blank']);
-    expect(model.pages[3].items?.[0]).toMatchObject({ wholesale: '', moq: '' });
+    expect(model.pages[3].items?.[0]).toMatchObject({ wholesale: '', moq: '1 pc' });
   });
 });
 

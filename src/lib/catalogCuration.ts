@@ -109,7 +109,7 @@ export function parseCuration(content: unknown, cands: Candidate[]): Curation | 
 const PROMPT = (name: string, category: string, list: string): string =>
   `Pick catalog imagery for the wholesale product "${name}" (category: ${category}).
 Answer with JSON only: {"hero": <index of the best cover image>, "extras": [<up to 2 supporting detail shots, never the hero>], "layout": "full" | "half" | "quarter"}
-hero: exactly ONE photo of the ONE product being sold, whole, nothing cut off at the edge. Never pick a collage, a contact sheet of colour swatches, a grid of several views, or an image with dimension arrows, size labels, badges, price stickers, marketing text or a watermark. If every candidate is a collage or an annotated diagram, still answer with the plainest single-object photo. A plain background beats a lifestyle scene.
+hero: exactly ONE photo of the ONE product being sold, whole, nothing cut off at the edge. Never pick a collage, a contact sheet of colour swatches, a grid of several views, or an image with dimension arrows, size labels, badges, price stickers, marketing text or a watermark. If every candidate is a collage or an annotated diagram, still answer with the plainest single-object photo. Prefer the product itself on a plain background (one stem, one plant, one object) over a styled arrangement, bouquet, vase set-up, room or lifestyle scene; choose the arrangement only if no photo shows the product on its own.
 layout: how much of a printed catalog page this product deserves.
   "full" = the whole page: a flagship product, or a tall image that needs the height.
   "half" = half a page (two products on it): the normal choice.

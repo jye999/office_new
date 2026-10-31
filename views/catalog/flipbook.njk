@@ -128,25 +128,25 @@
     .item.half .shot { flex: 0 0 48%; align-self: stretch; }
     .item.half .copy { flex: 1 1 auto; min-width: 0; }
     /* Titles are labels, not headlines: small, spaced display caps. Descriptions are set in full. */
-    .item h3 { font-family: var(--display); font-weight: 400; font-size: 0.8em; text-transform: uppercase; line-height: 1.12; letter-spacing: 0.07em; margin: 0.75em 0 0.35em; text-wrap: balance; }
-    .item p { font-family: var(--serif); font-style: italic; font-size: 0.74em; line-height: 1.38; color: #5C564E; margin: 0 0 0.7em; max-width: 46ch; }
+    .item h3 { font-family: var(--serif); font-weight: 600; font-size: 1.02em; text-transform: none; line-height: 1.15; letter-spacing: 0.005em; margin: 0.75em 0 0.35em; text-wrap: balance; }
+    .item p { font-family: var(--serif); font-style: normal; font-weight: 400; font-size: 0.8em; line-height: 1.36; color: #4A4640; margin: 0 0 0.7em; max-width: 46ch; }
     .item .specs { border-top: 1px solid var(--hair); padding-top: 0.55em; }
-    /* Label/value pairs in one aligned column: SKU, Colors, Size, Weight, Min qty. */
-    .specs { display: grid; grid-template-columns: max-content 1fr; gap: 0.22em 0.8em; align-items: baseline; font-size: 0.45em; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+    /* Label/value pairs in one aligned column: SKU, Colors, Size, Min qty. */
+    .specs { display: grid; grid-template-columns: max-content 1fr; gap: 0.22em 0.8em; align-items: baseline; font-size: 0.47em; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
     .specs .k { color: var(--mute); }
     .specs .v { color: var(--ink); min-width: 0; }
     .specs .price { font-family: var(--serif); font-size: 1.9em; letter-spacing: 0.02em; line-height: 1; }
-    /* Dimensions and weight are reference data, so they sit a step smaller. */
+    /* Dimensions are reference data, so they sit a step smaller. */
     .specs .small { font-size: 0.86em; }
-    .item.full h3 { font-size: 1.3em; margin: 0.9em 0 0.45em; }
-    .item.full p { font-size: 0.88em; }
+    .item.full h3 { font-size: 1.5em; margin: 0.9em 0 0.45em; }
+    .item.full p { font-size: 0.95em; }
     .item.full .specs { font-size: 0.58em; gap: 0.3em 1em; }
     .item.full .extras img { width: 4em; height: 4em; }
-    .item.half h3 { font-size: 0.78em; margin: 0.4em 0 0.3em; }
-    .item.half p { font-size: 0.68em; line-height: 1.32; margin-bottom: 0.55em; }
+    .item.half h3 { font-size: 0.98em; margin: 0.4em 0 0.3em; }
+    .item.half p { font-size: 0.74em; line-height: 1.32; margin-bottom: 0.55em; }
     .item.half .specs { font-size: 0.42em; gap: 0.2em 0.6em; }
     /* A quarter cell has room for the name and the numbers only. */
-    .item.quarter h3 { font-size: 0.7em; margin: 0.5em 0 0.25em; }
+    .item.quarter h3 { font-size: 0.9em; margin: 0.5em 0 0.25em; }
     .item.quarter .specs { font-size: 0.44em; gap: 0.3em 0.6em; }
     .item.quarter .specs .opt, .item.quarter p, .item.quarter .extras, .item.half .extras { display: none; }
     .extras { display: flex; gap: 5px; margin-top: 0.6em; }
@@ -285,7 +285,7 @@
             {% for c in p.contents %}<li><span>{{ c.name }}</span><b>{{ c.page }}</b></li>{% endfor %}
           </ul>
           <div class="hair"></div>
-          <p class="note">Prices are USD wholesale. Sizes are inches and weights lb/oz unless noted. Minimum order quantities apply per style.</p>
+          <p class="note">Prices are USD wholesale. Sizes are inches unless noted. Minimum order quantities apply per style.</p>
         </div>
       {% elif p.kind == 'category' %}
         <div class="pad dark opener">
@@ -305,12 +305,11 @@
                 {% if item.wholesale %}<span class="k">Wholesale</span><span class="v price">{{ item.wholesale }}</span>{% endif %}
                 {% if item.sku %}<span class="k">SKU</span><span class="v">{{ item.skus.slice(0, 3) | join(' · ') }}{% if item.skus.length > 3 %} +{{ item.skus.length - 3 }}{% endif %}</span>{% endif %}
                 {% if item.colors.length > 1 %}
-                  <span class="k opt">Colors</span>
+                  <span class="k opt">{{ item.variantLabel }}</span>
                   <span class="v opt">{{ item.colors.slice(0, 4) | join(', ') }}{% if item.colors.length > 4 %} +{{ item.colors.length - 4 }}{% endif %}</span>
                 {% endif %}
                 {% if item.dimensions.length %}<span class="k opt small">Size</span><span class="v opt small">{{ item.dimensions[0] }}{% if item.dimensions.length > 1 %} +{{ item.dimensions.length - 1 }}{% endif %}</span>{% endif %}
-                {% if item.weights.length %}<span class="k opt small">Weight</span><span class="v opt small">{{ item.weights[0] }}{% if item.weights.length > 1 %} +{{ item.weights.length - 1 }}{% endif %}</span>{% endif %}
-                {% if item.moq %}<span class="k">Min qty</span><span class="v">{{ item.moq }}</span>{% endif %}
+                <span class="k">Min qty</span><span class="v">{{ item.moq or '1 pc' }}</span>
               </div>
               {% if item.extras | length %}
                 <div class="extras">{% for e in item.extras %}<img src="{{ e }}" alt="" loading="lazy">{% endfor %}</div>
