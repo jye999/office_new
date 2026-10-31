@@ -1,0 +1,186 @@
+{% extends "layout.njk" %}
+
+{% block title %}Catalog{% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;500&display=swap">
+
+<style>
+  /* The picker is printed-form furniture, not app chrome: paper, hairlines, ink.
+     It deliberately overrides the Bootstrap controls the app shell brings in. */
+  :root {
+    --serif: "Cormorant Garamond", Georgia, serif;
+    --paper: #F7F2E9;
+    --paper2: #FBF7F0;
+    --ink: #2E2B27;
+    --mute: #8B8276;
+    --hair: #D8CFC1;
+  }
+  .cat-sheet { background: var(--paper); border: 1px solid var(--hair); color: var(--ink); font-family: Inter, system-ui, sans-serif; }
+  .cat-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; padding: 16px 18px 13px; border-bottom: 1px solid var(--hair); }
+  .cat-head h1 { font-family: var(--serif); font-size: 27px; font-weight: 400; margin: 0; }
+  .cat-head .cat-unpub { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mute); }
+  .cat-bar { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 11px 18px; background: var(--paper2); border-bottom: 1px solid var(--hair); }
+  .cat-bar input[type=text], .cat-bar input[type=search], .cat-bar select {
+    background: none; border: 0; border-bottom: 1px solid #C9BFAE; border-radius: 0; box-shadow: none;
+    height: 26px; width: 220px; padding: 2px 3px; font: 400 12px Inter, sans-serif; color: var(--ink);
+  }
+  .cat-bar input:focus, .cat-bar select:focus { outline: none; border-bottom-color: var(--ink); box-shadow: none; }
+  .cat-bar .btn, .cat-bar a.btn {
+    background: none; border: 0; border-bottom: 1px solid #C9BFAE; border-radius: 0; box-shadow: none;
+    text-decoration: none; padding: 3px 2px; font: 500 10px Inter, sans-serif; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #5A5349;
+  }
+  .cat-bar .btn:hover, .cat-bar a.btn:hover { color: var(--ink); border-bottom-color: var(--ink); }
+  .cat-bar .btn-primary { background: var(--ink); color: var(--paper); padding: 8px 15px; border: 0; }
+  .cat-bar .btn-primary:hover { background: #463F38; color: var(--paper); }
+  .cat-count { font-family: var(--serif); font-size: 16px; }
+  .cat-unpub { font-size: 11px; color: var(--mute); }
+  /* A contact sheet: tiles divided by hairlines instead of floating rounded cards. */
+  .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(198px, 1fr)); gap: 1px; background: var(--hair); }
+  .cat-card { display: block; position: relative; background: var(--paper); cursor: pointer; }
+  .cat-card img { width: 100%; height: 172px; object-fit: cover; display: block; background: var(--paper2); }
+  .cat-card .txt { padding: 9px 11px 12px; }
+  .cat-card .txt b { display: block; font-family: var(--serif); font-size: 15px; font-weight: 400; line-height: 1.25; }
+  .cat-card .txt span { display: block; font-size: 9.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); margin-top: 5px; }
+  /* The tick is an ink square drawn by us, not a system checkbox. */
+  .cat-card input {
+    -webkit-appearance: none; appearance: none; position: absolute; top: 10px; left: 10px;
+    width: 15px; height: 15px; margin: 0; background: rgba(251, 247, 240, 0.92); border: 1px solid #7E7569;
+  }
+  .cat-card input:checked { background: var(--ink); border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--paper); }
+  .cat-card:not(.on) { background: #EDE7DC; }
+  .cat-card:not(.on) .txt b { color: #6E665D; }
+  .cat-card.off { display: none; }
+</style>
+
+{% if drafts | length %}
+<div class="cat-sheet" style="margin-bottom:14px">
+  <div class="cat-head"><h1 style="font-size:20px">Saved drafts</h1></div>
+  {% for d in drafts %}
+    <form method="post" action="{{ url('/catalog/drafts/delete') }}" style="display:flex;align-items:baseline;gap:14px;padding:6px 0;border-bottom:1px solid var(--hair, rgba(0,0,0,.13))">
+      <input type="hidden" name="draft" value="{{ d.id }}">
+      <a href="{{ url('/catalog/view') }}?draft={{ d.id }}" style="font-family:'Cormorant Garamond',Georgia,serif;font-size:17px">{{ d.name }}</a>
+      <span style="margin-left:auto;font-size:11px;color:#6F6A63">{{ d.updated }}</span>
+      <button type="submit" class="btn btn-link btn-sm" onclick="return confirm('Delete this draft?')">Delete</button>
+    </form>
+  {% endfor %}
+</div>
+{% endif %}
+
+<form method="get" action="{{ url('/catalog/view') }}" id="catForm">
+  <div class="cat-sheet">
+    <div class="cat-head">
+      <h1>Catalog</h1>
+      <div class="cat-unpub">{{ items | length }} Faire products{% if showAll %} (including unpublished){% endif %} · all selected to start · the catalog uses the first 250</div>
+    </div>
+    <div class="cat-bar">
+      <input class="form-control" type="text" name="title" value="{{ title }}" placeholder="Catalog title" style="width:220px">
+      <input class="form-control" type="text" name="brand" value="{{ brand }}" placeholder="Brand mark" style="width:150px">
+      <input class="form-control" type="text" name="subtitle" value="{{ subtitle }}" placeholder="Cover subtitle (optional)" style="width:240px">
+      <input class="form-control" type="search" id="q" placeholder="Search products" style="width:200px">
+      <select class="form-control" id="cat">
+        <option value="">All categories</option>
+        {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+      </select>
+      <button type="button" class="btn btn-default" id="selVis">Select visible</button>
+      <button type="button" class="btn btn-default" id="clr">Clear</button>
+      <button type="button" class="btn btn-default" id="curate" title="Ask a vision model which photo best represents each selected product">Curate images (AI)</button>
+      <a class="btn btn-default" href="{{ url('/catalog') }}{% if showAll %}{% else %}?all=1{% endif %}">
+        {% if showAll %}Only published{% else %}Show unpublished{% endif %}
+      </a>
+      <span class="cat-count" id="count">0 selected</span>
+      <span class="cat-unpub" id="curateMsg"></span>
+      <button type="submit" class="btn btn-primary">Generate catalog</button>
+    </div>
+
+    <div class="cat-grid" id="grid">
+    {% for item in items %}
+      <label class="cat-card on" data-name="{{ item.name | lower }}" data-cat="{{ item.category | lower }}">
+        <input type="checkbox" name="ids[]" value="{{ item.id }}" checked>
+        <img src="{{ item.image }}" loading="lazy" alt="">
+        <div class="txt">
+          <b>{{ item.name }}</b>
+          <span>{{ item.category }} · {{ item.wholesale }} whl{% if item.moq %} · min {{ item.moq }}{% endif %}</span>
+          {% if item.sku %}<span>{{ item.sku }}{% if item.skus.length > 1 %} +{{ item.skus.length - 1 }} SKUs{% endif %}{% if not item.published %} · unpublished{% endif %}</span>{% endif %}
+          {% if item.colors.length > 1 %}<span>{{ item.colors.slice(0, 4) | join(', ') }}{% if item.colors.length > 4 %} +{{ item.colors.length - 4 }}{% endif %}</span>{% endif %}
+        </div>
+      </label>
+    {% endfor %}
+    </div>
+  </div>
+</form>
+
+<script>
+// layout.njk emits `block scripts` inside <head>, so this sits after the markup
+// it drives.
+(function () {
+  var urlCurate = '{{ url('/catalog/curate') }}';
+  var cards = Array.prototype.slice.call(document.querySelectorAll('.cat-card'));
+  var q = document.getElementById('q');
+  var cat = document.getElementById('cat');
+  var count = document.getElementById('count');
+  var curateMsg = document.getElementById('curateMsg');
+
+  function refresh() {
+    var needle = q.value.trim().toLowerCase();
+    var wantCat = cat.value.toLowerCase();
+    var shown = 0;
+    cards.forEach(function (card) {
+      var ok = (!needle || card.dataset.name.indexOf(needle) !== -1) && (!wantCat || card.dataset.cat === wantCat);
+      card.classList.toggle('off', !ok);
+      if (ok) shown++;
+    });
+    tally(shown);
+  }
+  function tally(shown) {
+    count.textContent = document.querySelectorAll('.cat-card input:checked').length + ' selected · ' + shown + ' shown';
+  }
+  q.addEventListener('input', refresh);
+  cat.addEventListener('change', refresh);
+  document.getElementById('selVis').addEventListener('click', function () {
+    cards.forEach(function (card) { if (!card.classList.contains('off')) card.querySelector('input').checked = true; });
+    tally(cards.filter(function (card) { return !card.classList.contains('off'); }).length);
+  });
+  document.getElementById('clr').addEventListener('click', function () {
+    cards.forEach(function (card) { card.querySelector('input').checked = false; });
+    tally(cards.filter(function (card) { return !card.classList.contains('off'); }).length);
+  });
+  document.getElementById('grid').addEventListener('change', function (e) {
+    e.target.closest('.cat-card').classList.toggle('on', e.target.checked);
+    tally(cards.filter(function (card) { return !card.classList.contains('off'); }).length);
+  });
+  document.getElementById('curate').addEventListener('click', function () {
+    var ids = cards
+      .filter(function (card) { return card.querySelector('input').checked; })
+      .map(function (card) { return card.querySelector('input').value; });
+    if (ids.length === 0) {
+      curateMsg.textContent = 'Select products first.';
+      return;
+    }
+    curateMsg.textContent = 'Curating ' + ids.length + ' product images\u2026';
+    fetch(urlCurate, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: ids.map(function (id) { return 'ids[]=' + encodeURIComponent(id); }).join('&'),
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        curateMsg.textContent = j.ok
+          ? j.curated + ' curated (' + j.from_model + ' by the model, ' + j.already_had + ' already done) — reload to see them'
+          : j.message;
+      })
+      .catch(function (e) {
+        curateMsg.textContent = 'Curation failed: ' + e;
+      });
+  });
+
+  refresh();
+})();
+</script>
+
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}

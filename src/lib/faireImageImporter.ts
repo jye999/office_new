@@ -64,7 +64,8 @@ function decodeJson(value: unknown): Record<string, unknown> | unknown[] {
   }
 }
 
-function imageUrls(images: unknown): string[] {
+// Exported for src/lib/catalog.ts (sequence-ordered image urls).
+export function imageUrls(images: unknown): string[] {
   if (!isPhpArray(images)) return [];
   const list = Array.isArray(images) ? [...images] : Object.values(images);
   const seq = (x: unknown): number => {

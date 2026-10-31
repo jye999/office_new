@@ -689,6 +689,28 @@ export interface OsBulkProductions {
   updated_at: Generated<Date>;
 }
 
+export interface OsCatalogDrafts {
+  brand: string;
+  created_at: Generated<Date | null>;
+  id: Generated<number>;
+  ids: Json;
+  name: string;
+  overrides: Json | null;
+  subtitle: Generated<string>;
+  title: string;
+  updated_at: Generated<Date | null>;
+}
+
+export interface OsCatalogCuration {
+  created_at: Generated<Date | null>;
+  extra_urls: Json | null;
+  faire_id: string;
+  hero_url: string;
+  layout: Generated<string>;
+  model: string | null;
+  updated_at: Generated<Date | null>;
+}
+
 export interface OsCompany {
   id: number;
   name: string;
@@ -2000,20 +2022,20 @@ export interface OsUsers {
   username: string;
 }
 
-export interface OsVendorUsers {
-  created_at: Generated<Date | null>;
-  id: Generated<number>;
-  updated_at: Generated<Date | null>;
-  user_id: number;
-  vendor_id: number;
-}
-
 export interface OsVendors {
   created_at: Generated<Date | null>;
   id: Generated<number>;
   name: string;
   notes: string | null;
   updated_at: Generated<Date | null>;
+}
+
+export interface OsVendorUsers {
+  created_at: Generated<Date | null>;
+  id: Generated<number>;
+  updated_at: Generated<Date | null>;
+  user_id: number;
+  vendor_id: number;
 }
 
 export interface OsVwShopifyProducts {
@@ -2390,6 +2412,8 @@ export interface DB {
   os_assigned_roles: OsAssignedRoles;
   os_bulk_production: OsBulkProduction;
   os_bulk_productions: OsBulkProductions;
+  os_catalog_curation: OsCatalogCuration;
+  os_catalog_drafts: OsCatalogDrafts;
   os_company: OsCompany;
   os_ebay_listings: OsEbayListings;
   os_ebay_notification: OsEbayNotification;

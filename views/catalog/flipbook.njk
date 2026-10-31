@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>{{ model.pages[0].title }}</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Inter:wght@400;500&family=Anton&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --pw: min(46vw, 58vh);
+      --ph: calc(var(--pw) * 1.3889);
+      --page: #FFFDF8;
+      --ink: #2E2B27;
+      --mute: #6F6A63;
+      --hair: rgba(0, 0, 0, 0.13);
+      --serif: "Cormorant Garamond", Georgia, serif;
+      /* Display face for headlines, the way a magazine masthead sets them. */
+      --display: Anton, "Arial Narrow", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      color: var(--ink);
+      background: #C9C0B1;
+      overflow: hidden;
+    }
+    #stage {
+      position: fixed; inset: 0 0 46px 0; z-index: 1;
+      display: flex; align-items: center; justify-content: center;
+      perspective: 2400px;
+    }
+    #masthead {
+      position: fixed; top: 13px; left: 16px; z-index: 60; display: flex; align-items: baseline; gap: 14px;
+      font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: #4A4338;
+    }
+    #pageLabel { font-family: var(--serif); font-size: 13px; letter-spacing: 0.04em; text-transform: none; color: #7A7166; }
+    #brandBox {
+      position: fixed; top: 11px; right: 16px; z-index: 60; padding: 4px 11px; border: 1px solid rgba(74, 67, 56, 0.4);
+      font-family: var(--serif); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; color: #4A4338;
+    }
+    #book {
+      position: relative;
+      width: calc(var(--pw) * 2); height: var(--ph);
+      transform-style: preserve-3d;
+      transition: transform 0.6s ease;
+    }
+    #book.closed { transform: translateX(calc(var(--pw) / -2)); }
+    .sheet {
+      position: absolute; left: 50%; top: 0;
+      width: var(--pw); height: var(--ph);
+      transform-style: preserve-3d;
+      transform-origin: left center;
+      transition: transform 0.85s cubic-bezier(0.42, 0, 0.28, 1);
+    }
+    .sheet.flipped { transform: rotateY(-180deg); }
+    .face {
+      position: absolute; inset: 0; overflow: hidden;
+      background: #fff;
+      /* Paper on a table: a hairline shadow only, no frame around the leaf. */
+      box-shadow: 0 1px 3px rgba(46, 43, 39, 0.12);
+      backface-visibility: hidden;
+    }
+    .face.back { transform: rotateY(180deg); }
+    .face::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+    .face.front::after { background: linear-gradient(90deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0) 6%); }
+    .face.back::after { background: linear-gradient(-90deg, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0) 6%); }
+    .zone { position: absolute; top: 0; bottom: 0; width: calc(var(--pw) * 0.4); cursor: pointer; transform: translateZ(2px); }
+    .zone.l { left: 0; }
+    .zone.r { right: 0; }
+    .zone.l:hover { background: linear-gradient(90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0)); }
+    .zone.r:hover { background: linear-gradient(-90deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0)); }
+
+    .page { position: absolute; inset: 0; font-size: calc(var(--pw) / 22); background: var(--page); }
+    .folio { position: absolute; bottom: 1.1em; right: 1.3em; font-family: var(--display); font-size: 0.5em; letter-spacing: 0.14em; color: var(--mute); }
+    .face.back .folio { right: auto; left: 1.3em; }
+
+    .brand { font-family: var(--serif); font-size: 0.95em; letter-spacing: 0.4em; text-transform: uppercase; }
+    .display { font-family: var(--display); font-weight: 400; text-transform: uppercase; line-height: 0.92; letter-spacing: 0.01em; }
+    .sub { font-size: 0.6em; letter-spacing: 0.2em; text-transform: uppercase; opacity: 0.9; }
+    .hair { height: 1px; background: var(--hair); margin: 1.1em 0 0.8em; }
+    .tag { font-size: 0.56em; letter-spacing: 0.22em; text-transform: uppercase; opacity: 0.8; }
+
+    /* Cover and section openers are set as type on paper with one framed photo,
+     * which is how a magazine builds them when the art is a white-background product shot. */
+    .coverPad, .opener { display: flex; flex-direction: column; }
+    .coverPad h1 { font-size: 3.5em; margin: 0.3em 0 0.25em; }
+    .opener h2 { font-size: 3.1em; margin: 0.5em 0 0; }
+    .shotBlock {
+      flex: 1 1 auto; min-height: 0; display: flex; align-items: center; justify-content: center;
+      border: 1px solid var(--hair); background: #FFFDF8; margin: 0.5em 0;
+    }
+    /* A section opener reverses to ink so the book has rhythm. */
+    .dark { background: #1B1915; color: #F3EDE3; }
+    .dark .eyebrow { color: #A99E8D; }
+    .dark .hair { background: rgba(255, 255, 255, 0.3); }
+    .dark .shotBlock { background: #F5F0E7; border-color: transparent; }
+
+    .pad { position: absolute; inset: 0; padding: 2.6em 2.2em; }
+    .eyebrow { font-size: 0.6em; letter-spacing: 0.3em; text-transform: uppercase; color: var(--mute); }
+    .pad h2 { font-family: var(--display); font-weight: 400; font-size: 2.8em; text-transform: uppercase; line-height: 0.95; letter-spacing: 0.01em; margin: 0.3em 0 1em; }
+    .pad .hair { background: var(--hair); }
+    .tocList { list-style: none; margin: 0; padding: 0; font-size: 0.78em; }
+    .tocList li { display: flex; align-items: baseline; gap: 0.7em; padding: 0.55em 0; border-bottom: 1px solid var(--hair); }
+    .tocList li b { margin-left: auto; font-family: var(--display); font-weight: 400; font-size: 1.15em; color: var(--ink); }
+    .note { font-size: 0.6em; line-height: 1.7; color: var(--mute); }
+    .pad.center { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 0.6em; }
+    .pad.center .brand { color: var(--ink); }
+    .pad.center .hair { width: 40%; background: var(--hair); }
+
+    /* A product page is a 2x2 grid: full spans it, half takes a row, quarter one cell. */
+    .products { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; padding-top: 2.1em; }
+    /* Running head, the way a printed catalog marks its section on every page. */
+    .runner { position: absolute; top: 0.95em; left: 1.5em; right: 1.5em; display: flex; justify-content: space-between; font-size: 0.5em; letter-spacing: 0.26em; text-transform: uppercase; color: var(--mute); }
+    .runner::after { content: ""; position: absolute; left: 0; right: 0; bottom: -0.9em; height: 1px; background: var(--hair); }
+    .item { display: flex; flex-direction: column; min-height: 0; overflow: hidden; padding: 1em 1.2em 0.8em; }
+    .item.quarter { grid-column: span 1; grid-row: span 1; }
+    .item.half { grid-column: span 2; grid-row: span 1; }
+    .item.full { grid-column: span 2; grid-row: span 2; padding: 1.3em 1.6em 1.2em; }
+    /* Photos sit on a tinted plate so white-background shots read as a deliberate frame. */
+    .shot { flex: 1 1 0; min-height: 4em; display: flex; align-items: center; justify-content: center; background: #F5F0E7; padding: 0.5em; }
+    /* The whole product is always visible: photos are fitted, never cropped. */
+    .shot img, .shotBlock img { max-width: 100%; max-height: 100%; object-fit: contain; display: block; mix-blend-mode: multiply; }
+    .copy { min-width: 0; flex: 0 0 auto; }
+    /* A half page splits side by side, so the photo gets the full page height. */
+    .item.half { flex-direction: row; align-items: center; gap: 1.4em; }
+    .item.half .shot { flex: 0 0 48%; align-self: stretch; }
+    .item.half .copy { flex: 1 1 auto; min-width: 0; }
+    /* Titles are labels, not headlines: small, spaced display caps. Descriptions are set in full. */
+    .item h3 { font-family: var(--display); font-weight: 400; font-size: 0.8em; text-transform: uppercase; line-height: 1.12; letter-spacing: 0.07em; margin: 0.75em 0 0.35em; text-wrap: balance; }
+    .item p { font-family: var(--serif); font-style: italic; font-size: 0.74em; line-height: 1.38; color: #5C564E; margin: 0 0 0.7em; max-width: 46ch; }
+    .item .specs { border-top: 1px solid var(--hair); padding-top: 0.55em; }
+    /* Label/value pairs in one aligned column: SKU, Colors, Size, Weight, Min qty. */
+    .specs { display: grid; grid-template-columns: max-content 1fr; gap: 0.22em 0.8em; align-items: baseline; font-size: 0.45em; letter-spacing: 0.08em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+    .specs .k { color: var(--mute); }
+    .specs .v { color: var(--ink); min-width: 0; }
+    .specs .price { font-family: var(--serif); font-size: 1.9em; letter-spacing: 0.02em; line-height: 1; }
+    /* Dimensions and weight are reference data, so they sit a step smaller. */
+    .specs .small { font-size: 0.86em; }
+    .item.full h3 { font-size: 1.3em; margin: 0.9em 0 0.45em; }
+    .item.full p { font-size: 0.88em; }
+    .item.full .specs { font-size: 0.58em; gap: 0.3em 1em; }
+    .item.full .extras img { width: 4em; height: 4em; }
+    .item.half h3 { font-size: 0.78em; margin: 0.4em 0 0.3em; }
+    .item.half p { font-size: 0.68em; line-height: 1.32; margin-bottom: 0.55em; }
+    .item.half .specs { font-size: 0.42em; gap: 0.2em 0.6em; }
+    /* A quarter cell has room for the name and the numbers only. */
+    .item.quarter h3 { font-size: 0.7em; margin: 0.5em 0 0.25em; }
+    .item.quarter .specs { font-size: 0.44em; gap: 0.3em 0.6em; }
+    .item.quarter .specs .opt, .item.quarter p, .item.quarter .extras, .item.half .extras { display: none; }
+    .extras { display: flex; gap: 5px; margin-top: 0.6em; }
+    .extras img { width: 2.6em; height: 2.6em; object-fit: contain; background: #F3EFE8; }
+
+    /* Edit mode: pages stop turning on click and every photo becomes a target. */
+    body.editing .zone { pointer-events: none; }
+    body.editing .shot img, body.editing .shotBlock img { cursor: pointer; }
+    body.editing .shot:hover, body.editing .shotBlock:hover { outline: 2px solid var(--ink); outline-offset: -2px; }
+    body.editing #editBtn { color: var(--ink); border-bottom-color: var(--ink); }
+    #saveState { color: var(--mute); font-family: var(--serif); font-size: 14px; letter-spacing: 0.02em; text-transform: none; }
+    #imgPane .pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+    #imgPane .pick button { padding: 0; border: 1px solid var(--hair); background: #F5F0E7; aspect-ratio: 1; cursor: pointer; border-bottom-color: var(--hair); }
+    #imgPane .pick button.cur { outline: 2px solid var(--ink); outline-offset: -2px; }
+    #imgPane .pick img { width: 100%; height: 100%; object-fit: contain; display: block; }
+    #imgPane .url { display: flex; gap: 6px; }
+    #imgPane input { flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 6px 8px; border: 1px solid var(--hair); background: #fff; }
+    #imgPane .name { font-family: var(--serif); font-size: 16px; margin: 0 0 10px; }
+    #imgPane .hint { font-size: 11px; color: var(--mute); margin: 10px 0 0; line-height: 1.5; }
+    button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+    ::selection { background: #E4D9C4; }
+
+    /* Controls sit on the same paper as the pages: hairline rule, letterspaced caps. */
+    #bar {
+      position: fixed; left: 0; right: 0; bottom: 0; height: 46px; z-index: 60;
+      display: flex; align-items: center; gap: 14px; padding: 0 16px;
+      background: rgba(255, 253, 248, 0.94); border-top: 1px solid var(--hair);
+      color: var(--ink); font-size: 10.5px; letter-spacing: 0.12em; text-transform: uppercase;
+    }
+    #bar button, #bar a {
+      font: inherit; color: var(--mute); text-decoration: none; background: none; border: 0;
+      border-bottom: 1px solid var(--hair); padding: 4px 1px; cursor: pointer;
+    }
+    #bar button:hover, #bar a:hover { color: var(--ink); border-bottom-color: var(--ink); }
+    #counter { min-width: 96px; text-align: center; color: var(--mute); font-family: var(--serif); font-size: 14px; letter-spacing: 0.04em; text-transform: none; }
+    .spacer { flex: 1; }
+    #panel {
+      position: fixed; top: 0; right: 0; bottom: 46px; width: min(300px, 82vw); z-index: 55;
+      background: rgba(255, 253, 248, 0.97); border-left: 1px solid var(--hair);
+      overflow-y: auto; padding: 16px 14px;
+    }
+    #panel.hidden { display: none; }
+    #panel h4 { font-family: var(--display); font-size: 15px; font-weight: 400; text-transform: uppercase; letter-spacing: 0.06em; margin: 4px 0 12px; }
+    #panel ol, #panel ul { list-style: none; margin: 0; padding: 0; font-size: 12px; letter-spacing: 0.04em; }
+    #panel li { display: flex; align-items: center; gap: 9px; padding: 8px 6px; cursor: pointer; border-bottom: 1px solid var(--hair); }
+    #panel li:hover { color: var(--ink); }
+    #panel li.cur { box-shadow: inset 3px 0 0 var(--ink); }
+    #panel li img { width: 44px; height: 32px; object-fit: cover; background: #EFE9E1; flex: none; }
+    #panel li em { margin-left: auto; font-style: normal; color: var(--mute); }
+    #panel li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 720px) { :root { --pw: min(47vw, 44vh); } #bar { font-size: 12px; } }
+  </style>
+</head>
+<body>
+
+<div id="masthead">{{ model.pages[0].title }}<span id="pageLabel"></span></div>
+<div id="brandBox">{{ brand }}</div>
+
+<div id="stage">
+  <div id="book">
+    <div class="zone l" id="zoneL" title="Previous page"></div>
+    <div class="zone r" id="zoneR" title="Next page"></div>
+  </div>
+</div>
+
+<div id="bar">
+  <button id="prev">&#8249; Prev</button>
+  <button id="next">Next &#8250;</button>
+  <span class="spacer"></span>
+  <button id="tocBtn">Contents</button>
+  <button id="thumbBtn">Pages</button>
+  <button id="fsBtn">Fullscreen</button>
+  <span id="saveState">{% if draft %}Draft: {{ draft.name }}{% endif %}</span>
+  <button id="editBtn" aria-pressed="false">Change images</button>
+  <button id="saveBtn">Save draft</button>
+  <a href="{{ url('/catalog') }}">Edit selection</a>
+</div>
+
+<aside id="panel" class="hidden">
+  <div id="tocPane">
+    <h4>Contents</h4>
+    <ol>
+      {% for t in model.toc %}
+        <li data-spread="{{ t.spread }}"><span>{{ t.name }}</span><em>{{ t.spread * 2 + 1 }}</em></li>
+      {% endfor %}
+    </ol>
+  </div>
+  <div id="imgPane" style="display:none"></div>
+  <div id="thumbPane">
+    <h4>Pages</h4>
+    <ul>
+      {% for p in model.pages %}
+        {% set img = p.image %}{% if not img and p.items %}{% set img = p.items[0].image %}{% endif %}
+        <li data-spread="{{ loop.index0 // 2 }}" data-page="{{ loop.index0 }}">
+          {% if img %}<img src="{{ img }}" loading="lazy" alt="">{% endif %}
+          <span>{{ p.title or p.kind }}</span>
+          <em>{{ loop.index }}</em>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</aside>
+
+<script type="application/json" id="catData">{{ { overrides: overrides, products: products, draft: draft, ids: ids, title: title, subtitle: subtitle, brand: brand } | dump | replace('<', '\\u003c') | safe }}</script>
+<div id="pool" style="display:none">
+  {% for p in model.pages %}
+    <div class="page {{ p.kind }}">
+      {% if p.kind == 'cover' %}
+        <div class="pad coverPad">
+          <div class="eyebrow">{{ brand }}</div>
+          <h1 class="display">{{ p.title }}</h1>
+          {% if p.subtitle %}<p class="sub">{{ p.subtitle }}</p>{% endif %}
+          {% if p.image %}<div class="shotBlock"><img src="{{ p.image }}" alt="" data-pid="{{ p.imageId }}"></div>{% endif %}
+          <div class="hair"></div>
+          <p class="tag">{{ model.count }} styles · {{ model.categories }} categories · wholesale · {{ year }}</p>
+        </div>
+      {% elif p.kind == 'contents' %}
+        <div class="pad">
+          <div class="eyebrow">{{ brand }}</div>
+          <h2>Contents</h2>
+          <ul class="tocList">
+            {% for c in p.contents %}<li><span>{{ c.name }}</span><b>{{ c.page }}</b></li>{% endfor %}
+          </ul>
+          <div class="hair"></div>
+          <p class="note">Prices are USD wholesale. Sizes are inches and weights lb/oz unless noted. Minimum order quantities apply per style.</p>
+        </div>
+      {% elif p.kind == 'category' %}
+        <div class="pad dark opener">
+          <div class="eyebrow">{{ brand }}</div>
+          <div class="shotBlock">{% if p.image %}<img src="{{ p.image }}" alt="" data-pid="{{ p.imageId }}">{% endif %}</div>
+          <h2 class="display">{{ p.title }}</h2>
+        </div>
+      {% elif p.kind == 'products' %}
+        <div class="runner"><span>{{ p.title }}</span><span>{{ brand }}</span></div>
+        {% for item in p.items %}
+          <article class="item {{ item.layout }}">
+            <div class="shot">{% if item.image %}<img src="{{ item.image }}" alt="{{ item.name }}" data-pid="{{ item.id }}" loading="lazy">{% endif %}</div>
+            <div class="copy">
+              <h3>{{ item.name }}</h3>
+              {% if item.text %}<p>{{ item.text }}</p>{% endif %}
+              <div class="specs">
+                {% if item.wholesale %}<span class="k">Wholesale</span><span class="v price">{{ item.wholesale }}</span>{% endif %}
+                {% if item.sku %}<span class="k">SKU</span><span class="v">{{ item.skus.slice(0, 3) | join(' · ') }}{% if item.skus.length > 3 %} +{{ item.skus.length - 3 }}{% endif %}</span>{% endif %}
+                {% if item.colors.length > 1 %}
+                  <span class="k opt">Colors</span>
+                  <span class="v opt">{{ item.colors.slice(0, 4) | join(', ') }}{% if item.colors.length > 4 %} +{{ item.colors.length - 4 }}{% endif %}</span>
+                {% endif %}
+                {% if item.dimensions.length %}<span class="k opt small">Size</span><span class="v opt small">{{ item.dimensions[0] }}{% if item.dimensions.length > 1 %} +{{ item.dimensions.length - 1 }}{% endif %}</span>{% endif %}
+                {% if item.weights.length %}<span class="k opt small">Weight</span><span class="v opt small">{{ item.weights[0] }}{% if item.weights.length > 1 %} +{{ item.weights.length - 1 }}{% endif %}</span>{% endif %}
+                {% if item.moq %}<span class="k">Min qty</span><span class="v">{{ item.moq }}</span>{% endif %}
+              </div>
+              {% if item.extras | length %}
+                <div class="extras">{% for e in item.extras %}<img src="{{ e }}" alt="" loading="lazy">{% endfor %}</div>
+              {% endif %}
+            </div>
+          </article>
+        {% endfor %}
+      {% elif p.kind == 'back' %}
+        <div class="pad center">
+          <div class="brand">{{ brand }}</div>
+          <div class="hair"></div>
+          <p class="note">{{ model.count }} styles · {{ model.categories }} categories<br>{{ p.title }} · {{ year }}</p>
+        </div>
+      {% endif %}
+      {% if not loop.first %}<div class="folio">{{ loop.index }}</div>{% endif %}
+    </div>
+  {% endfor %}
+</div>
+
+<script>
+(function () {
+  var book = document.getElementById('book');
+  var pool = document.getElementById('pool');
+  var pageLabel = document.getElementById('pageLabel');
+  var panel = document.getElementById('panel');
+  var tocPane = document.getElementById('tocPane');
+  var thumbPane = document.getElementById('thumbPane');
+  var pages = Array.prototype.slice.call(pool.querySelectorAll('.page'));
+  pool.parentNode.removeChild(pool);
+
+  var sheets = [];
+  for (var i = 0; i < Math.ceil(pages.length / 2); i++) {
+    var sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    var front = document.createElement('div');
+    front.className = 'face front';
+    var back = document.createElement('div');
+    back.className = 'face back';
+    if (pages[i * 2]) front.appendChild(pages[i * 2]);
+    if (pages[i * 2 + 1]) back.appendChild(pages[i * 2 + 1]);
+    sheet.appendChild(back);
+    sheet.appendChild(front);
+    book.appendChild(sheet);
+    sheets.push(sheet);
+  }
+
+  var spread = 0;
+  var last = sheets.length - 1;
+  var items = Array.prototype.slice.call(document.querySelectorAll('#panel li'));
+
+  function go(next) {
+    spread = Math.max(0, Math.min(last, next));
+    sheets.forEach(function (sheet, k) {
+      var flipped = k < spread;
+      sheet.classList.toggle('flipped', flipped);
+      sheet.style.zIndex = flipped ? k + 1 : sheets.length - k;
+    });
+    book.classList.toggle('closed', spread === 0);
+    pageLabel.textContent = spread === 0
+      ? 'page 1 of ' + pages.length
+      : 'pages ' + (spread * 2 + 1) + '-' + (spread * 2 + 2) + ' of ' + pages.length;
+    items.forEach(function (li) {
+      li.classList.toggle('cur', Number(li.dataset.spread) === spread);
+    });
+    // Page deeplink, like the flipbook hosts' /view/{id}/{page}/ urls.
+    history.replaceState(null, '', '#' + (spread * 2 + 1));
+  }
+
+  document.getElementById('next').addEventListener('click', function () { go(spread + 1); });
+  document.getElementById('prev').addEventListener('click', function () { go(spread - 1); });
+  document.getElementById('zoneR').addEventListener('click', function () { go(spread + 1); });
+  document.getElementById('zoneL').addEventListener('click', function () { go(spread - 1); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); go(spread + 1); }
+    if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); go(spread - 1); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(last);
+  });
+  items.forEach(function (li) {
+    li.addEventListener('click', function () { go(Number(li.dataset.spread)); });
+  });
+
+  var imgPane = document.getElementById('imgPane');
+  var panes = [tocPane, thumbPane, imgPane];
+  function showPane(el) {
+    var alreadyOpen = !panel.classList.contains('hidden') && el.style.display !== 'none';
+    if (alreadyOpen) {
+      panel.classList.add('hidden');
+      return;
+    }
+    panes.forEach(function (p) { p.style.display = p === el ? '' : 'none'; });
+    panel.classList.remove('hidden');
+  }
+  document.getElementById('tocBtn').addEventListener('click', function () { showPane(tocPane); });
+  document.getElementById('thumbBtn').addEventListener('click', function () { showPane(thumbPane); });
+
+  // ---- Draft + image swapping -------------------------------------------------
+  var data = JSON.parse(document.getElementById('catData').textContent);
+  var overrides = data.overrides || {};
+  var draftId = data.draft ? data.draft.id : 0;
+  var draftName = data.draft ? data.draft.name : '';
+  var saveState = document.getElementById('saveState');
+  var saveBtn = document.getElementById('saveBtn');
+  var editBtn = document.getElementById('editBtn');
+
+  function setDirty() {
+    saveState.textContent = (draftName ? 'Draft: ' + draftName + ' \u00b7 ' : '') + 'unsaved changes';
+  }
+
+  // Every place a product's photo shows (page, cover, opener, thumbnail) follows the swap.
+  function applyImage(pid, url) {
+    Array.prototype.forEach.call(document.querySelectorAll('img[data-pid]'), function (img) {
+      if (img.dataset.pid === pid) img.src = url;
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('#thumbPane li'), function (li) {
+      var page = pages[Number(li.dataset.page)];
+      var first = page && page.querySelector('img[data-pid]');
+      var thumb = li.querySelector('img');
+      if (first && thumb && first.dataset.pid === pid) thumb.src = url;
+    });
+  }
+  // The server already renders saved choices; remember what each product shows right now.
+  var shown = {};
+  Array.prototype.forEach.call(document.querySelectorAll('img[data-pid]'), function (img) {
+    if (!(img.dataset.pid in shown)) shown[img.dataset.pid] = img.getAttribute('src');
+  });
+
+  function choose(pid, url) {
+    overrides[pid] = url;
+    shown[pid] = url;
+    applyImage(pid, url);
+    setDirty();
+    openImagePane(pid);
+  }
+
+  function openImagePane(pid) {
+    var product = data.products[pid];
+    if (!product) return;
+    var current = shown[pid];
+    var html = '<h4>Change image</h4><p class="name"></p><div class="pick"></div>' +
+      '<div class="url"><input type="url" placeholder="Paste an image link" aria-label="Image link"><button type="button">Use</button></div>' +
+      '<p class="hint">Pick any photo this product has, or paste a link. Save the draft to keep the choice.</p>';
+    imgPane.innerHTML = html;
+    imgPane.querySelector('.name').textContent = product.name;
+    var grid = imgPane.querySelector('.pick');
+    var choices = product.images.slice();
+    if (current && choices.indexOf(current) < 0) choices.unshift(current);
+    choices.forEach(function (url) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      if (url === current) b.className = 'cur';
+      var im = document.createElement('img');
+      im.src = url;
+      im.alt = '';
+      b.appendChild(im);
+      b.addEventListener('click', function () { choose(pid, url); });
+      grid.appendChild(b);
+    });
+    var input = imgPane.querySelector('input');
+    imgPane.querySelector('.url button').addEventListener('click', function () {
+      var v = input.value.trim();
+      if (/^https?:\/\//i.test(v)) choose(pid, v); else input.focus();
+    });
+    panes.forEach(function (p) { p.style.display = p === imgPane ? '' : 'none'; });
+    panel.classList.remove('hidden');
+  }
+
+  editBtn.addEventListener('click', function () {
+    var on = !document.body.classList.contains('editing');
+    document.body.classList.toggle('editing', on);
+    editBtn.setAttribute('aria-pressed', String(on));
+    editBtn.textContent = on ? 'Done changing' : 'Change images';
+    if (!on) panel.classList.add('hidden');
+  });
+  document.getElementById('book').addEventListener('click', function (e) {
+    if (!document.body.classList.contains('editing')) return;
+    var img = e.target.closest ? e.target.closest('.shot, .shotBlock') : null;
+    var pic = img && img.querySelector('img[data-pid]');
+    if (pic) openImagePane(pic.dataset.pid);
+  });
+
+  saveBtn.addEventListener('click', function () {
+    if (!draftId) {
+      var name = window.prompt('Name this draft', data.title);
+      if (!name) return;
+      draftName = name;
+    }
+    var body = new URLSearchParams();
+    if (draftId) body.set('draft', String(draftId));
+    body.set('name', draftName || data.title);
+    body.set('ids', data.ids.join(','));
+    body.set('title', data.title);
+    body.set('subtitle', data.subtitle);
+    body.set('brand', data.brand);
+    body.set('overrides', JSON.stringify(overrides));
+    saveState.textContent = 'Saving\u2026';
+    fetch('{{ url('/catalog/drafts') }}', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: body.toString() })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) { saveState.textContent = j.message || 'Save failed'; return; }
+        draftId = j.id;
+        saveState.textContent = 'Draft: ' + (draftName || data.title) + ' \u00b7 saved';
+        history.replaceState(null, '', '{{ url('/catalog/view') }}?draft=' + draftId + location.hash);
+      })
+      .catch(function () { saveState.textContent = 'Save failed'; });
+  });
+
+  document.getElementById('fsBtn').addEventListener('click', function () {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  });
+
+  var startPage = parseInt(String(location.hash || '').replace(/[^0-9]/g, ''), 10);
+  go(startPage > 0 ? Math.floor((startPage - 1) / 2) : 0);
+  window.addEventListener('hashchange', function () {
+    var page = parseInt(String(location.hash).replace(/[^0-9]/g, ''), 10);
+    if (page > 0) go(Math.floor((page - 1) / 2));
+  });
+})();
+</script>
+
+</body>
+</html>

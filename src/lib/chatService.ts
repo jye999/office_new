@@ -32,15 +32,15 @@ type Message = Record<string, unknown>;
 
 // Test seam: replaces the OpenAI chat/completions POST so unit tests never
 // reach api.openai.com. Receives the (already JSON-encoded) payload.
-type OpenAiPost = (jsonBody: string) => Promise<Record<string, unknown>>;
+type OpenAiPost = (jsonBody: string, url?: string, timeoutMs?: number) => Promise<Record<string, unknown>>;
 
 let openAiPostImpl: OpenAiPost;
 
-async function openAiPostHttp(jsonBody: string): Promise<Record<string, unknown>> {
+async function openAiPostHttp(jsonBody: string, url?: string, timeoutMs = 60000): Promise<Record<string, unknown>> {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 60000); // Guzzle timeout 60
+  const timer = setTimeout(() => controller.abort(), timeoutMs); // Guzzle timeout 60
   try {
-    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    const res = await fetch(url ?? 'https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       body: jsonBody,
       signal: controller.signal,
@@ -61,6 +61,14 @@ async function openAiPostHttp(jsonBody: string): Promise<Record<string, unknown>
 
 export function setOpenAiPostForTests(fn: OpenAiPost | null): void {
   openAiPostImpl = fn ?? openAiPostHttp;
+}
+
+// One-shot completion for callers outside ChatService (catalog curation), through
+// the same test seam so no unit test reaches api.openai.com.
+// url: an OpenAI-compatible chat/completions endpoint other than api.openai.com
+// (e.g. a local llama-server, see CATALOG_LLM_URL).
+export async function openAiChat(payload: Record<string, unknown>, url?: string, timeoutMs?: number): Promise<Record<string, unknown>> {
+  return (openAiPostImpl ?? openAiPostHttp)(JSON.stringify(payload), url, timeoutMs);
 }
 
 export class ChatService {

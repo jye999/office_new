@@ -20,6 +20,11 @@ const EnvSchema = z.object({
   OPENAI_API_KEY: z.string().default(''),
   OPENAI_MODEL: z.string().default('gpt-4o'),
   OPENAI_TRANSCRIPTION_MODEL: z.string().default('gpt-4o-mini-transcribe'),
+  // Catalog image curation (/catalog/curate): an OpenAI-compatible endpoint and
+  // model; empty url means api.openai.com with OPENAI_MODEL.
+  CATALOG_LLM_URL: z.string().default(''),
+  CATALOG_LLM_MODEL: z.string().default(''),
+  CATALOG_LLM_EFFORT: z.string().default(''),
   N8N_MCP_URL: z.string().default(''),
   // The only account allowed to manage other admins on the Users page (matched by login email).
   SUPER_ADMIN_EMAIL: z.string().default('johnny@angelisabella.com'),
