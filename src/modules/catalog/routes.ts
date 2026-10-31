@@ -6,8 +6,9 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { db } from '../../db.js';
 import { input, lredirect } from '../../http.js';
-import { buildCatalog, catalogItem, asJson, type CatalogItem, type CatalogLayout, type FaireRow, type ItemPick } from '../../lib/catalog.js';
-import { curateProduct } from '../../lib/catalogCuration.js';
+import { buildCatalog, catalogItem, asJson, FAIRE_COLUMNS, type CatalogItem, type CatalogLayout, type FaireRow, type ItemPick } from '../../lib/catalog.js';
+import { catalogJobStatus, dispatchCatalogCurate } from '../../jobs/queue.js';
+import { curationTodo } from '../../lib/catalogCurateRun.js';
 import { route } from '../../router.js';
 import { render } from '../../view.js';
 
@@ -15,7 +16,7 @@ const ROLES = ['admin', 'user', 'remote'];
 const DEFAULT_TITLE = 'Wholesale Catalog';
 const DEFAULT_BRAND = 'Enfloral';
 
-const COLUMNS = ['id', 'name', 'description', 'short_description', 'taxonomy_type', 'images', 'variants', 'minimum_order_quantity', 'per_style_minimum_order_quantity'] as const;
+const COLUMNS = FAIRE_COLUMNS;
 
 interface PickerItem extends CatalogItem {
   id: string;
@@ -69,48 +70,25 @@ async function picksByFaireId(ids: string[]): Promise<Record<string, ItemPick>> 
   return picks;
 }
 
-// Small bounded map: OpenAI answers in ~2-4s, and 4 at a time is polite.
-async function mapLimit<T>(items: T[], limit: number, fn: (item: T) => Promise<void>): Promise<void> {
-  for (let i = 0; i < items.length; i += limit) {
-    await Promise.all(items.slice(i, i + limit).map((item) => fn(item)));
-  }
-}
-
+// Curation runs in the worker (a local model takes seconds per product, so hundreds of
+// products outlast any HTTP request): this queues the job and the page polls /catalog/curate/status.
 async function curate(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   // formbody does not expand ids[] the way the query-string parser does.
   const ids = idList(input(req, 'ids') ?? input(req, 'ids[]'));
   if (ids.length === 0) return void reply.code(400).send({ ok: false, message: 'Select products first.' });
-  const force = String(input(req, 'force') ?? '') === '1';
-  const have = await db.selectFrom('os_catalog_curation').select('faire_id').where('faire_id', 'in', ids).execute();
-  const known = new Set(have.map((h) => h.faire_id));
-  const todo = force ? ids : ids.filter((id) => !known.has(id));
-  // MySQL rejects "in ()", and there is nothing to ask the model about anyway.
-  if (todo.length === 0) return void reply.send({ ok: true, curated: 0, from_model: 0, already_had: ids.length });
+  const running = await catalogJobStatus();
+  if (running) return void reply.send({ ok: true, job: running.id, total: running.total, already_running: true });
+  const todo = await curationTodo(ids, String(input(req, 'force') ?? '') === '1');
+  if (todo.length === 0) return void reply.send({ ok: true, job: null, total: 0, already_had: ids.length });
+  const job = await dispatchCatalogCurate({ ids: todo });
+  return void reply.send({ ok: true, job, total: todo.length, already_had: ids.length - todo.length });
+}
 
-  const rows = (await db
-    .selectFrom('os_faire_products')
-    .select(COLUMNS)
-    .where('id', 'in', todo)
-    .execute()) as FaireRow[];
-
-  let curated = 0;
-  let fromModel = 0;
-  // shortcut: 4 in flight is tuned for throughput, but a local llama-server still
-  // takes ~15s per product, so hundreds of products take tens of minutes.
-  // Upgrade to a background job if that gets annoying.
-  await mapLimit(rows, 4, async (row) => {
-    const { pick, model } = await curateProduct(row);
-    if (!pick.hero) return;
-    await db
-      .insertInto('os_catalog_curation')
-      .values({ faire_id: row.id, hero_url: pick.hero, extra_urls: JSON.stringify(pick.extras), layout: pick.layout, model })
-      .onDuplicateKeyUpdate({ hero_url: pick.hero, extra_urls: JSON.stringify(pick.extras), layout: pick.layout, model })
-      .execute();
-    curated += 1;
-    if (model) fromModel += 1;
-  });
-
-  return void reply.send({ ok: true, curated, from_model: fromModel, already_had: ids.length - todo.length });
+async function curateStatus(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const raw = String(input(req, 'job') ?? '').trim();
+  const status = await catalogJobStatus(raw || undefined);
+  reply.header('cache-control', 'no-store');
+  return void reply.send({ ok: true, status });
 }
 
 async function picker(req: FastifyRequest, reply: FastifyReply): Promise<void> {
@@ -282,5 +260,6 @@ export function registerCatalogRoutes(app: FastifyInstance): void {
   route(app, { verb: 'post', path: '/catalog/open', name: 'catalog.open', roles: ROLES, handler: openSelection });
   route(app, { verb: 'post', path: '/catalog/drafts', name: 'catalog.drafts.save', roles: ROLES, handler: saveDraft });
   route(app, { verb: 'post', path: '/catalog/drafts/delete', name: 'catalog.drafts.delete', roles: ROLES, handler: deleteDraft });
+  route(app, { verb: 'get', path: '/catalog/curate/status', name: 'catalog.curate.status', roles: ROLES, handler: curateStatus });
   route(app, { verb: 'post', path: '/catalog/curate', name: 'catalog.curate', roles: ROLES, handler: curate });
 }

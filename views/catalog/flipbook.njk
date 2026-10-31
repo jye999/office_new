@@ -166,6 +166,18 @@
     #imgPane input { flex: 1; min-width: 0; font: inherit; font-size: 12px; padding: 6px 8px; border: 1px solid var(--hair); background: #fff; }
     #imgPane .name { font-family: var(--serif); font-size: 16px; margin: 0 0 10px; }
     #imgPane .hint { font-size: 11px; color: var(--mute); margin: 10px 0 0; line-height: 1.5; }
+    /* PDF: the viewer clones every page into #printRoot and prints that, one page per sheet. */
+    #printRoot { display: none; }
+    @page { size: 7in 9.7222in; margin: 0; }
+    @media print {
+      html, body { height: auto; overflow: visible; background: #fff; }
+      body.printing > :not(#printRoot) { display: none !important; }
+      body.printing #printRoot { display: block; --pw: 7in; --ph: 9.7222in; }
+      #printRoot .page { position: relative; inset: auto; width: var(--pw); height: var(--ph); overflow: hidden; break-after: page; break-inside: avoid; }
+      #printRoot .page.blank { display: none; }
+      #printRoot .page.verso .folio { right: auto; left: 1.3em; }
+      #printRoot, #printRoot * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
     button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
     ::selection { background: #E4D9C4; }
 
@@ -222,6 +234,7 @@
   <span id="saveState">{% if draft %}Draft: {{ draft.name }}{% endif %}</span>
   <button id="editBtn" aria-pressed="false">Change images</button>
   <button id="saveBtn">Save draft</button>
+  <button id="pdfBtn">Save as PDF</button>
   <a href="{{ url('/catalog') }}">Edit selection</a>
 </div>
 
@@ -251,6 +264,7 @@
 </aside>
 
 <script type="application/json" id="catData">{{ { overrides: overrides, products: products, draft: draft, ids: ids, title: title, subtitle: subtitle, brand: brand } | dump | replace('<', '\\u003c') | safe }}</script>
+<div id="printRoot" aria-hidden="true"></div>
 <div id="pool" style="display:none">
   {% for p in model.pages %}
     <div class="page {{ p.kind }}">
@@ -377,6 +391,37 @@
   });
   items.forEach(function (li) {
     li.addEventListener('click', function () { go(Number(li.dataset.spread)); });
+  });
+
+  // ---- PDF: print every page at its own size; the browser's "Save as PDF" does the rest ----
+  var pdfBtn = document.getElementById('pdfBtn');
+  pdfBtn.addEventListener('click', function () {
+    var root = document.getElementById('printRoot');
+    root.innerHTML = '';
+    pages.forEach(function (page, i) {
+      var copy = page.cloneNode(true);
+      if (i % 2 === 1) copy.classList.add('verso');
+      Array.prototype.forEach.call(copy.querySelectorAll('img'), function (img) { img.loading = 'eager'; });
+      root.appendChild(copy);
+    });
+    var imgs = Array.prototype.slice.call(root.querySelectorAll('img'));
+    pdfBtn.disabled = true;
+    pdfBtn.textContent = 'Preparing\u2026';
+    var loaded = Promise.all(imgs.map(function (img) {
+      return img.complete ? null : new Promise(function (done) { img.onload = img.onerror = done; });
+    }));
+    // A slow image must not hold the export hostage.
+    Promise.race([loaded, new Promise(function (done) { setTimeout(done, 15000); })]).then(function () {
+      document.body.classList.add('printing');
+      window.print();
+    });
+    window.addEventListener('afterprint', function done() {
+      window.removeEventListener('afterprint', done);
+      document.body.classList.remove('printing');
+      root.innerHTML = '';
+      pdfBtn.disabled = false;
+      pdfBtn.textContent = 'Save as PDF';
+    });
   });
 
   var imgPane = document.getElementById('imgPane');

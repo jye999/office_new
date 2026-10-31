@@ -18,6 +18,9 @@ export interface FaireRow {
   per_style_minimum_order_quantity?: number | null;
 }
 
+// Columns the catalog selects from os_faire_products (routes and the curation job).
+export const FAIRE_COLUMNS = ['id', 'name', 'description', 'short_description', 'taxonomy_type', 'images', 'variants', 'minimum_order_quantity', 'per_style_minimum_order_quantity'] as const;
+
 interface VariantPrices {
   wholesale_price_cents?: number | null;
   retail_price_cents?: number | null;

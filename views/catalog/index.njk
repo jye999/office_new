@@ -151,7 +151,41 @@
     e.target.closest('.cat-card').classList.toggle('on', e.target.checked);
     tally(cards.filter(function (card) { return !card.classList.contains('off'); }).length);
   });
-  document.getElementById('curate').addEventListener('click', function () {
+  var curateBtn = document.getElementById('curate');
+  var urlStatus = '{{ url('/catalog/curate/status') }}';
+  var timer = null;
+
+  function describe(st) {
+    var line = st.done + ' / ' + st.total + ' curated';
+    return st.fromModel < st.curated ? line + ' (' + st.fromModel + ' by the model, the rest by rule)' : line;
+  }
+  // The job runs in the worker; poll until it finishes. Closing the page does not stop it.
+  function watch(job) {
+    curateBtn.disabled = true;
+    clearTimeout(timer);
+    fetch(urlStatus + (job ? '?job=' + encodeURIComponent(job) : ''), { cache: 'no-store' })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var st = j.status;
+        if (!st) { curateBtn.disabled = false; return; }
+        if (st.state === 'completed') {
+          curateBtn.disabled = false;
+          curateMsg.textContent = 'Done: ' + describe(st) + ' \u2014 reload to see them';
+        } else if (st.state === 'failed') {
+          curateBtn.disabled = false;
+          curateMsg.textContent = 'Curation stopped after ' + st.done + ' / ' + st.total + ': ' + (st.error || 'failed') + '. Run it again to continue.';
+        } else {
+          curateMsg.textContent = 'Curating in the background: ' + describe(st) + (st.state === 'waiting' ? ' (queued)' : '');
+          timer = setTimeout(function () { watch(st.id); }, 2500);
+        }
+      })
+      .catch(function () {
+        if (!job) { curateBtn.disabled = false; return; }
+        timer = setTimeout(function () { watch(job); }, 5000);
+      });
+  }
+
+  curateBtn.addEventListener('click', function () {
     var ids = cards
       .filter(function (card) { return card.querySelector('input').checked; })
       .map(function (card) { return card.querySelector('input').value; });
@@ -159,7 +193,8 @@
       curateMsg.textContent = 'Select products first.';
       return;
     }
-    curateMsg.textContent = 'Curating ' + ids.length + ' product images\u2026';
+    curateBtn.disabled = true;
+    curateMsg.textContent = 'Queuing ' + ids.length + ' products\u2026';
     fetch(urlCurate, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -167,14 +202,17 @@
     })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        curateMsg.textContent = j.ok
-          ? j.curated + ' curated (' + j.from_model + ' by the model, ' + j.already_had + ' already done) — reload to see them'
-          : j.message;
+        if (!j.ok) { curateBtn.disabled = false; curateMsg.textContent = j.message; return; }
+        if (!j.job) { curateBtn.disabled = false; curateMsg.textContent = 'All ' + j.already_had + ' already curated.'; return; }
+        watch(j.job);
       })
       .catch(function (e) {
-        curateMsg.textContent = 'Curation failed: ' + e;
+        curateBtn.disabled = false;
+        curateMsg.textContent = 'Could not start curation: ' + e;
       });
   });
+  // A run started earlier (or from another tab) shows its progress when the page opens.
+  watch('');
 
   refresh();
 })();

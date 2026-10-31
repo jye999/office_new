@@ -10,6 +10,8 @@ import { registerCatalogRoutes } from '../src/modules/catalog/routes.js';
 import { installRouter } from '../src/router.js';
 import { registerViewPlugins } from '../src/view.js';
 import { setOpenAiPostForTests } from '../src/lib/chatService.js';
+import { setCatalogQueueForTests } from '../src/jobs/queue.js';
+import { runCuration } from '../src/lib/catalogCurateRun.js';
 
 const live = await db
   .selectFrom('os_faire_products')
@@ -36,11 +38,20 @@ beforeAll(async () => {
     (req.session as Record<string, unknown>)['user_id'] = 1;
   });
   await app.ready();
+  // The queue is stubbed: the job's work runs inline, as the worker would run it.
+  setCatalogQueueForTests({
+    add: async (data) => {
+      await runCuration(data.ids);
+      return '1';
+    },
+    status: async () => null,
+  });
   setOpenAiPostForTests(async () => ({ choices: [{ message: { content: '{"hero": 0, "extras": [1], "layout": "half"}' } }] }));
 });
 
 afterAll(async () => {
   setOpenAiPostForTests(null);
+  setCatalogQueueForTests(null);
   if (live) await db.deleteFrom('os_catalog_curation').where('faire_id', '=', live).execute();
   if (app) await app.close();
 });
@@ -60,7 +71,7 @@ describe.skipIf(!live)('catalog curation route', () => {
       payload: `ids[]=${live}`,
     });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toMatchObject({ ok: true, curated: 1, from_model: 1 });
+    expect(res.json()).toMatchObject({ ok: true, job: '1', total: 1 });
 
     const stored = await db.selectFrom('os_catalog_curation').select(['hero_url', 'layout', 'model']).where('faire_id', '=', live!).execute();
     expect(stored[0]?.layout).toBe('half');
@@ -78,6 +89,6 @@ describe.skipIf(!live)('catalog curation route', () => {
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
       payload: `ids[]=${live}`,
     });
-    expect(res.json()).toMatchObject({ ok: true, curated: 0, already_had: 1 });
+    expect(res.json()).toMatchObject({ ok: true, job: null, total: 0, already_had: 1 });
   });
 });
