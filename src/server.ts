@@ -74,7 +74,8 @@ preloadRouteTable();
 // fp() = global scope: form bodies must be parsed for routes registered on
 // the root app (T02's auth module registered them after this plugin; without
 // fp() the plugin is encapsulated and root routes 415 on urlencoded POSTs).
-await app.register(fp(multipart), { attachFieldsToBody: false });
+// Phone/iPad photos run 3-12 MB; the plugin default (Fastify bodyLimit, 1 MB) rejected them with 413.
+await app.register(fp(multipart), { attachFieldsToBody: false, limits: { fileSize: 50 * 1024 * 1024 } });
 // T42: /ebayClosureNotification needs $request->getContent() (the RAW urlencoded
 // body), so formbody is NOT registered here: this parser both captures the raw
 // bytes on the request and hands them to the same parseLaravelQuery parser the
