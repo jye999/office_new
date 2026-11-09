@@ -355,8 +355,10 @@ async function uploadMultipleImage(req: FastifyRequest, reply: FastifyReply): Pr
         void p.value; // drain field parts
         continue;
       }
-      if (p.fieldname !== 'files') continue;
+      // The page's axios FormData sends `files[]`; a file part that is skipped must still be
+      // read, or the multipart stream never ends and the upload hangs.
       const buffer = await p.toBuffer();
+      if (p.fieldname !== 'files' && p.fieldname !== 'files[]') continue;
       // getClientOriginalExtension(): pathinfo EXTENSION, case kept.
       const ext = (p.filename ?? '').split('.').pop() ?? '';
       const filePath = `${id}_${Math.floor(Date.now() / 1000)}_${counter}.${ext}`;
