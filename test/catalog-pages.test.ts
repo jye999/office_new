@@ -55,6 +55,14 @@ describe('/catalog/site', () => {
   });
 });
 
+describe('/catalog/publish', () => {
+  it('refuses when Cloudflare is not configured', async () => {
+    const res = await buildApp().inject({ method: 'POST', url: '/catalog/publish', payload: 'draft=1', headers: { 'content-type': 'application/x-www-form-urlencoded' } });
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body).ok).toBe(false);
+  });
+});
+
 describe('/catalog access', () => {
   it('refuses a signed-in user who is not an admin', async () => {
     const other = await db

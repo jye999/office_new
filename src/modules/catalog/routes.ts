@@ -10,7 +10,8 @@ import { buildCatalog, catalogItem, dedupeRows, asJson, FAIRE_COLUMNS, type Cata
 import { catalogJobStatus, dispatchCatalogCurate } from '../../jobs/queue.js';
 import { curationTodo } from '../../lib/catalogCurateRun.js';
 import { route } from '../../router.js';
-import { render } from '../../view.js';
+import { render, renderToString } from '../../view.js';
+import { cloudflareConfigured, publishPage } from '../../lib/cloudflareSite.js';
 
 const ROLES = ['admin'];
 const DEFAULT_TITLE = 'Wholesale Catalog';
@@ -216,7 +217,7 @@ async function deleteDraft(req: FastifyRequest, reply: FastifyReply): Promise<vo
   return void lredirect(req, reply, '/catalog');
 }
 
-async function viewer(req: FastifyRequest, reply: FastifyReply, publish = false): Promise<void> {
+async function viewer(req: FastifyRequest, reply: FastifyReply, publish = false, push = false): Promise<void> {
   const draft = await loadDraft(input(req, 'draft'));
   const ids = draft ? draft.ids : idList(input(req, 'ids'));
   if (ids.length === 0) {
@@ -254,8 +255,8 @@ async function viewer(req: FastifyRequest, reply: FastifyReply, publish = false)
 
   reply.header('cache-control', 'no-store');
   // The published copy is a standalone index.html for a static host: no prices, no admin controls.
-  if (publish) reply.header('content-disposition', 'attachment; filename="index.html"');
-  await render(req, reply, 'catalog/flipbook', {
+  if (publish && !push) reply.header('content-disposition', 'attachment; filename="index.html"');
+  const view = {
     publish,
     model,
     brand: draft?.brand ?? (await text(req, 'brand', DEFAULT_BRAND)),
@@ -268,7 +269,14 @@ async function viewer(req: FastifyRequest, reply: FastifyReply, publish = false)
     title: model.pages[0]?.title ?? DEFAULT_TITLE,
     subtitle: model.pages[0]?.subtitle ?? '',
     year: String(new Date().getFullYear()),
-  });
+  };
+  if (!push) return render(req, reply, 'catalog/flipbook', view);
+  try {
+    const url = await publishPage(await renderToString(req, 'catalog/flipbook', view));
+    return void reply.send({ ok: true, url });
+  } catch (e) {
+    return void reply.code(502).send({ ok: false, message: e instanceof Error ? e.message : 'Publish failed' });
+  }
 }
 
 // Standalone, price-free copy of a saved draft, for hosting as a static website.
@@ -276,10 +284,18 @@ async function site(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   return viewer(req, reply, true);
 }
 
+// Pushes the same price-free page to the Cloudflare Worker that hosts the public catalog.
+async function publish(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (!cloudflareConfigured()) return void reply.code(400).send({ ok: false, message: 'Cloudflare is not configured on the server.' });
+  if (!(await loadDraft(input(req, 'draft')))) return void reply.code(400).send({ ok: false, message: 'Save the draft first.' });
+  return viewer(req, reply, true, true);
+}
+
 export function registerCatalogRoutes(app: FastifyInstance): void {
   route(app, { verb: 'get', path: '/catalog', name: 'catalog', roles: ROLES, handler: picker });
   route(app, { verb: 'get', path: '/catalog/view', name: 'catalog.view', roles: ROLES, handler: viewer });
   route(app, { verb: 'get', path: '/catalog/site', name: 'catalog.site', roles: ROLES, handler: site });
+  route(app, { verb: 'post', path: '/catalog/publish', name: 'catalog.publish', roles: ROLES, handler: publish });
   route(app, { verb: 'post', path: '/catalog/open', name: 'catalog.open', roles: ROLES, handler: openSelection });
   route(app, { verb: 'post', path: '/catalog/drafts', name: 'catalog.drafts.save', roles: ROLES, handler: saveDraft });
   route(app, { verb: 'post', path: '/catalog/drafts/delete', name: 'catalog.drafts.delete', roles: ROLES, handler: deleteDraft });

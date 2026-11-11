@@ -240,6 +240,7 @@
 {% endif %}
   <button id="pdfBtn">Save as PDF</button>
 {% if not publish %}
+  <button id="publishBtn"{% if not draft %} style="display:none"{% endif %} title="Put this saved draft on the public website (no prices)">Publish</button>
   <a id="siteBtn" href="{{ url('/catalog/site') }}?draft={{ draft.id if draft else '' }}" title="Download a price-free index.html to host as a website"{% if not draft %} style="display:none"{% endif %}>Website</a>
   <a href="{{ url('/catalog') }}">Edit selection</a>
 {% endif %}
@@ -584,9 +585,24 @@
         saveState.textContent = 'Draft: ' + (draftName || data.title) + ' \u00b7 saved';
         history.replaceState(null, '', '{{ url('/catalog/view') }}?draft=' + draftId + location.hash);
         var siteBtn = document.getElementById('siteBtn');
+        var pubBtn = document.getElementById('publishBtn');
+        if (pubBtn) pubBtn.style.display = '';
         if (siteBtn) { siteBtn.href = '{{ url('/catalog/site') }}?draft=' + draftId; siteBtn.style.display = ''; }
       })
       .catch(function () { saveState.textContent = 'Save failed'; });
+  });
+
+  var publishBtn = document.getElementById('publishBtn');
+  if (publishBtn) publishBtn.addEventListener('click', function () {
+    if (!draftId) return;
+    if (!window.confirm('Publish this saved draft to the public website? Prices are left out. Unsaved changes are not included.')) return;
+    publishBtn.disabled = true;
+    saveState.textContent = 'Publishing\u2026';
+    fetch('{{ url('/catalog/publish') }}', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'draft=' + draftId })
+      .then(function (r) { return r.json(); })
+      .then(function (j) { saveState.textContent = j.ok ? 'Published' + (j.url ? ' \u00b7 ' + j.url : '') : (j.message || 'Publish failed'); })
+      .catch(function () { saveState.textContent = 'Publish failed'; })
+      .then(function () { publishBtn.disabled = false; });
   });
 
   document.getElementById('fsBtn').addEventListener('click', function () {
