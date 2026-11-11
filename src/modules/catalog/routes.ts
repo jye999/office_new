@@ -216,7 +216,7 @@ async function deleteDraft(req: FastifyRequest, reply: FastifyReply): Promise<vo
   return void lredirect(req, reply, '/catalog');
 }
 
-async function viewer(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+async function viewer(req: FastifyRequest, reply: FastifyReply, publish = false): Promise<void> {
   const draft = await loadDraft(input(req, 'draft'));
   const ids = draft ? draft.ids : idList(input(req, 'ids'));
   if (ids.length === 0) {
@@ -253,7 +253,10 @@ async function viewer(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   });
 
   reply.header('cache-control', 'no-store');
+  // The published copy is a standalone index.html for a static host: no prices, no admin controls.
+  if (publish) reply.header('content-disposition', 'attachment; filename="index.html"');
   await render(req, reply, 'catalog/flipbook', {
+    publish,
     model,
     brand: draft?.brand ?? (await text(req, 'brand', DEFAULT_BRAND)),
     ids,
@@ -268,9 +271,15 @@ async function viewer(req: FastifyRequest, reply: FastifyReply): Promise<void> {
   });
 }
 
+// Standalone, price-free copy of a saved draft, for hosting as a static website.
+async function site(req: FastifyRequest, reply: FastifyReply): Promise<void> {
+  return viewer(req, reply, true);
+}
+
 export function registerCatalogRoutes(app: FastifyInstance): void {
   route(app, { verb: 'get', path: '/catalog', name: 'catalog', roles: ROLES, handler: picker });
   route(app, { verb: 'get', path: '/catalog/view', name: 'catalog.view', roles: ROLES, handler: viewer });
+  route(app, { verb: 'get', path: '/catalog/site', name: 'catalog.site', roles: ROLES, handler: site });
   route(app, { verb: 'post', path: '/catalog/open', name: 'catalog.open', roles: ROLES, handler: openSelection });
   route(app, { verb: 'post', path: '/catalog/drafts', name: 'catalog.drafts.save', roles: ROLES, handler: saveDraft });
   route(app, { verb: 'post', path: '/catalog/drafts/delete', name: 'catalog.drafts.delete', roles: ROLES, handler: deleteDraft });

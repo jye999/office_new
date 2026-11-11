@@ -40,6 +40,21 @@ beforeAll(async () => {
 
 afterAll(async () => { await db.destroy(); });
 
+describe('/catalog/site', () => {
+  it('is a price-free standalone copy', async () => {
+    const q = ids.map((id) => 'ids[]=' + encodeURIComponent(id)).join('&');
+    const normal = await buildApp().inject({ method: 'GET', url: '/catalog/view?' + q });
+    const res = await buildApp().inject({ method: 'GET', url: '/catalog/site?' + q });
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['content-disposition']).toContain('index.html');
+    expect(normal.body).toMatch(/class="v price">\$/);
+    expect(res.body).not.toMatch(/class="v price"/);
+    expect(res.body).not.toContain('Prices are USD wholesale');
+    expect(res.body).not.toContain('Save draft');
+    expect(res.body).not.toContain('Edit selection');
+  });
+});
+
 describe('/catalog access', () => {
   it('refuses a signed-in user who is not an admin', async () => {
     const other = await db

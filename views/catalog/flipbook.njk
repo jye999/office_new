@@ -232,10 +232,17 @@
   <button id="thumbBtn">Pages</button>
   <button id="fsBtn">Fullscreen</button>
   <span id="saveState">{% if draft %}Draft: {{ draft.name }}{% endif %}</span>
+{% if not publish %}
   <button id="editBtn" aria-pressed="false">Change images</button>
   <button id="saveBtn">Save draft</button>
+{% else %}
+  <button id="editBtn" hidden></button><button id="saveBtn" hidden></button>
+{% endif %}
   <button id="pdfBtn">Save as PDF</button>
+{% if not publish %}
+  <a id="siteBtn" href="{{ url('/catalog/site') }}?draft={{ draft.id if draft else '' }}" title="Download a price-free index.html to host as a website"{% if not draft %} style="display:none"{% endif %}>Website</a>
   <a href="{{ url('/catalog') }}">Edit selection</a>
+{% endif %}
 </div>
 
 <aside id="panel" class="hidden">
@@ -275,7 +282,7 @@
           {% if p.subtitle %}<p class="sub">{{ p.subtitle }}</p>{% endif %}
           {% if p.image %}<div class="shotBlock"><img src="{{ p.image }}" alt="" data-pid="{{ p.imageId }}"></div>{% endif %}
           <div class="hair"></div>
-          <p class="tag">{{ model.count }} styles · {{ model.categories }} categories · wholesale · {{ year }}</p>
+          <p class="tag">{{ model.count }} styles · {{ model.categories }} categories · {% if publish %}catalog{% else %}wholesale{% endif %} · {{ year }}</p>
         </div>
       {% elif p.kind == 'contents' %}
         <div class="pad">
@@ -285,7 +292,7 @@
             {% for c in p.contents %}<li><span>{{ c.name }}</span><b>{{ c.page }}</b></li>{% endfor %}
           </ul>
           <div class="hair"></div>
-          <p class="note">Prices are USD wholesale. Sizes are inches unless noted. Minimum order quantities apply per style.</p>
+          <p class="note">{% if not publish %}Prices are USD wholesale. {% endif %}Sizes are inches unless noted. Minimum order quantities apply per style.</p>
         </div>
       {% elif p.kind == 'category' %}
         <div class="pad dark opener">
@@ -302,7 +309,7 @@
               <h3>{{ item.name }}</h3>
               {% if item.text %}<p>{{ item.text }}</p>{% endif %}
               <div class="specs">
-                {% if item.wholesale %}<span class="k">Price</span><span class="v price">{{ item.wholesale }}</span>{% endif %}
+                {% if item.wholesale and not publish %}<span class="k">Price</span><span class="v price">{{ item.wholesale }}</span>{% endif %}
                 {% if item.sku %}<span class="k">SKU</span><span class="v">{{ item.skus.slice(0, 3) | join(' · ') }}{% if item.skus.length > 3 %} +{{ item.skus.length - 3 }}{% endif %}</span>{% endif %}
                 {% if item.colors.length > 1 %}
                   <span class="k opt">{{ item.variantLabel }}</span>
@@ -576,6 +583,8 @@
         draftId = j.id;
         saveState.textContent = 'Draft: ' + (draftName || data.title) + ' \u00b7 saved';
         history.replaceState(null, '', '{{ url('/catalog/view') }}?draft=' + draftId + location.hash);
+        var siteBtn = document.getElementById('siteBtn');
+        if (siteBtn) { siteBtn.href = '{{ url('/catalog/site') }}?draft=' + draftId; siteBtn.style.display = ''; }
       })
       .catch(function () { saveState.textContent = 'Save failed'; });
   });
