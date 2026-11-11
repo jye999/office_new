@@ -25,6 +25,10 @@ const EnvSchema = z.object({
   CATALOG_LLM_URL: z.string().default(''),
   CATALOG_LLM_MODEL: z.string().default(''),
   CATALOG_LLM_EFFORT: z.string().default(''),
+  // Publish the catalog as a static site on a Cloudflare Worker (static assets).
+  CLOUDFLARE_API_TOKEN: z.string().default(''),
+  CLOUDFLARE_ACCOUNT_ID: z.string().default(''),
+  CLOUDFLARE_WORKER: z.string().default(''),
   N8N_MCP_URL: z.string().default(''),
   // The only account allowed to manage other admins on the Users page (matched by login email).
   SUPER_ADMIN_EMAIL: z.string().default('johnny@angelisabella.com'),
